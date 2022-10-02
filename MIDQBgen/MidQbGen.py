@@ -13,13 +13,13 @@ tbp = 480
 
 consoleType = 1  # 0 for Wii, 1 for PC, 2 for 360, 3 for XBX, 4 for PS2, 5 for WPC
 
-midfile = "C:\\GitHub\\Guitar-Hero-III-Tools\\MID Parser\\MidiFiles\\greengrassreal.mid"
+midfile = "D:\\GitHub\\Guitar-Hero-III-Tools\\MIDQBgen\\MidiFiles\\greengrassreal.mid"
 
 # midfile = input("Please drag in your MIDI file: ")
 
 mid = MidiFile(midfile)
 
-# filename = "greengrassreal"
+# filename = "greengrassreal"P
 filename = os.path.splitext(os.path.basename(midfile))[0]
 
 packname = f"songs/{filename}.mid.qb"
