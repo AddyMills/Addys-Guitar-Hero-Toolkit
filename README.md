@@ -37,7 +37,7 @@ There are a lot of things that can be pulled from an RB MIDI that can be used in
 *  Implement RB's forced notes, either on or off
 *  Add an option to create GH2-style HO/POs. Currently if a single note of one colour comes after a chord containing that colour, it's a HO/PO in GH3 while it's not in HMX style games. This feature would automatically add HO/PO force markers to those single notes to make them strummed
 *  Allow you to create your own GH3 style venue with an added MIDI track called "GH3 Venue". There will also be a guide created for this.
-*  Custom sections with spaces and without abbreviations. Currently, you can only use songs with sections found in HMX style games. If there's a custom section in your song, it'll just be called that in-game with the underscores.
+*  Custom sections with spaces and without abbreviations. Currently, you can only use songs with sections found in HMX style games. If there's a custom section in your song, it'll just be called the name of the text event (without "section" or "prc_") in-game with the underscores.
 
 ### Further off
 
