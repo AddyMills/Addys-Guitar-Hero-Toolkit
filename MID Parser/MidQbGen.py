@@ -13,9 +13,9 @@ tbp = 480
 
 consoleType = 1  # 0 for Wii, 1 for PC, 2 for 360, 3 for XBX, 4 for PS2, 5 for WPC
 
-filename = "D:\\GitHub\\Guitar-Hero-III-Tools\\MID Parser\\MidiFiles\\greengrassreal.mid"
+midfile = "C:\\GitHub\\Guitar-Hero-III-Tools\\MID Parser\\MidiFiles\\greengrassreal.mid"
 
-mid = MidiFile(filename)
+mid = MidiFile(midfile)
 
 filename = "greengrassreal"
 # filename = os.path.splitext(os.path.basename(filename))[0]
@@ -55,6 +55,9 @@ QBItems = []
 # print(midQB)
 
 for x in midQB["playableQB"]:
+    QBChart = []
+    QBStar = []
+    QBStarBM = []
     # print(x)
     if not midQB["playableQB"][x]:
         for y in difficulties:
@@ -62,10 +65,10 @@ for x in midQB["playableQB"]:
             chartName = f"{filename}_song_{instrument}_{y}"
             starName = f"{filename}_{instrument}_{y}_Star"
             BMStarName = f"{filename}_{instrument}_{y}_StarBattleMode"
-            QBItems.append(
+            QBChart.append(
                 QBItem("ArrayInteger", chartName, headerDict[chartName], [], consoleType))
-            QBItems.append(QBItem("ArrayArray", starName, headerDict[starName], [], consoleType))
-            QBItems.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], [], consoleType))
+            QBStar.append(QBItem("ArrayArray", starName, headerDict[starName], [], consoleType))
+            QBStarBM.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], [], consoleType))
 
     for i, y in enumerate(midQB["playableQB"][x]):
         data = [midQB["playableQB"][x][y].song, midQB["playableQB"][x][y].star, midQB["playableQB"][x][y].starBM]
@@ -73,27 +76,23 @@ for x in midQB["playableQB"]:
             chartName = f"{filename}_song_{y}"
             starName = f"{filename}_{y}_Star"
             BMStarName = f"{filename}_{y}_StarBattleMode"
-            QBItems.append(
+            QBChart.append(
                 QBItem("ArrayInteger", chartName, headerDict[chartName], data[0], consoleType))
-            QBItems.append(QBItem("ArrayArray", starName, headerDict[starName], data[1], consoleType))
-            QBItems.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], data[2], consoleType))
+            QBStar.append(QBItem("ArrayArray", starName, headerDict[starName], data[1], consoleType))
+            QBStarBM.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], data[2], consoleType))
         else:
             instrument = x.replace("_", "").lower() if x != "Bass" else "rhythm"
             chartName = f"{filename}_song_{instrument}_{y}"
             starName = f"{filename}_{instrument}_{y}_Star"
             BMStarName = f"{filename}_{instrument}_{y}_StarBattleMode"
-            QBItems.append(
+            QBChart.append(
                 QBItem("ArrayInteger", chartName, headerDict[chartName], data[0], consoleType))
-            QBItems.append(QBItem("ArrayArray", starName, headerDict[starName], data[1], consoleType))
-            QBItems.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], data[2], consoleType))
-
-if not midQB["drumNotes"]:
-    chartName = f"{filename}_drums_notes"
-    QBItems.append(QBItem("ArrayInteger", chartName, headerDict[chartName], [], consoleType))
-    # print(QBItems[-1])
-else:
-    chartName = f"{filename}_drums_notes"
-    QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], midQB["drumNotes"], consoleType))
+            QBStar.append(QBItem("ArrayArray", starName, headerDict[starName], data[1], consoleType))
+            QBStarBM.append(QBItem("ArrayArray", BMStarName, headerDict[BMStarName], data[2], consoleType))
+    
+    for y in [QBChart, QBStar, QBStarBM]:
+        for z in y:
+            QBItems.append(z)
 
 # print(midQB["faceOffs"])
 for x in midQB["faceOffs"]:
@@ -103,9 +102,11 @@ for x in midQB["faceOffs"]:
     else:
         QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], midQB["faceOffs"][x], consoleType))
 
+# Boss Battle Array
 for x in midQB["faceOffs"]:
     chartName = f"{filename}_BossBattle{x}"
     QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], [], consoleType))
+
 # timesig (array), markers (struct), fretbars (integer)
 chartName = f"{filename}_timesig"
 QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], midQB["timesig"], consoleType))
@@ -113,16 +114,6 @@ chartName = f"{filename}_fretbars"
 QBItems.append(QBItem("ArrayInteger", chartName, headerDict[chartName], midQB["fretbars"], consoleType))
 chartName = f"{filename}_markers"
 QBItems.append(QBItem("ArrayStruct", chartName, headerDict[chartName], midQB["markers"], consoleType))
-
-# Add drums scripts above and add anim notes
-# exit()
-toIgnoreNotes = ["anim"]
-for x in ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "performance"]:
-    chartName = f"{filename}_{x}"
-    QBItems.append(QBItem("ArrayInteger", chartName, headerDict[chartName], [], consoleType))
-    chartName += "_notes"
-    if x not in toIgnoreNotes:
-        QBItems.append(QBItem("ArrayInteger", chartName, headerDict[chartName], [], consoleType))
 
 P1count = 0
 P2count = 0
@@ -142,8 +133,31 @@ while True:
             mergedAnim += midQB["leftHandAnims"]["Guitar"][P1count:]
         break
 
-chartName = f"{filename}_anim_notes"
-QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], mergedAnim, consoleType))
+misc = ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "drums", "performance"]
+
+QBNotes = []
+QBScripts = []
+
+for x in misc:
+    xscript = f"{filename}_{x}"
+    xnote = f"{xscript}_notes"
+    if x == "anim":
+        QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], mergedAnim, consoleType))
+    elif x == "drums":
+        if not midQB["drumNotes"]:
+            QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
+        else:
+            QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB["drumNotes"], consoleType))
+    else:
+        QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
+    QBScripts.append(QBItem("ArrayInteger", xscript, headerDict[xscript], [], consoleType))
+
+for x in QBNotes:
+    QBItems.append(x)
+
+for x in QBScripts:
+    QBItems.append(x)
+    
 
 positionStart = 28
 
