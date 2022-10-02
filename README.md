@@ -18,7 +18,9 @@ How to use:
 
 This program is PC only and you will need GHTCP to use this tool for now.
 
-*  Create a custom with your RB MIDI in GHTCP and remember the "short name" you made. This is the name found on the left-hand side, once created.
+*  Create a custom with your RB MIDI in GHTCP and remember the "short name" you made. This is the name found on the left-hand side, once created. 
+
+![image](https://user-images.githubusercontent.com/74471839/193481392-baa1b954-bb82-4f74-b890-2b422cda14d9.png)
 *  Rename the RB MIDI file to your "short name" (in my case it's "youshouldbeashamed.mid"), with the same case. If any part of the name is different, this will not work.
 *  Drag the MIDI file onto the executable.
 *  A PAK file will be generated. Simply copy and paste this PAK file into your SONGS folder
