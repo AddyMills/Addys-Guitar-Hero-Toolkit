@@ -14,7 +14,7 @@ tbp = 480
 
 consoleType = 1  # 0 for Wii, 1 for PC, 2 for 360, 3 for XBX, 4 for PS2, 5 for WPC
 
-midfile = "D:\\GitHub\\Guitar-Hero-III-Tools\\MIDQBgen\\MidiFiles\\youshouldbeashamed.mid"
+midfile = sys.argv[1]
 
 mid = MidiFile(midfile)
 
