@@ -33,6 +33,14 @@ Forcing HO/POs using the notes directly above the playable notes as in RB, inclu
 When adding songs to GHTCP, it's highly recommended to use a slightly different HO/PO threshold of 2.8 or 2.85 (technically 2.8235, but GHTCP only allows you to set it in increments of 0.05. You can change this using QueenBee for now if you really want to get precise). The way GH3 calculates hopos is using the following formula: 1/(4\*x). Any note slower than this number will result in a strummed note. The default is 2.95. 1/(4\*2.95) is 11.8 so slightly slower than 1/12th note. HMX's default of 170 converts to roughly 11.3 which I find is better. Fast BPM triplets will sometimes have strummed notes in there using the default GH3 HO/PO value.
 ![image](https://user-images.githubusercontent.com/74471839/193668661-b96636b7-19f0-4211-a2e7-3f73fbbb4c9e.png)
 
+Common HMX thresholds and their NS counterparts to enter in GHTCP:
+|HMX Ticks|NS HOPO value|Largest HOPO Distance|
+|:----------:|:----------:|:------:|
+|250|1.92|8th Note|
+|170|2.8235|8th Triplet (12th note)|
+|130|3.6923|16th Note|
+|90|5.3333|16th Triplet (24th Note)|
+
 
 ## Roadmap
 
