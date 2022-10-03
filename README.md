@@ -16,7 +16,7 @@ Note: In order for drum animations to show up, the input MIDI must have drum ani
 
 How to use:
 
-This program is PC only and you will need GHTCP to use this tool for now.
+This program is for GH3 PC only and you will need GHTCP to use this tool for now.
 
 *  Create a custom with your RB MIDI in GHTCP and remember the "short name" you made. This is the name found on the left-hand side, once created. 
 
