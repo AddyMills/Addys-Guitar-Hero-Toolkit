@@ -15,6 +15,8 @@ class Note:  # Every note will be its own class to determine what kind of chord 
         self.blue = 0
         self.orange = 0
         self.force = 0
+        self.force_on = 0
+        self.force_off = 0
         self.tap = 0
         self.length = 1  # Default length of 1 ms to make note appear, but no sustain yet
 
@@ -46,7 +48,7 @@ class Note:  # Every note will be its own class to determine what kind of chord 
                 else:
                     notes += "-" + x.title()
                 count += 1
-        return f"{notes} {'note' if count == 1 else 'chord'} at {self.time} with note length {self.length}"
+        return f"{notes} {'note' if count == 1 else 'chord'} at {self.time} with note length {self.length}."
 
 
 class NoteChart:

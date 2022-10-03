@@ -5,3 +5,6 @@
 *.pyc
 *.xlsx
 *.bak
+*/build*
+*/dist*
+*.spec
