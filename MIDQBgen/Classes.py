@@ -4,27 +4,56 @@ from CRC import QBKey
 
 colours = {
     "green": 1, "red": 2, "yellow": 4, "blue": 8, "orange": 16, "force": 32, "tap": 64}
+single_notes = [1, 2, 4, 8, 16]
 
 
 class Note:  # Every note will be its own class to determine what kind of chord is played, the length, and if it needs to be forced or not
-    def __init__(self, time):
+    def __init__(self, time, prevNote, currTempChange):
         self.time = time
         self.green = 0
         self.red = 0
         self.yellow = 0
         self.blue = 0
         self.orange = 0
+        self.chord = 0
         self.force = 0
         self.force_on = 0
         self.force_off = 0
         self.tap = 0
         self.length = 1  # Default length of 1 ms to make note appear, but no sustain yet
+        self.prev_note = prevNote
+        self.tempo_change = currTempChange
 
     def setLength(self, length, tempo, tbp = 480):
-        if s2t(length / 1000, tbp, tempo) < 355:
+        if s2t(length / 1000, tbp, tempo) < 240:
             self.length = 1
         else:
             self.length = length
+
+    def setForcing(self, hopo = 170, tbp = 480):
+        if self.prev_note == 0:
+            return
+        if ((self.green * 1) + (self.red * 2) + (self.yellow * 4) + (self.blue * 8) + self.orange * 16) not in single_notes:
+            return
+        prev_tempo = self.prev_note.tempo_change.tempo
+        prev_time = self.prev_note.time
+        # print(self.time, self.prev_note.time, prev_tempo, tbp)
+        # print(self.time, self.prev_note.time, s2t((self.time - prev_time)/1000, tbp, prev_tempo))
+        ticks_away = s2t((self.time - prev_time)/1000, tbp, prev_tempo)
+        # print(self.time, ticks_away)
+        if self.force_on != self.force_off:
+            # print(self.time, "Forced")
+            if self.force_on == 1:
+                if ticks_away > hopo:
+                    self.force = 1
+                else:
+                    self.force = 0
+            elif self.force_off == 1:
+                if ticks_away < hopo:
+                    self.force = 1
+                else:
+                    self.force = 0
+        return
 
     def noNoteTouch(self):
         if self.length != 1:
@@ -46,9 +75,11 @@ class Note:  # Every note will be its own class to determine what kind of chord 
                 if notes == "":
                     notes += x.title()
                 else:
-                    notes += "-" + x.title()
-                count += 1
-        return f"{notes} {'note' if count == 1 else 'chord'} at {self.time} with note length {self.length}."
+                    if x != "force":
+                        notes += "-" + x.title()
+                if x != "force":
+                    count += 1
+        return f"{notes} {'note' if count == 1 else 'chord'} at {self.time} with note length {self.length}.{' Forced' if self.force == 1 else ''}"
 
 
 class NoteChart:

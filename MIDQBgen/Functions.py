@@ -6,7 +6,6 @@ from Sections import sections
 import CRC
 
 
-
 def createHeaderDict(filename):
     headers = []
     headerDict = {}
@@ -32,6 +31,7 @@ def createHeaderDict(filename):
 
     return headerDict
 
+
 def midiProcessing(mid):
     tempoMap, ticks = tempMap(mid)
     endEvent = 0
@@ -50,6 +50,7 @@ def midiProcessing(mid):
 def rollingAverage(x, y, z, a):  # x = prevTime, y = curTime, z = avgTempo, a = curTempo
     newTempo = ((x / y) * z) + (a * (y - x) / y)
     return newTempo
+
 
 def tempMap(mid):
     x = []  # Tempo changes
@@ -84,7 +85,7 @@ def timeInSecs(currChange, mid, time):
                                                                             currChange.tempo), 3) * 1000)
 
 
-def parseGH3QB(mid, spNote=116):
+def parseGH3QB(mid, hopoThreshold, spNote=116):
     changes, ticks = tempMap(mid)
 
     ticksArray = np.array(ticks)
@@ -159,7 +160,12 @@ def parseGH3QB(mid, spNote=116):
         }
 
         qbItems = []
-
+        forcing = {
+            "Easy": {"force_on": 0, "force_off": 0},
+            "Medium": {"force_on": 0, "force_off": 0},
+            "Hard": {"force_on": 0, "force_off": 0},
+            "Expert": {"force_on": 0, "force_off": 0}
+        }
         try:
             instrument = playTracksDict[track.name]
         except:
@@ -205,7 +211,13 @@ def parseGH3QB(mid, spNote=116):
                                     diffs[chartDiff][-1].setLength(timeSec - diffs[chartDiff][-1].time,
                                                                    currChange.tempo,
                                                                    mid.ticks_per_beat)
-
+                            elif x.note in forceMapping:
+                                chartDiff = forceMapping[x.note].split("_")[0]
+                                forceType = "force_" + forceMapping[x.note].split("_")[1]
+                                forcing[chartDiff][forceType] = 0
+                                if diffs[chartDiff]:
+                                    if timeSec == diffs[chartDiff][-1].time:
+                                        setattr(diffs[chartDiff][-1], forceType, 0)
                             elif x.note == spNote:
                                 starPowerList[-1].setLength(timeSec - starPowerList[-1].time)
                             elif instrument == "Guitar":
@@ -225,7 +237,7 @@ def parseGH3QB(mid, spNote=116):
                                 noteColour = noteMapping[x.note].split("_")[1]
 
                                 if not diffs[chartDiff]:  # Check for empty note array and adds a note
-                                    diffs[chartDiff].append(Note(timeSec))
+                                    diffs[chartDiff].append(Note(timeSec, 0, currChange))
                                     activeNote[chartDiff] = 1
                                 elif diffs[chartDiff][
                                     -1].time != timeSec:  # Check if the note shows up at the same time as the previous note
@@ -238,13 +250,23 @@ def parseGH3QB(mid, spNote=116):
                                             diffs[chartDiff][-1].setLength(timeSec - diffs[chartDiff][-1].time,
                                                                            currChange.tempo,
                                                                            mid.ticks_per_beat)
-                                            diffs[chartDiff].append(Note(timeSec))
+                                            diffs[chartDiff].append(Note(timeSec, diffs[chartDiff][-1], currChange))
                                             activeNote[chartDiff] = 1
                                     else:  # If no note is currently active at this note_on event, create one.
-                                        diffs[chartDiff].append(Note(timeSec))
+                                        diffs[chartDiff].append(Note(timeSec, diffs[chartDiff][-1], currChange))
                                         activeNote[chartDiff] = 1
                                 if noteColour in colours:
                                     setattr(diffs[chartDiff][-1], noteColour, 1)
+                                if "forceType" in locals():
+                                    if forcing[chartDiff][forceType] == 1:
+                                        setattr(diffs[chartDiff][-1], forceType, 1)
+                            if x.note in forceMapping:
+                                chartDiff = forceMapping[x.note].split("_")[0]
+                                forceType = "force_" + forceMapping[x.note].split("_")[1]
+                                forcing[chartDiff][forceType] = 1
+                                if diffs[chartDiff]:
+                                    if timeSec == diffs[chartDiff][-1].time:
+                                        setattr(diffs[chartDiff][-1], forceType, 1)
                             if x.note == spNote:
                                 if not starPowerList:
                                     starPowerList.append(StarPower(timeSec))
@@ -277,7 +299,13 @@ def parseGH3QB(mid, spNote=116):
                                 activeNote[chartDiff] = 0
                                 diffs[chartDiff][-1].setLength(timeSec - diffs[chartDiff][-1].time, currChange.tempo,
                                                                mid.ticks_per_beat)
-
+                        if x.note in forceMapping:
+                            chartDiff = forceMapping[x.note].split("_")[0]
+                            forceType = "force_" + forceMapping[x.note].split("_")[1]
+                            forcing[chartDiff][forceType] = 0
+                            if diffs[chartDiff]:
+                                if timeSec == diffs[chartDiff][-1].time:
+                                    setattr(diffs[chartDiff][-1], forceType, 0)
                         if x.note == spNote:
                             starPowerList[-1].setLength(timeSec - starPowerList[-1].time)
                         if instrument == "Guitar":
@@ -314,6 +342,9 @@ def parseGH3QB(mid, spNote=116):
         if track.name in playTracksDict:
             for x in diffs:
                 playableQB[instrument][x] = Difficulty(x, instrument, diffs[x], starPowerDiffs[x], starBM[x])
+                for y in playableQB[instrument][x].song:
+                    y.setForcing(hopoThreshold, mid.ticks_per_beat)
+                    print(y)
     # print(playableQB)
 
     time = 0
@@ -351,6 +382,7 @@ def parseGH3QB(mid, spNote=116):
 
     return {"playableQB": playableQB, "drumNotes": drumNotes, "timesig": timeSigs, "markers": markers,
             "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs}
+
 
 def makeMidQB(midQB, filename, headerDict, consoleType):
     QBItems = []

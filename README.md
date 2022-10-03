@@ -28,6 +28,10 @@ This program is for GH3 PC only and you will need GHTCP to use this tool for now
 
 A GH2 style MIDI will also work. However, since there are no drum animations found inside those MIDIs, there will not be any animations made for him. The left-hand stuff will work though!
 
+Forcing HO/POs using the notes directly above the playable notes as in RB, including on Medium and Easy if you wanted to. The script will assume you're using a 170 ho/po threshold like RB, but that can be overridden if you're using a different HOPO setting in GHTCP. To change the logic of the script with a different threshold, simply add the hopo threshold in ticks after calling the script and mid. For example "MidQbGen greengrassreal.mid 250" will handle the midi as if the hopo threshold was set to 250 in-game. If a note is forced on and off, the forcing will be ignored entirely.
+
+When adding songs to GHTCP, it's highly recommended to use a slightly different HO/PO threshold of 2.8 or 2.85 (technically 2.8235, but GHTCP only allows you to set it in increments of 0.05. You can change this using QueenBee for now if you really want to get precise). The way GH3 calculates hopos is using the following formula: 1/(4\*x). Any note slower than this number will result in a strummed note. The default is 2.95. 1/(4\*2.95) is 11.8 so slightly slower than 1/12th note. HMX's default of 170 converts to roughly 11.3 which I find is better. Fast BPM triplets will sometimes have strummed notes in there using the default GH3 HO/PO value.
+
 ## Roadmap
 
 There are a lot of things that can be pulled from an RB MIDI that can be used inside a GH3 song. Here is what I plan to include at some point:

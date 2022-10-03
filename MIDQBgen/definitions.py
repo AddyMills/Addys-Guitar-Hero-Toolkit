@@ -185,3 +185,17 @@ faceOffMapping = {
     105: "P1",
     106: "P2"
 }
+
+forceMapping = {
+    102: "Expert_off",
+    101: "Expert_on",
+
+    90: "Hard_off",
+    89: "Hard_on",
+
+    78: "Medium_off",
+    77: "Medium_on",
+
+    66: "Easy_off",
+    65: "Easy_on"
+}
