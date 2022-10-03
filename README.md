@@ -10,15 +10,17 @@ These tools, while in its infancy, plan to start fixing this aspect of the custo
 
 ## MidQBGen
 
-My first tool is a MIDI parser so far called "MidQBGen". This will take a Rock Band style MIDI file and, in addition to giving you all the playable stuff you get with GHTCP, give you a game file that has left-hand animations, and drumming animations.
+My first released tool is a MIDI parser so far called "MidQBGen". This will take a Rock Band style MIDI file and, in addition to giving you all the playable stuff you get with GHTCP, give you a game file that has left-hand animations, and drumming animations.
 
 Note: In order for drum animations to show up, the input MIDI must have drum animations charted as per Rock Band's specifications.
 
 How to use:
 
-This program is PC only and you will need GHTCP to use this tool for now.
+This program is for GH3 PC only and you will need GHTCP to use this tool for now.
 
-*  Create a custom with your RB MIDI in GHTCP and remember the "short name" you made. This is the name found on the left-hand side, once created.
+*  Create a custom with your RB MIDI in GHTCP and remember the "short name" you made. This is the name found on the left-hand side, once created. 
+
+![image](https://user-images.githubusercontent.com/74471839/193481392-baa1b954-bb82-4f74-b890-2b422cda14d9.png)
 *  Rename the RB MIDI file to your "short name" (in my case it's "youshouldbeashamed.mid"), with the same case. If any part of the name is different, this will not work.
 *  Drag the MIDI file onto the executable.
 *  A PAK file will be generated. Simply copy and paste this PAK file into your SONGS folder
@@ -33,9 +35,10 @@ There are a lot of things that can be pulled from an RB MIDI that can be used in
 ### Very soon
 
 *  Implement RB's forced notes, either on or off
+*  Utilize the in-game count off notes
 *  Add an option to create GH2-style HO/POs. Currently if a single note of one colour comes after a chord containing that colour, it's a HO/PO in GH3 while it's not in HMX style games. This feature would automatically add HO/PO force markers to those single notes to make them strummed
 *  Allow you to create your own GH3 style venue with an added MIDI track called "GH3 Venue". There will also be a guide created for this.
-*  Custom sections with spaces and without abbreviations. Currently, you can only use songs with sections found in HMX style games. If there's a custom section in your song, it'll just be called that in-game with the underscores.
+*  Custom sections with spaces and without abbreviations. Currently, only sections found in HMX style games will have nicely formatted names in the "More Stats" screen. If there's a custom section in your song, it'll just be called the name of the text event (without "section" or "prc_") in-game with the underscores.
 
 ### Further off
 
