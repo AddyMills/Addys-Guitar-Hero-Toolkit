@@ -49,16 +49,16 @@ There are a lot of things that can be pulled from an RB MIDI that can be used in
 ### Completed
 
 *  Create a guitar and bass note chart directly from a MIDI without converting to chart first
-*  Read Star Power Phrases
-*  Read Face-off sections
 *  Drummer animations
+*  Harmonix-style HO/POs by default (if a single note follows a chord containing that note, it'll never be a HO/PO unless forced)
 *  Left-hand animations for both instrument parts
-*  Implement RB's forced notes, either on or off
+*  RB's forced notes, either on or off
+*  Read Face-off sections
+*  Read Star Power Phrases
 
 ### Very soon
 
 *  Utilize the in-game count off notes
-*  Add an option to create GH2-style HO/POs. Currently if a single note of one colour comes after a chord containing that colour, it's a HO/PO in GH3 while it's not in HMX style games. This feature would automatically add HO/PO force markers to those single notes to make them strummed
 *  Allow you to create your own GH3 style venue with an added MIDI track called "GH3 Venue". There will also be a guide created for this.
 *  Custom sections with spaces and without abbreviations. Currently, only sections found in HMX style games will have nicely formatted names in the "More Stats" screen. If there's a custom section in your song, it'll just be called the name of the text event (without "section" or "prc_") in-game with the underscores.
 

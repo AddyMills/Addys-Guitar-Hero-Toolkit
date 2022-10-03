@@ -85,7 +85,7 @@ def timeInSecs(currChange, mid, time):
                                                                             currChange.tempo), 3) * 1000)
 
 
-def parseGH3QB(mid, hopoThreshold, spNote=116):
+def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
     changes, ticks = tempMap(mid)
 
     ticksArray = np.array(ticks)
@@ -343,8 +343,8 @@ def parseGH3QB(mid, hopoThreshold, spNote=116):
             for x in diffs:
                 playableQB[instrument][x] = Difficulty(x, instrument, diffs[x], starPowerDiffs[x], starBM[x])
                 for y in playableQB[instrument][x].song:
-                    y.setForcing(hopoThreshold, mid.ticks_per_beat)
-                    print(y)
+                    y.setForcing(hopoThreshold, mid.ticks_per_beat, hmxmode)
+
     # print(playableQB)
 
     time = 0

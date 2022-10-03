@@ -4,7 +4,8 @@ from CRC import QBKey
 
 colours = {
     "green": 1, "red": 2, "yellow": 4, "blue": 8, "orange": 16, "force": 32, "tap": 64}
-single_notes = [1, 2, 4, 8, 16]
+single_notes = {1: "green", 2: "red", 4: "yellow", 8: "blue", 16: "orange"}
+
 
 
 class Note:  # Every note will be its own class to determine what kind of chord is played, the length, and if it needs to be forced or not
@@ -30,11 +31,17 @@ class Note:  # Every note will be its own class to determine what kind of chord 
         else:
             self.length = length
 
-    def setForcing(self, hopo = 170, tbp = 480):
+    def setForcing(self, hopo = 170, tbp = 480, hmxmode = 1):
         if self.prev_note == 0:
             return
-        if ((self.green * 1) + (self.red * 2) + (self.yellow * 4) + (self.blue * 8) + self.orange * 16) not in single_notes:
+
+        value = self.getValue()
+        if value not in single_notes:
             return
+        if self.prev_note.getValue() not in single_notes:
+            if getattr(self, single_notes[value]) == getattr(self.prev_note,single_notes[value]):
+                if self.force_on != 1:
+                    self.force_off = 1
         prev_tempo = self.prev_note.tempo_change.tempo
         prev_time = self.prev_note.time
         # print(self.time, self.prev_note.time, prev_tempo, tbp)
@@ -54,6 +61,9 @@ class Note:  # Every note will be its own class to determine what kind of chord 
                 else:
                     self.force = 0
         return
+
+    def getValue(self):
+        return (self.green * 1) + (self.red * 2) + (self.yellow * 4) + (self.blue * 8) + (self.orange * 16)
 
     def noNoteTouch(self):
         if self.length != 1:
