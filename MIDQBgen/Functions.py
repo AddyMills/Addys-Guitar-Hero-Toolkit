@@ -122,6 +122,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
         "P2": []
     }
 
+    cameraNotes = []
     drumNotes = []
     timeSigs = []
     markers = []
@@ -195,10 +196,18 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                     elif x.text == '[end]':
                         endEvent = time
                         break
+            elif track.name == "GH3 CAMERA":
+                if x.type == "note_on":
+                    if x.note in valid_camera_notes:
+                        if x.velocity != 0:
+                            if len(cameraNotes) >= 1:
+                                cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
+                            cameraNotes.append(AnimNote(timeSec, x.note))
             elif track.name == "PART DRUMS":
                 if x.type == "note_on":
                     if x.note in drumKeyMapRB.keys():
-                        drumNotes.append(AnimNote(timeSec, drumKeyMapRB[x.note]))
+                        if x.velocity != 0:
+                            drumNotes.append(AnimNote(timeSec, drumKeyMapRB[x.note]))
             else:
                 if x.type == "note_on":
                     if track.name in playTracksDict:
@@ -346,7 +355,12 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                     y.setForcing(hopoThreshold, mid.ticks_per_beat, hmxmode)
 
     # print(playableQB)
-
+    if not "endEvent" in locals():
+        raise Exception("Invalid MIDI: No [end] event found. Cannot parse MIDI.")
+    if cameraNotes:
+        cameraNotes[-1].setLength(endEvent - cameraNotes[-1].time)
+        for x in cameraNotes:
+            print(x)
     time = 0
     currTS = 0
     numer = timeSigs[currTS].numerator
@@ -380,8 +394,8 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                         prev.noNoteTouch()
                         # print(y, z.time, prev.time + prev.length)
 
-    return {"playableQB": playableQB, "drumNotes": drumNotes, "timesig": timeSigs, "markers": markers,
-            "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs}
+    return {"playableQB": playableQB, "drums": drumNotes, "timesig": timeSigs, "markers": markers,
+            "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs, "cameras": cameraNotes}
 
 
 def makeMidQB(midQB, filename, headerDict, consoleType):
@@ -478,11 +492,11 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
         xnote = f"{xscript}_notes"
         if x == "anim":
             QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], mergedAnim, consoleType))
-        elif x == "drums":
-            if not midQB["drumNotes"]:
+        elif x == "drums" or x == "cameras":
+            if not midQB[x]:
                 QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
             else:
-                QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB["drumNotes"], consoleType))
+                QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB[x], consoleType))
         else:
             QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
         QBScripts.append(QBItem("ArrayInteger", xscript, headerDict[xscript], [], consoleType))

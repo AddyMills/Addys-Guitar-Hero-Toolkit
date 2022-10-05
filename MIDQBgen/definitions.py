@@ -40,7 +40,6 @@ qbNodeHeaders = {
     "StructItemQbKeyStringQs":  [0x009C0000, 0x009C0000, 0x009C0000, 0xFFFFFFFF, 0x001A0400, 0xFFFFFFFF],
     "Floats":                   [0x00010000, 0x00010000, 0x00010000, 0x00000100, 0x00000100, 0x00000100],
     "StructHeader":             [0x00000100, 0x00000100, 0x00000100, 0x00010000, 0x00010000, 0x00010000]
-
 }
 
 playableParts = ["", "rhythm", "guitarcoop", "rhythmcoop"]  # Blank one is for guitar in the headers
@@ -50,6 +49,9 @@ others = ["_FaceOffP1", "_FaceOffP2", "_BossBattleP1", "_BossBattleP2", "_timesi
           "_scripts_notes", "_anim_notes", "_triggers_notes", "_cameras_notes", "_lightshow_notes", "_crowd_notes",
           "_drums_notes", "_performance_notes", "_scripts", "_anim", "_triggers", "_cameras", "_lightshow", "_crowd",
           "_drums", "_performance"]
+
+valid_camera_notes = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+                      101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
 
 anims_guitar = []  # MIDI Note 127-118 is Lead left hand anims, 110-101 is Bass/Rhythm left hand notes
 stances = ["Stance_A", "Stance_B", "Stance_C", "jump", "special", "Solo", "kick"]
@@ -86,14 +88,14 @@ drumKeyMapRB = {
     48: 38,
     47: 51,
     46: 39,
-    45: 45, # 45
-    44: 45, # 45
-    43: 43, # 43
-    42: 55, # 55
-    41: 57, # 57
+    45: 45,  # 45
+    44: 45,  # 45
+    43: 43,  # 43
+    42: 55,  # 55
+    41: 57,  # 57
     40: 56,
-    39: 57, # 57
-    38: 57, # 57
+    39: 57,  # 57
+    38: 57,  # 57
     37: 56,
     36: 56,
     35: 44,
