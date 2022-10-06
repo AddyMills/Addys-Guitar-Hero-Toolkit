@@ -4,6 +4,7 @@ import numpy as np
 from definitions import *
 from Sections import sections
 import CRC
+import binascii
 
 
 def createHeaderDict(filename):
@@ -123,6 +124,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
     }
 
     cameraNotes = []
+    lightshowNotes = []
     drumNotes = []
     timeSigs = []
     markers = []
@@ -203,6 +205,12 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                             if len(cameraNotes) >= 1:
                                 cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
                             cameraNotes.append(AnimNote(timeSec, x.note))
+            elif track.name == "GH3 LIGHTSHOW":
+                if x.type == "note_on":
+                    if x.note in valid_lightshow_notes:
+                        if x.velocity != 0:
+                            lightshowNotes.append(AnimNote(timeSec, x.note))
+                            # print(lightshowNotes[-1])
             elif track.name == "PART DRUMS":
                 if x.type == "note_on":
                     if x.note in drumKeyMapRB.keys():
@@ -359,13 +367,12 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
         raise Exception("Invalid MIDI: No [end] event found. Cannot parse MIDI.")
     if cameraNotes:
         cameraNotes[-1].setLength(endEvent - cameraNotes[-1].time)
-        for x in cameraNotes:
-            print(x)
     time = 0
     currTS = 0
     numer = timeSigs[currTS].numerator
     denom = timeSigs[currTS].denominator
-    # print(numer, denom)
+    # print(numer, denom, timeSigs[currTS].time)
+    # print(timeSigs[0])
     currTS += 1
     while time < endEvent:
         currChange = changes[len(ticksArray[ticksArray <= time]) - 1]  # time, tempo, avgTempo
@@ -394,8 +401,9 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                         prev.noNoteTouch()
                         # print(y, z.time, prev.time + prev.length)
 
-    return {"playableQB": playableQB, "drums": drumNotes, "timesig": timeSigs, "markers": markers,
-            "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs, "cameras": cameraNotes}
+    return {"playableQB": playableQB, "drums_notes": drumNotes, "timesig": timeSigs, "markers": markers,
+            "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs, "cameras_notes": cameraNotes,
+            "lightshow_notes": lightshowNotes}
 
 
 def makeMidQB(midQB, filename, headerDict, consoleType):
@@ -459,6 +467,7 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
     # timesig (array), markers (struct), fretbars (integer)
     chartName = f"{filename}_timesig"
     QBItems.append(QBItem("ArrayArray", chartName, headerDict[chartName], midQB["timesig"], consoleType))
+
     chartName = f"{filename}_fretbars"
     QBItems.append(QBItem("ArrayInteger", chartName, headerDict[chartName], midQB["fretbars"], consoleType))
     chartName = f"{filename}_markers"
@@ -483,20 +492,21 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
             break
 
     misc = ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "drums", "performance"]
-
+    withNotes = ["drums", "lightshow", "cameras"]
     QBNotes = []
     QBScripts = []
 
     for x in misc:
         xscript = f"{filename}_{x}"
         xnote = f"{xscript}_notes"
+        notesqb = f"{x}_notes"
         if x == "anim":
             QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], mergedAnim, consoleType))
-        elif x == "drums" or x == "cameras":
-            if not midQB[x]:
+        elif x in withNotes:
+            if not midQB[notesqb]:
                 QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
             else:
-                QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB[x], consoleType))
+                QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB[notesqb], consoleType))
         else:
             QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
         QBScripts.append(QBItem("ArrayInteger", xscript, headerDict[xscript], [], consoleType))
@@ -519,7 +529,6 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
     packname = f"songs/{filename}.mid.qb"
     for i, x in enumerate(QBItems):
         x.processData(consoleType)  # Convert data in classes to numbers for use
-
         sectionbytes = bytearray()
 
         # QB Item Header
@@ -553,17 +562,23 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
             for j, y in enumerate(x.arraydata):  # Add all starts of array entries to the mid
                 arraynodelength = 4 + 4 + 4 + (len(y) * 4)
                 # print(arraynodelength)
-                sectionbytes += toBytes(firstitem + (arraynodelength * j))
-                # print(y)
+                if len(x.arraydata) == 1:
+                    pass
+                else:
+                    sectionbytes += toBytes(firstitem + (arraynodelength * j))
+                #print(y)
             position = positionStart + len(sectionbytes)
+            # print(len(x.arraydata))
             for y in x.arraydata:
+
                 sectionbytes += toBytes(x.subarraytype)
                 sectionbytes += toBytes(len(y))
                 position = positionStart + len(sectionbytes) + 4
                 sectionbytes += toBytes(position)
                 for z in y:
                     sectionbytes += toBytes(z)
-                position = positionStart + len(sectionbytes)
+
+                    position = positionStart + len(sectionbytes)
         elif x.node == "ArrayStruct":
             sectionbytes += toBytes(x.itemcount)
             position = positionStart + len(sectionbytes)

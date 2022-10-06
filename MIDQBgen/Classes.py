@@ -226,6 +226,7 @@ class QBItem:
                 for x in self.data:
                     arraydata.append([x.time, x.note, x.length])
             self.arraydata = arraydata
+            # print(self.arraydata)
             if type(self.arraydata[0][0]) == int:
                 self.subarraytype = qbNodeHeaders["ArrayInteger"][console]
             else:

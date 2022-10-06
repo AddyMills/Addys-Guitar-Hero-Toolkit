@@ -28,6 +28,8 @@ headerDict = createHeaderDict(filename)
 
 midParsed = parseGH3QB(mid, hopo)
 midQB = makeMidQB(midParsed, filename, headerDict, consoleType)
+with open(f"{filename}_song.mid.qb", 'wb') as f:
+    f.write(midQB)
 pakFile = pakMaker([[midQB, f"{filename}.mid.qb"]])
 
 
