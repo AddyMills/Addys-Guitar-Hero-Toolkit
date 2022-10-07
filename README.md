@@ -41,6 +41,34 @@ Common HMX thresholds and their NS counterparts to enter in GHTCP:
 |130|3.6923|16th Note|
 |90|5.3333|16th Triplet (24th Note)|
 
+### Venues
+As of V0.5, you can now add two MIDI tracks to your MIDI to create a custom lightshow and camera cuts! A full guide will come soon(tm), but here's a summary for now.
+
+To take advantage of this, you'll need to create two MIDI tracks. One named "GH3 CAMERA" and one named "GH3 LIGHTSHOW" (make sure you also create "Track Name" events inside these MIDI tracks!)
+
+You can use the Reaper templates in the repo to figure out where to place notes.
+
+For GH3 CAMERA, simply place notes where you want cuts. Some cuts last longer than other, but there's generally no harm in having as little or many camera cuts in a song. The names can be a bit confusing as these are the internal names. I will update the names in a future update to make them more clear.
+
+GH3 LIGHTSHOW is a bit more complicated. 
+
+I'll start with the "mood" notes. These are different lighting presets. All except blackout and flare have multiple states. Of the ones that have multiple states, strobe gets toggled using note 60, and the others with 57 and 58. Think of these as your *next* and *previous* events in Rock Band venues. Strobe does not have a preset speed like in RB. Note 60 turns the lights on or off when it's called.
+
+The light override notes will change the colour of the current mood, except for blackout and flare. These are unaffected by the override. The rest of the moods will all change, even strobe!
+
+56 is the pyro note. It's similar to the *bonusfx* event in RB. If you want a long lasting pyro like in "My Curse", you can keep calling it every quarter note or so until you want them to be done.
+
+Notes 39-53 control the speed at which lights blend into each other. The blending starts when a mood or lighting override is called. For example, if you have your lighting blend set to 200ms, and you call a flare, it will take 200ms from the note before the stage is fully set to the flare mood.
+
+Lighting blend notes must be called before the mood or light override note (it can even be as little as 1ms, but it needs to be placed before). If a blend note is placed the same time as a mood note, the blend won't activate until the next mood/colour note.
+
+You can also cancel blends. If you have a blend of 700ms, and at 300ms into the blend place a blend note of 0ms followed by a light note before the initial 700ms are up, the blend gets cancelled and it cuts to your note immediately. "My Curse" uses this effect during the part of the song where the band comes in.
+
+Blends lasting longer than 1 second are not yet possible with this tool, but it is possible to do in the engine. This functionality will hopefully come in the near future.
+
+For an example of both venue tracks, please see my "example.mid" in the Reaper template folder. It is the MIDI file I used for my video here: 
+[![Venue Showoff](http://img.youtube.com/vi/7_Wd9ZNnqLA/0.jpg)](http://www.youtube.com/watch?v=7_Wd9ZNnqLA "Custom Cameras and Lightshow")
+
 
 ## Roadmap
 
@@ -55,11 +83,12 @@ There are a lot of things that can be pulled from an RB MIDI that can be used in
 *  RB's forced notes, either on or off
 *  Read Face-off sections
 *  Read Star Power Phrases
+*  Allow you to create your own GH3 style venue with 2 added MIDI tracks called "GH3 CAMERA" and "GH3 LIGHTSHOW".
 
 ### Very soon
 
 *  Utilize the in-game count off notes
-*  Allow you to create your own GH3 style venue with an added MIDI track called "GH3 Venue". There will also be a guide created for this.
+*  Allow light blending times of longer than 1 second using the game's scripting functionality
 *  Custom sections with spaces and without abbreviations. Currently, only sections found in HMX style games will have nicely formatted names in the "More Stats" screen. If there's a custom section in your song, it'll just be called the name of the text event (without "section" or "prc_") in-game with the underscores.
 
 ### Further off
