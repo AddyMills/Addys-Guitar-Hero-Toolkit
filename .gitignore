@@ -1,5 +1,3 @@
-
-*.mid
 *.xen
 *.qb
 *.pyc
@@ -9,3 +7,4 @@
 */dist*
 *.spec
 .idea/discord.xml
+*/MidiFiles*

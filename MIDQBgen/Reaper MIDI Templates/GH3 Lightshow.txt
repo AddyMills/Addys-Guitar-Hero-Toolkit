@@ -1,0 +1,42 @@
+39	Default
+40	Set Blend Time - 0 seconds
+41	Set Blend Time - 0.05 seconds
+42	Set Blend Time - 0.1 seconds
+43	Set Blend Time - 0.15 seconds
+44	Set Blend Time - 0.2 seconds
+45	Set Blend Time - 0.25 seconds
+46	Set Blend Time - 0.3 seconds
+47	Set Blend Time - 0.4 seconds
+48	Set Blend Time - 0.5 seconds
+49	Set Blend Time - 0.6 seconds
+50	Set Blend Time - 0.7 seconds
+51	Set Blend Time - 0.8 seconds
+52	Set Blend Time - 0.9 seconds
+53	Set Blend Time - 1 second
+54	-------------------
+55	-------------------
+56	Pyro
+57	Prev Keyframe
+58	Next Keyframe
+59	-------------------
+60	Strobe Toggle
+
+// Lights Override
+61	Override with Purple
+62	Override with Orange
+63	No Override
+64	Override with Magenta
+65	Override with White
+66	Override with Yellow
+67	Override with Blue
+68	Override with Red
+69	Override with Green
+
+// Mood
+70	Mood: Strobe
+71	Mood: Flare
+72	Mood: Blackout
+73	Mood: Solo
+74	Mood: Chorus
+75	Mood: Verse
+76	Mood: Intro

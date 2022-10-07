@@ -1,0 +1,42 @@
+//Notemap following Neversoft's specifications
+117	Stagedive
+116	Player Closeup
+115	Boss Closeup
+114	Pan Camera
+113	Zoom Out
+112	Zoom Fast
+111	Zoom Slow
+110	Stage Camera 2
+109	Special 4
+108	Special 3
+107	Special 2
+106	Special 1
+105	Special
+104	Singer Close Up
+103	Orbit Singer
+102	Vertical Cam Stage Rear
+101	Vertical Cam Strage Front
+100	Vertical Cam Drummer
+99	Vertical Cam Guitar
+98	Walking Cam
+97	Bassist Cam
+96	Star Power Cam
+95	Guitar Close Up
+94	Orbit Mid
+93	Orbit Close Up
+92	Orbit Drummer
+91	Orbit Stage 2
+90	Headstock Cam
+89	Drummer
+88	Singer Camera
+87	Stage Camera
+86	Close Up 2
+85	Mid Camera
+84	Close Up
+83	Zoom
+82	Orbit Stage
+81	Solo Camera
+80	Intro Camera
+79	Camera
+78	Disable Changes
+77	Enable Changes

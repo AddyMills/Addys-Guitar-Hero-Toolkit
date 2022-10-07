@@ -196,7 +196,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                         except:
                             markers.append(markerNode(timeSec, x.text[1:-1].title()))
                     elif x.text == '[end]':
-                        endEvent = time
+                        endEvent = timeSec
                         break
             elif track.name == "GH3 CAMERA":
                 if x.type == "note_on":
@@ -528,6 +528,7 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
     # print(bytes("Intro Slow", "utf-8"))
     packname = f"songs/{filename}.mid.qb"
     for i, x in enumerate(QBItems):
+        # print(x)
         x.processData(consoleType)  # Convert data in classes to numbers for use
         sectionbytes = bytearray()
 
