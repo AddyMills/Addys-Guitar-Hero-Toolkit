@@ -189,6 +189,14 @@ class markerNode:
     def __str__(self):
         return f"Section {self.marker} at time {self.time}"
 
+class scriptsNode:
+    def __init__(self, time, type, data):
+        self.time = time
+        self.type = type # Set time or colour override
+        self.data = data
+
+    def __str__(self):
+        return f"{self.type} script at time {self.time}"
 
 class QBItem:
     def __init__(self, node, name, hexname, data, console = 1, endian = "big"):
@@ -237,7 +245,13 @@ class QBItem:
             self.itemcount = len(self.data)
             if "markers" in self.name:
                 for x in self.data:
+                    # print(x)
                     arraydata.append([x.time, x.marker])
+            if "lightshow" in self.name:
+                for x in self.data:
+                    if x.type == "LightShow_SetTime":
+                        arraydata.append([x.time, x.type, x.data])
+                        # print(arraydata[-1])
             self.arraydata = arraydata
             # print(self.arraydata)
 

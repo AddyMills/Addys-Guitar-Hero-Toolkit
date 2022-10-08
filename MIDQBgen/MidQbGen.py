@@ -25,6 +25,7 @@ mid = MidiFile(midfile)
 filename = os.path.splitext(os.path.basename(midfile))[0]
 
 headerDict = createHeaderDict(filename)
+# print(headerDict)
 
 midParsed = parseGH3QB(mid, hopo)
 midQB = makeMidQB(midParsed, filename, headerDict, consoleType)

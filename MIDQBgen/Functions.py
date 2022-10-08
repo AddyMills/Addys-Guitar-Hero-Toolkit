@@ -5,6 +5,7 @@ import numpy as np
 from definitions import *
 from Sections import sections
 import CRC
+import struct
 import binascii
 
 
@@ -127,6 +128,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
 
     cameraNotes = []
     lightshowNotes = []
+    lightshowScripts = []
     drumNotes = []
     timeSigs = []
     markers = []
@@ -210,6 +212,10 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                     if x.note in valid_lightshow_notes:
                         if x.velocity != 0:
                             lightshowNotes.append(AnimNote(timeSec, x.note))
+                elif x.type == "text":
+                    if x.text.startswith("SetBlendTime"):
+                        blendtime = float(x.text.split(" ")[1])
+                        lightshowScripts.append(scriptsNode(timeSec, "LightShow_SetTime", blendtime))
             elif track.name == "PART DRUMS":
                 if x.type == "note_on":
                     if x.note in drumKeyMapRB.keys():
@@ -402,7 +408,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
 
     return {"playableQB": playableQB, "drums_notes": drumNotes, "timesig": timeSigs, "markers": markers,
             "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs, "cameras_notes": cameraNotes,
-            "lightshow_notes": lightshowNotes}
+            "lightshow_notes": lightshowNotes, "lightshow": lightshowScripts}
 
 
 def makeMidQB(midQB, filename, headerDict, consoleType):
@@ -492,6 +498,7 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
 
     misc = ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "drums", "performance"]
     withNotes = ["drums", "lightshow", "cameras"]
+    withScripts = ["lightshow"]
     QBNotes = []
     QBScripts = []
 
@@ -508,8 +515,11 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
                 QBNotes.append(QBItem("ArrayArray", xnote, headerDict[xnote], midQB[notesqb], consoleType))
         else:
             QBNotes.append(QBItem("ArrayInteger", xnote, headerDict[xnote], [], consoleType))
-        QBScripts.append(QBItem("ArrayInteger", xscript, headerDict[xscript], [], consoleType))
-
+        if x in withScripts:
+            QBScripts.append(QBItem("ArrayStruct", xscript, headerDict[xscript], midQB[x], consoleType))
+            # print(QBScripts[-1])
+        else:
+            QBScripts.append(QBItem("ArrayInteger", xscript, headerDict[xscript], [], consoleType))
     for x in QBNotes:
         QBItems.append(x)
 
@@ -540,7 +550,7 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
         sectionbytes += toBytes(position + 8)  # +8 to account for the next 8 bytes
         sectionbytes += toBytes(0)  # Next Item = 0 for mid.qb
 
-        sectionbytes += toBytes(x.qbType)
+        sectionbytes += toBytes(x.qbType) # Add the hex value of the qb type
         if x.node == "ArrayInteger":
             sectionbytes += toBytes(x.itemcount)
             position = positionStart + len(sectionbytes)
@@ -570,14 +580,12 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
             position = positionStart + len(sectionbytes)
             # print(len(x.arraydata))
             for y in x.arraydata:
-
                 sectionbytes += toBytes(x.subarraytype)
                 sectionbytes += toBytes(len(y))
                 position = positionStart + len(sectionbytes) + 4
                 sectionbytes += toBytes(position)
                 for z in y:
                     sectionbytes += toBytes(z)
-
                     position = positionStart + len(sectionbytes)
         elif x.node == "ArrayStruct":
             sectionbytes += toBytes(x.itemcount)
@@ -590,24 +598,25 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
                 offsets = []
                 markerBytes = bytearray()  # 4 for header_marker, 4 for "first item" in struct
                 for y in x.arraydata:
-                    # time
+                    # Struct Header
                     offsets.append(positionStart + len(sectionbytes) + 4 * x.itemcount + len(markerBytes))
                     markerBytes += toBytes(qbNodeHeaders["StructHeader"][consoleType])
 
+                    # time
                     position = positionStart + len(sectionbytes) + len(markerBytes) + 4 * x.itemcount
                     markerBytes += toBytes(position + 4)
                     markerBytes += toBytes(qbNodeHeaders["StructItemInteger"][consoleType])
                     markerBytes += toBytes(int(QBKey("time"), 16))
                     markerBytes += toBytes(y[0])  # Add the time of the marker
                     position = positionStart + len(sectionbytes) + len(markerBytes) + 4 * x.itemcount
-                    markerBytes += toBytes(position + 4)
+                    markerBytes += toBytes(position + 4) # Position of next item
 
                     # marker
                     markerBytes += toBytes(qbNodeHeaders["StructItemStringW"][consoleType])
                     markerBytes += toBytes(int(QBKey("marker"), 16))
                     position = positionStart + len(sectionbytes) + len(markerBytes) + 4 * x.itemcount + 8
                     markerBytes += toBytes(position)
-                    markerBytes += toBytes(0)
+                    markerBytes += toBytes(0) # Next item is 0 as it's the final item in this struct
                     markername = y[1]
                     # print(markername, len(markername))
                     markernamebytes = bytes(markername, "latin-1")
@@ -619,6 +628,59 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
                 for y in offsets:
                     sectionbytes += toBytes(y)
                 sectionbytes += markerBytes
+            if "lightshow" in x.name:
+                offsets = []
+                lightshowBytes = bytearray()
+                if len(x.arraydata) == 1:
+                    setattr(x, "itemcount", 0) # If only one blend event, it shuffles back the position of the following items
+                for y in x.arraydata:
+                    # Struct Header
+                    offsets.append(positionStart + len(sectionbytes) + 4 * x.itemcount + len(lightshowBytes))
+                    lightshowBytes += toBytes(qbNodeHeaders["StructHeader"][consoleType])
+
+                    # Time
+                    position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount
+                    lightshowBytes += toBytes(position + 4)
+                    lightshowBytes += toBytes(qbNodeHeaders["StructItemInteger"][consoleType])
+                    lightshowBytes += toBytes(int(QBKey("time"), 16))
+                    lightshowBytes += toBytes(y[0])  # Add the time of the lightshow event
+                    position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount
+                    lightshowBytes += toBytes(position + 4)  # Position of next item in struct
+
+                    # Event Type
+                    lightshowBytes += toBytes(qbNodeHeaders["StructItemQbKey"][consoleType])
+                    lightshowBytes += toBytes(int(QBKey("scr"), 16))
+                    lightshowBytes += toBytes(int(QBKey(y[1]), 16)) # Add blend time to struct
+                    position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount
+                    lightshowBytes += toBytes(position + 4)  # Position of next item in struct
+
+                    # Struct Item Struct - To feed the game the custom blend time
+                    lightshowBytes += toBytes(qbNodeHeaders["StructItemStruct"][consoleType])
+                    lightshowBytes += toBytes(int(QBKey("params"), 16)) # Tell the game to change the params
+                    position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount + 8
+                    lightshowBytes += toBytes(position)
+                    lightshowBytes += toBytes(0)  # Next item is 0 as it's the final item in this overall struct
+                    if y[1] == "LightShow_SetTime":
+                        lightshowBytes += toBytes(qbNodeHeaders["StructHeader"][consoleType])
+                        position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount + 4
+                        lightshowBytes += toBytes(position)
+                        lightshowBytes += toBytes(qbNodeHeaders["StructItemFloat"][consoleType])
+                        lightshowBytes += toBytes(int(QBKey("time"), 16))
+                        lightshowBytes += struct.pack(">f", y[2]) # Pack in the float as bytes
+                        lightshowBytes += toBytes(0)  # Next item is 0 as it's the final item in this internal struct
+
+                if len(offsets) > 1:
+                    for y in offsets:
+                        #print(y)
+                        sectionbytes += toBytes(y)
+
+                sectionbytes += lightshowBytes
+
+
+                    # position = positionStart + len(sectionbytes) + len(lightshowBytes) + 4 * x.itemcount + 8
+
+
+
                 # print(offsets)
 
         elif x.node == "Floats":
@@ -634,7 +696,7 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
         # print(positionStart)
 
     # print(binascii.hexlify(qbbytes, ' ', 1))
-
+    # exit()
     filesize = len(qbbytes) + 28
     fullqb = bytearray()
     fullqb += toBytes(0) + toBytes(filesize) + qbFileHeader + qbbytes
