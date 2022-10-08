@@ -8,3 +8,4 @@
 *.spec
 .idea/discord.xml
 */MidiFiles*
+QBParser/

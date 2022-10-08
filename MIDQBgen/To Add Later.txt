@@ -1,28 +1,11 @@
 import mido
 
-if "markers" in x.name:
-    offsets = []
-    markerBytes = bytearray()  # 4 for header_marker, 4 for "first item" in struct
-    for y in x.arraydata:
-        # time
-        offsets.append(positionStart + len(sectionbytes))
-        sectionbytes += toBytes(qbNodeHeaders["StructItemInteger"][consoleType])
-        sectionbytes += toBytes(int(QBKey("time"), 16))
-        sectionbytes += toBytes(y[0])  # Add the time of the marker
-        position = positionStart + len(sectionbytes)
-        sectionbytes += toBytes(position + 4)
-
-        # marker
-        sectionbytes += toBytes(qbNodeHeaders["StructItemStringW"][consoleType])
-        sectionbytes += toBytes(int(QBKey("marker"), 16))
-        position = positionStart + len(sectionbytes) + 8
-        sectionbytes += toBytes(0)
-        markername = y[1]
-        markernamebytes = bytes(markername, "latin-1")
-        for z in markernamebytes:
-            sectionbytes += toBytes(z, 2)
-        sectionbytes += toBytes(0, 2)
-    print(offsets)
+elif track.name == "VENUE":
+    if x.type == "text":
+        if x.text in venue_states:
+            venueType = x.text[1:-1]
+        if x.text.startswith("[lighting"):
+            print(x.text.split(" ")[1][1:-2] + f"{venueType if x.text.split(' ')[1][1:-2] == '' else ''}")
 """for x in faceOffs:
     for y in faceOffs[x]:
         print(y)"""

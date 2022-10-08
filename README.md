@@ -42,15 +42,15 @@ Common HMX thresholds and their NS counterparts to enter in GHTCP:
 |90|5.3333|16th Triplet (24th Note)|
 
 ### Venues
-As of V0.5, you can now add two MIDI tracks to your MIDI to create a custom lightshow and camera cuts! A full guide will come soon(tm), but here's a summary for now.
+As of V0.5, you can now add a MIDI track to your MIDI to create a custom lightshow and camera cuts! A full guide will come soon(tm), but here's a summary for now.
 
-To take advantage of this, you'll need to create two MIDI tracks. One named "GH3 CAMERA" and one named "GH3 LIGHTSHOW" (make sure you also create "Track Name" events inside these MIDI tracks!)
+To take advantage of this, you'll need to create a new MIDI track named "GH3 VENUE" (make sure you also create a "Track Name" event inside this MIDI track!)
 
-You can use the Reaper templates in the repo to figure out where to place notes.
+You can use the Reaper templates in the repo to figure out where to place notes. 
 
-For GH3 CAMERA, simply place notes where you want cuts. Some cuts last longer than other, but there's generally no harm in having as little or many camera cuts in a song. The names can be a bit confusing as these are the internal names. I will update the names in a future update to make them more clear.
+For cameras (notes 79-117), simply place notes where you want cuts. Some cuts last longer than others, but there's generally no harm in having as little or many camera cuts in a song. The names can be a bit confusing as these are the internal names. I will update the names in a future update to make them more clear.
 
-GH3 LIGHTSHOW is a bit more complicated. 
+Lights in GH3 is a bit more complicated. 
 
 I'll start with the "mood" notes. These are different lighting presets. All except blackout and flare have multiple states. Of the ones that have multiple states, strobe gets toggled using note 60, and the others with 57 and 58. Think of these as your *next* and *previous* events in Rock Band venues. Strobe does not have a preset speed like in RB. Note 60 turns the lights on or off when it's called.
 

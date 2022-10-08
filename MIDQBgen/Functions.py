@@ -1,4 +1,5 @@
 from mido import tick2second as t2s
+from mido import MidiFile, MidiTrack
 from Classes import *
 import numpy as np
 from definitions import *
@@ -84,6 +85,7 @@ def timeInSecs(currChange, mid, time):
     return int(round(
         t2s(currChange.time, mid.ticks_per_beat, currChange.avgTempo) + t2s(time - currChange.time, mid.ticks_per_beat,
                                                                             currChange.tempo), 3) * 1000)
+
 
 
 def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
@@ -198,19 +200,16 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                     elif x.text == '[end]':
                         endEvent = timeSec
                         break
-            elif track.name == "GH3 CAMERA":
+            elif track.name == "GH3 VENUE":
                 if x.type == "note_on":
                     if x.note in valid_camera_notes:
                         if x.velocity != 0:
                             if len(cameraNotes) >= 1:
                                 cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
                             cameraNotes.append(AnimNote(timeSec, x.note))
-            elif track.name == "GH3 LIGHTSHOW":
-                if x.type == "note_on":
                     if x.note in valid_lightshow_notes:
                         if x.velocity != 0:
                             lightshowNotes.append(AnimNote(timeSec, x.note))
-                            # print(lightshowNotes[-1])
             elif track.name == "PART DRUMS":
                 if x.type == "note_on":
                     if x.note in drumKeyMapRB.keys():
