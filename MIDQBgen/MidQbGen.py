@@ -1,14 +1,7 @@
-from mido import MidiFile
-from Sections import sections
-from Classes import *
 from Functions import *
 from CreatePAK import pakMaker
-import numpy as np
-import definitions
-import CRC
 import os
 import sys
-import binascii
 
 tbp = 480
 

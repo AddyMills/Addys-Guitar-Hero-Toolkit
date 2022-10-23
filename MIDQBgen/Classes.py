@@ -258,3 +258,7 @@ class QBItem:
 
     def __str__(self):
         return f"QB Item {self.name}, type {self.node}, CRC {''.join('{:02x}'.format(x) for x in self.hexname)}"
+
+class rbVenueCut:
+    def __init__(self):
+        return

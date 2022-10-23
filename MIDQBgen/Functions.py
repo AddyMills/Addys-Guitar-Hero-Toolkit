@@ -87,7 +87,14 @@ def timeInSecs(currChange, mid, time):
         t2s(currChange.time, mid.ticks_per_beat, currChange.avgTempo) + t2s(time - currChange.time, mid.ticks_per_beat,
                                                                             currChange.tempo), 3) * 1000)
 
-
+def convertVenue(mid, track, changes, ticksArray):
+    time = 0
+    for x in track:
+        time += x.time
+        currChange = changes[len(ticksArray[ticksArray <= time]) - 1]  # time, tempo, avgTempo
+        timeSec = timeInSecs(currChange, mid, time)
+    venue = 1
+    return venue
 
 def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
     changes, ticks = tempMap(mid)
@@ -96,11 +103,20 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
     changesArray = np.array(changes)
 
     GH2Tracks = ["PART GUITAR COOP", "PART RHYTHM", "TRIGGERS", "BAND BASS", "BAND DRUMS", "BAND SINGER", "BAND KEYS"]
+    gh3venue = 0
+    hmxvenue = 0
 
     for x in mid.tracks:
         if x.name in GH2Tracks:
             spNote = 103
-            break
+        elif x.name == "VENUE":
+            hmxvenue = x.copy()
+        elif x.name == "GH3 VENUE":
+            gh3venue = x.copy()
+
+    # Converting an RB venue will take a bit of figuring out the math. Do it later
+    """if hmxvenue and not gh3venue:
+        gh3venue = convertVenue(mid, hmxvenue, changes, ticksArray)"""
 
     playTracksDict = {
         "PART GUITAR": "Guitar",
@@ -204,7 +220,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                         break
             elif track.name == "GH3 VENUE":
                 if x.type == "note_on":
-                    if x.note in valid_camera_notes:
+                    if x.note in valid_camera_notes_gh3:
                         if x.velocity != 0:
                             if len(cameraNotes) >= 1:
                                 cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
@@ -531,7 +547,6 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
     qbbytes = bytearray()
 
     toBytes = lambda a, b=4: a.to_bytes(b, "big")
-    updatePos = lambda a, b: a + b
 
     # binascii.hexlify(bytes("Intro Slow", "latin-1"), ' ', 1))
     # print(bytes("Intro Slow", "utf-8"))
