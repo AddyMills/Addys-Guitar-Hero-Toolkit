@@ -1,8 +1,7 @@
 from mido import tick2second as t2s
-from mido import MidiFile, MidiTrack
-from Classes import *
+from midqb_classes import *
 import numpy as np
-from definitions import *
+from midqb_definitions import *
 from Sections import sections
 import CRC
 import struct

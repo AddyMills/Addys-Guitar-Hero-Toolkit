@@ -49,7 +49,7 @@ class qb_section:
         self.section_data = 0
 
     def __str__(self):
-        return f"Section {self.section_id}"
+        return f"{self.section_type} {self.section_id}"
 
 class array_item:
     def __init__(self, array_type, item_count, list_start):

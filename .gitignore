@@ -9,6 +9,13 @@
 .idea/discord.xml
 */MidiFiles*
 QBParser/
-CreateAudio/
-PAKQBExtract/testing/
+create_audio/
+pak_extract/testing/
+test/
+output/
 scratchpad/
+build/
+dist/
+midqb_gen/midqb_gen*/
+pak_extract/pak_extract*/
+pak_extract/Input*/

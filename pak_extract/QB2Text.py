@@ -1,11 +1,11 @@
-from definitions import *
-from Functions import *
-from Classes import *
+from pak_definitions import *
+from pak_functions import *
+from pak_classes import *
 import os
 import sys
 import CRC
 
-
+orig_stdout = sys.stdout
 
 def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     endian = console_endian[console]
@@ -21,7 +21,7 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     count = 0
     test_run = 0
     section_list = []
-    if test_run: # Set test to 1 to print more details and let you step through a qb file per section header if you wish
+    if test_run: # Set test_run to 1 to print more details and let you step through a qb file per section header if you wish
         # Please see production code below for comments
         while test_count != count:
             while qb_file.getPosition() < qb_filesize:
@@ -94,26 +94,57 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
                 # print(vars(section_entry))
                 section_list.append(section_entry)
             else:
-                script_crc = hex(read_dbg_bytes())
+                script_data = bytearray()
+                script_crc = int.to_bytes(read_int_bytes(), 4, endian)
                 setattr(section_entry, "script_crc", script_crc)
                 script_uncom_size = read_int_bytes()
                 setattr(section_entry, "script_uncom_size", script_uncom_size)
                 script_com_size = read_int_bytes()
                 setattr(section_entry, "script_com_size", script_com_size)
+                script_data += script_crc
+                script_data += int.to_bytes(script_uncom_size, 4, endian)
+                script_data += int.to_bytes(script_com_size, 4, endian)
+
+                script_data += int.to_bytes(read_int_bytes(script_com_size), script_com_size, endian)
                 if script_com_size % 4 != 0:
-                    script_com_size += (4 - (script_com_size % 4))
-                script_data = int.to_bytes(read_int_bytes(script_com_size), script_com_size, endian)
+                    offset_amount = (4 - (script_com_size % 4))
+                    read_int_bytes(offset_amount)
                 script_data = " ".join("{:02x}".format(c) for c in script_data)
                 setattr(section_entry, f"section_data", script_data)
+
                 section_list.append(section_entry)
+            count += 1
+                # raise Exception
 
 
     # raise Exception
     return section_list
 
-def read_qb_file(qb_file):
-
+def output_qb_file(qb_sections, output_file):
+    with open(output_file, "w") as f:
+        sys.stdout = f
+        print_qb_text_file(qb_sections)
+        sys.stdout = orig_stdout
     return
+
+def main(file):
+    file_strip = os.path.basename(file)
+    if not file_strip.endswith(".qb"):
+        raise Exception("Not a valid file. File must be a QB file.")
+    elif file_strip.endswith(".mid.qb"):
+        file_name = file_strip[:-7]
+        file_name_qb = file_strip[:-3]
+        file_headers = createHeaderDict(file_name)
+    else:
+        file_name = file_strip[:-3]
+        file_name_qb = file_strip[:-3]
+        file_headers = createHeaderDict(file_name)
+    # filename = os.path.join(directory, file)
+    with open(file, "rb") as f:
+        qb_sections = convert_qb_file(qb_bytes(f.read()), file_name, file_headers)
+
+    return qb_sections, file_name_qb
+
 
 if __name__ == "__main__":
     orig_stdout = sys.stdout
@@ -127,7 +158,7 @@ if __name__ == "__main__":
             file_headers = createHeaderDict(file_name)
         else:
             file_name = file[:-3]
-            file_headers = ""
+            file_headers = createHeaderDict(file_name)
         filename = os.path.join(directory, file)
         with open(filename, "rb") as f:
             qb_sections = convert_qb_file(qb_bytes(f.read()), file_name, file_headers)
@@ -137,39 +168,6 @@ if __name__ == "__main__":
             os.makedirs(dir_name)
         except:
             pass
-        with open(output_file, "w") as f:
-            sys.stdout = f
-            print_qb_text_file(qb_sections)
-            sys.stdout = orig_stdout
-    """else:
-        filename = sys.argv[1]
-        if filename.endswith(".mid.qb"):
-            file_name = os.path.basename(filename[:-7])
-            file_headers = createHeaderDict(file_name)
-        else:
-            file_name = os.path.basename(filename[:-3])
-            file_headers = ""
-        with open(filename, "rb") as f:
-            qb_sections = convert_qb_file(qb_bytes(f.read()), file_name, file_headers)
-        dir_name = os.path.dirname(filename)
-        output_file = dir_name + "\\" + file_name + ".txt"
-        with open(output_file, "w") as f:
-            sys.stdout = f
-            print_qb_text_file(qb_sections)
-            sys.stdout = orig_stdout"""
-
-    """qb_test = f".\\extract\\PAK\\qb\\scripts\\guitar\\songlist.qb"
-    qb_test = f".\\extract\\SONGS\\bullsonparade_song\\songs\\bullsonparade.mid.qb"
-    if "SONGS" in qb_test:
-        file_name = qb_test[qb_test.rfind("\\") + 1:qb_test.rfind(".mid")]
-        file_headers = createHeaderDict(file_name)
-    else:
-        file_name = ""
-        file_headers = ""
-    with open(qb_test, 'rb') as f:
-        qb_data = qb_bytes(f.read())
-    mid_sections = main(qb_data, file_name, file_headers)
-    print(f'qb_name = \"{mid_sections[0].section_pak_name}\"')
-    print_qb_text_file(mid_sections)"""
+        output_qb_file(qb_sections, output_file)
 
     # raise Exception

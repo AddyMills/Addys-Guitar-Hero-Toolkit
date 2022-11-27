@@ -51,8 +51,8 @@ qb_node_list = ["Unknown", "SectionInteger", "SectionFloat", "SectionString", "S
                "StructItemStruct", "StructItemArray", "StructItemQbKey", "StructItemQbKeyString",
                "StructItemStringPointer", "StructItemQbKeyStringQs", "Floats", "StructHeader"]
 
-simple_array_types = ["ArrayFloat", "ArrayString", "ArrayStringW", "ArrayQbKey", "ArrayQbKeyString", "ArrayStringPointer"]
-simple_struct_items = ["StructItemQbKeyString",]
+simple_array_types = ["ArrayFloat", "ArrayString", "ArrayStringW", "ArrayQbKey"]
+simple_struct_items = ["StructItemQbKeyString"]
 hard_struct_items = ["StructItemStruct"]
 
 

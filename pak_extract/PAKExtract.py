@@ -1,6 +1,6 @@
 from dbg import checksum_dbg
-from Classes import *
-from Functions import *
+from pak_classes import *
+from pak_functions import *
 from CRC import QBKey
 import os
 
