@@ -10,7 +10,7 @@ These tools, while in its infancy, plan to start fixing this aspect of the custo
 
 There is now just one executable for all available functions. This program will be updated to include more functions as time goes, but it'll allow you to just use one executable:
 
-
+![image](https://user-images.githubusercontent.com/74471839/204162885-b4d996eb-1617-42d9-853f-587dd5211802.png)
 
 The image above explains the functions. You can either use beginner mode, or advanced mode. Beginner mode is activated when starting the program without any arguments (i.e. just double clicking on the executable). It'll confirm you want to start in beginner mode, and then you can use the step-by-step instructions to perform your tasks.
 
