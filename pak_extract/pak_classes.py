@@ -51,6 +51,9 @@ class qb_section:
     def __str__(self):
         return f"{self.section_type} {self.section_id}"
 
+    def set_new_id(self, new_id):
+        self.section_id = new_id
+
 class array_item:
     def __init__(self, array_type, item_count, list_start):
         self.array_type = array_type
