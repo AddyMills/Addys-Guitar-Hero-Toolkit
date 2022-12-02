@@ -121,9 +121,14 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     return section_list
 
 def output_qb_file(qb_sections, output_file):
-    with open(output_file, "w") as f:
-        sys.stdout = f
-        print_qb_text_file(qb_sections)
+    try:
+        with open(output_file, "w") as f:
+            sys.stdout = f
+            print_qb_text_file(qb_sections)
+            sys.stdout = orig_stdout
+    except:
+        if os.path.isfile(output_file):
+            os.remove(output_file)
         sys.stdout = orig_stdout
     return
 

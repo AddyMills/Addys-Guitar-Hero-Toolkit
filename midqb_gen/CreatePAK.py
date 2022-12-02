@@ -10,7 +10,12 @@ def pakHeaderMaker(pakbytes, pakname, offset):
     startoffset = toBytes(offset)
     filesize = toBytes(len(pakbytes))
     aContextChecksum = toBytes(0)
-    fullChecksum = toBytes(int(QBKey(f"songs/{os.path.basename(pakname)}"), 16))
+    if ".qb" in pakname:
+        fullChecksum = toBytes(int(QBKey(f"songs/{os.path.basename(pakname)}"), 16))
+    elif ".ska" in pakname:
+        fullChecksum = toBytes(int(QBKey(f"{os.path.basename(pakname)[:-4]}"), 16))
+    else:
+        raise Exception
     name = f"{os.path.basename(pakname)}"
     if "." in name:
         name = name[0:name.find(".")]

@@ -1,6 +1,7 @@
 from CRC import QBKey as qb_key
 import struct
 from pak_definitions import console_lookup, console_endian, qbNodeHeaders
+import os
 
 class qb_string:
     def __init__(self, qb_data):
@@ -564,7 +565,22 @@ def main(line_items, console = "PC", endian = "big"):
 
 
 if __name__ == "__main__":
-    with open(".\\input Text\\store_data.txt", "r") as f:
-        lines = f.read()
-
-    qb_file = main(lines)
+    directory = f".\\input Text"
+    console = "PC"
+    endian = "big"
+    for file in os.listdir(directory):
+        if not file.endswith(".txt"):
+            continue
+        filename = os.path.join(directory, file)
+        file_name = file[:-4]
+        with open(filename, "r") as f:
+            lines = f.read()
+        output_file = f'.\\output\\Text\\{file_name}.qb'
+        dir_name = os.path.dirname(output_file)
+        try:
+            os.makedirs(dir_name)
+        except:
+            pass
+        qb_file = main(lines, console, endian)
+        with open(output_file, 'wb') as f:
+            f.write(qb_file)

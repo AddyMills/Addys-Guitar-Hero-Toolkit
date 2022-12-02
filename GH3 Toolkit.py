@@ -1,17 +1,24 @@
 import os
 import sys
 import mido
+import random
+from io import StringIO
 
 sys.path.append(f"{os.getcwd()}\\pak_extract")
 sys.path.append(f"{os.getcwd()}\\midqb_gen")
 from pak_extract import PAKExtract, QB2Text, Text2QB
 from midqb_gen import MidQbGen as mid_qb
 
+from toolkit_functions import *
+from toolkit_variables import *
+from gh_sections import gh3_sections
+
 menu_options = ["make_mid - Create a PAK file for a custom song",
                 "extract_pak - Extract all files from a PAK file",
                 "qb2text - Convert a single QB file to a text file",
                 "text2qb - Convert a text file back into a QB file",
-                "midqb2mid - Convert a song PAK to a normal MIDI (Currently only camera and light events)"
+                "midqb2mid - Convert a song PAK to a normal MIDI (Currently only camera and light events)",
+                "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)\n\t\tLipsync does convert, but is glitchy!"
                 ]
 
 menu_mods = ["-o: Specify an output folder (default is the same folder as your input file)",
@@ -22,28 +29,111 @@ menu_mods = ["-o: Specify an output folder (default is the same folder as your i
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def get_track_type(track_name):
-    diffs = ["Easy", "Medium", "Hard", "Expert"]
-    instrument = ["guitarcoop", "rhythmcoop", "rhythm"]
-    if(any(x in track_name for x in diffs)):
-        for x in diffs:
-            if x in track_name:
-                if "Battle" in track_name:
-                    track_type = "Battle"
-                elif "Star" in track_name:
-                    track_type = "Star"
-                else:
-                    track_type = "Notes"
-                track_diff = x
-                for y in instrument:
-                    if y in track_name:
-                        track_play = y
-                        break
-                    else:
-                        track_play = "song"
-                return {"instrument": track_play, "track_type": track_type, "difficulty": track_diff}
-    else:
-        return {"track_type": track_name[track_name.find("_")+1:]}
+def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
+    if not "_song.pak" in pakmid:
+        warning = input(
+            "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
+        if not warning.lower().startswith("y"):
+            return -1
+
+    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
+
+    track_types = []
+    qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
+    rhythm_sections, rhythm_dict = get_rhythm_headers(song_name)
+    rhythm_parts = []
+
+    sections_dict = {}
+    for x in qb_sections:
+        if x.section_id in file_headers_hex.keys():
+            x.set_new_id(file_headers_hex[x.section_id])
+        sections_dict[x.section_id] = x
+
+    for x in rhythm_sections:
+        if x != f"{song_name}_song_aux_Expert":
+            fake_section = PAKExtract.qb_section("SectionArray")
+            fake_section.make_empty()
+            fake_section.set_new_id(x)
+            fake_section.set_pak_name(sections_dict[f"{song_name}_song_Expert"].section_pak_name)
+            rhythm_parts.append(fake_section)
+        else:
+            rhythm_section = PAKExtract.qb_section("SectionArray")
+            rhythm_section.set_data(sections_dict[f"{song_name}_song_Expert"].section_data)
+            rhythm_section.set_new_id(x)
+            rhythm_section.set_array_node_type("ArrayInteger")
+            rhythm_section.set_pak_name(sections_dict[f"{song_name}_song_Expert"].section_pak_name)
+            rhythm_parts.append(rhythm_section)
+
+    # Swap camera cuts
+    for x in sections_dict[f"{song_name}_cameras_notes"].section_data:
+        if type(gh3_to_gha[x[1]]) == list:
+            x[1] = random.choice(gh3_to_gha[x[1]])
+        else:
+            x[1] = gh3_to_gha[x[1]]
+
+    # Add left-hand anims to rhythm player
+    new_anims = []
+    new_anims_type = []
+    for x in sections_dict[f"{song_name}_anim_notes"].section_data:
+        if x[1] in range(118,128):
+            new_anims.append([x[0], x[1]-34, x[2]])
+            new_anims_type.append("ArrayInteger")
+        new_anims.append(x)
+        new_anims_type.append("ArrayInteger")
+    sections_dict[f"{song_name}_anim_notes"].section_data = new_anims
+    sections_dict[f"{song_name}_anim_notes"].subarray_types = new_anims_type
+
+    for x in sections_dict[f"{song_name}_markers"].section_data:
+        if x.data_value[1].data_type == "StructItemQbKeyString":
+            x.data_value[1].data_type = "StructItemStringW"
+            marker_hex = x.data_value[1].data_value
+            if "markers_text" in marker_hex:
+                new_marker = gh3_sections[int(marker_hex[-8:],16)]
+            else:
+                new_marker = "No Section Name"
+            x.data_value[1].set_string_w(new_marker)
+            x.data_value[1].data_value = new_marker
+
+
+    # Add rhythm notes to total package
+    gha_dict = {}
+    for x in sections_dict.keys():
+        if x != f"{song_name}_rhythm_Expert_StarBattleMode":
+            gha_dict[x] = sections_dict[x]
+        else:
+            gha_dict[x] = sections_dict[x]
+            for y in rhythm_parts:
+                gha_dict[y.section_id] = y
+    gha_qb_sections = []
+    for x in gha_dict.keys():
+        gha_qb_sections.append(gha_dict[x])
+    result = StringIO()
+    orig_stdout = sys.stdout
+    sys.stdout = result
+    QB2Text.print_qb_text_file(gha_qb_sections)
+    sys.stdout = orig_stdout
+    gha_text = result.getvalue()
+    gha_qb = Text2QB.main(gha_text, "PC", "big")
+
+
+    # QB2Text.output_qb_file(gha_qb_sections, output+f'\\{song_name}.txt')
+    for x in song_files:
+        x['file_name'] = x['file_name'].replace("\\", "")
+        if x['file_name'] == f'songs/{song_name}.mid.qb':
+            x["file_data"] = gha_qb
+
+    # Convert dict to array of arrays
+    gha_array = []
+    for x in song_files:
+        gha_array.append([x["file_data"], x['file_name']])
+
+    # Create the song PAK file
+    song_pak = mid_qb.pakMaker(gha_array)
+
+    with open(output+f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
+            f.write(song_pak)
+    # raise Exception
+    return
 
 
 def midqb2mid(pakmid, output=f'{os.getcwd()}'):
@@ -55,30 +145,7 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
 
     song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
 
-    with open(pakmid, 'rb') as pak:
-        mid_bytes = pak.read()
-    mid_files = PAKExtract.main(mid_bytes, "")
-    for x in mid_files:
-        if "0x" in x['file_name']:
-            file_name_scrubbed = x['file_name'].replace("\\", "")
-            if file_name_scrubbed.endswith(".qb"):
-                qb_string = f'songs/{song_name}.mid.qb'
-                crc_name = int(PAKExtract.QBKey(f'songs/{song_name}.mid.qb'), 16)
-                hex_name = int(file_name_scrubbed[:-3], 16)
-                if crc_name == hex_name:
-                    mid_qb = qb_string
-                    mid_data_bytes = x['file_data']
-        elif ".mid.qb" in x['file_name']:
-            mid_qb = x['file_name'].replace("\\", "")
-            mid_data_bytes = x['file_data']
-    if "mid_data_bytes" not in locals():
-        raise Exception("No MIDI data found in PAK file.")
-    file_headers = QB2Text.createHeaderDict(song_name)
-    file_header_keys = file_headers.keys()
-    file_headers_hex = {}
-    for x in file_headers.keys():
-        file_headers_hex[hex(file_headers[x])] = x
-    qb_sections = QB2Text.convert_qb_file(QB2Text.qb_bytes(mid_data_bytes), song_name, file_headers)
+    qb_sections, file_headers, file_headers_hex = pak2mid(pakmid, song_name)
 
     inst_types = ["Notes", "Star", "Battle"]
 
@@ -390,6 +457,14 @@ if __name__ == "__main__":
                 if "output" not in locals():
                     output = f'{os.path.dirname(midqb_file)}'
                 midqb2mid(midqb_file, output)
+            else:
+                print("Error: No song PAK file found.")
+        elif sys.argv[1] == "convert_to_gha":
+            midqb_file = sys.argv[2].replace("\"", "")
+            if "_song.pak" in midqb_file.lower():
+                if "output" not in locals():
+                    output = f'{os.path.dirname(midqb_file)}'
+                convert_to_gha(midqb_file, output)
             else:
                 print("Error: No song PAK file found.")
         else:

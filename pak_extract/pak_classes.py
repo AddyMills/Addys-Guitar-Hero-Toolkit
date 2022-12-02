@@ -54,6 +54,25 @@ class qb_section:
     def set_new_id(self, new_id):
         self.section_id = new_id
 
+    def set_pak_name(self, pak_name):
+        self.pak_name = pak_name
+
+    def set_data(self, qb_data):
+        self.section_data = qb_data
+
+    def set_array_node_type(self, node_type):
+        self.array_node_type = node_type
+        self.subarray_types = []
+
+    def make_empty(self):
+        self.section_type = "SectionArray"
+        self.section_id = 0
+        self.section_pak_name = 0
+        self.section_data_start = 0
+        self.section_next_item = 0
+        self.section_data = [0, 0]
+        self.array_node_type = "Floats"
+
 class array_item:
     def __init__(self, array_type, item_count, list_start):
         self.array_type = array_type
@@ -84,6 +103,9 @@ class struct_item:
             return
         else:
             return f"{self.data_type} {self.data_value}"
+
+    def set_string_w(self, stringw):
+        self.struct_data_string_w = stringw
 
 class script_item:
     def __init__(self, uncom_size, com_size, data):
