@@ -133,17 +133,19 @@ def extract_paks():
     print(pabs)"""
     for y, x in enumerate(paks):
         if x in pabs:
+            print(f"Processing {os.path.basename(filepaths[y])}")
             with open(filepaths_pab[pabs.index(x)], 'rb') as f:
                 pab_file = f.read()
             with open(filepaths[y], 'rb') as f:
                 pak_file = f.read()
             pak_file += pab_file
         else:
+            print(f"Processing {os.path.basename(filepaths[y])}")
             with open(filepaths[y], 'rb') as f:
                 pak_file = f.read()
         files = main(pak_file, filepaths[y])
         for x in files:
-            output_file = f'.\\output\\PAK{x["file_name"]}'
+            output_file = f'.\\output\\PAK{x["file_name"]}.xen'
             dir_name = os.path.dirname(output_file)
             try:
                 os.makedirs(dir_name)

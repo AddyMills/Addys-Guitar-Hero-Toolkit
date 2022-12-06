@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Guitar-Hero-III-Tools.iml" filepath="$PROJECT_DIR$/.idea/Guitar-Hero-III-Tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ghtools/.idea/ghtools.iml" filepath="$PROJECT_DIR$/../ghtools/.idea/ghtools.iml" />
     </modules>
   </component>
 </project>

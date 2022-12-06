@@ -2,12 +2,17 @@ import os
 import sys
 import mido
 import random
+import re
 from io import StringIO
+
+import ska_switcher.ska_switcher
 
 sys.path.append(f"{os.getcwd()}\\pak_extract")
 sys.path.append(f"{os.getcwd()}\\midqb_gen")
+sys.path.append(f"{os.getcwd()}\\ska_switcher")
 from pak_extract import PAKExtract, QB2Text, Text2QB
 from midqb_gen import MidQbGen as mid_qb
+from ska_switcher import ska_switcher
 
 from toolkit_functions import *
 from toolkit_variables import *
@@ -29,7 +34,8 @@ menu_mods = ["-o: Specify an output folder (default is the same folder as your i
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
+
+def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_dict["gha_singer"]):
     if not "_song.pak" in pakmid:
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
@@ -75,8 +81,8 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
     new_anims = []
     new_anims_type = []
     for x in sections_dict[f"{song_name}_anim_notes"].section_data:
-        if x[1] in range(118,128):
-            new_anims.append([x[0], x[1]-34, x[2]])
+        if x[1] in range(118, 128):
+            new_anims.append([x[0], x[1] - 34, x[2]])
             new_anims_type.append("ArrayInteger")
         new_anims.append(x)
         new_anims_type.append("ArrayInteger")
@@ -88,12 +94,11 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
             x.data_value[1].data_type = "StructItemStringW"
             marker_hex = x.data_value[1].data_value
             if "markers_text" in marker_hex:
-                new_marker = gh3_sections[int(marker_hex[-8:],16)]
+                new_marker = gh3_sections[int(marker_hex[-8:], 16)]
             else:
                 new_marker = "No Section Name"
             x.data_value[1].set_string_w(new_marker)
             x.data_value[1].data_value = new_marker
-
 
     # Add rhythm notes to total package
     gha_dict = {}
@@ -115,12 +120,18 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
     gha_text = result.getvalue()
     gha_qb = Text2QB.main(gha_text, "PC", "big")
 
-
     # QB2Text.output_qb_file(gha_qb_sections, output+f'\\{song_name}.txt')
     for x in song_files:
         x['file_name'] = x['file_name'].replace("\\", "")
         if x['file_name'] == f'songs/{song_name}.mid.qb':
             x["file_data"] = gha_qb
+        if ".ska" in x['file_name']:
+            if re.search("[0-9][bB]\.ska",x['file_name'].lower()):
+                # raise Exception
+                x["file_data"] = ska_switcher.main(x["file_data"], ska_switcher.lipsync_dict["gha_guitarist"])
+            else:
+                x["file_data"] = ska_switcher.main(x["file_data"], singer)
+            # raise Exception
 
     # Convert dict to array of arrays
     gha_array = []
@@ -130,8 +141,8 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}'):
     # Create the song PAK file
     song_pak = mid_qb.pakMaker(gha_array)
 
-    with open(output+f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
-            f.write(song_pak)
+    with open(output + f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
+        f.write(song_pak)
     # raise Exception
     return
 
@@ -151,34 +162,34 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
 
     playableQB = {
         "song": {
-                "Easy": [],
-                "Medium": [],
-                "Hard": [],
-                "Expert": []
+            "Easy": [],
+            "Medium": [],
+            "Hard": [],
+            "Expert": []
 
         },
         "rhythm": {
 
-                "Easy": [],
-                "Medium": [],
-                "Hard": [],
-                "Expert": []
+            "Easy": [],
+            "Medium": [],
+            "Hard": [],
+            "Expert": []
 
         },
         "guitarcoop": {
 
-                "Easy": [],
-                "Medium": [],
-                "Hard": [],
-                "Expert": []
+            "Easy": [],
+            "Medium": [],
+            "Hard": [],
+            "Expert": []
 
         },
         "rhythmcoop": {
 
-                "Easy": [],
-                "Medium": [],
-                "Hard": [],
-                "Expert": []
+            "Easy": [],
+            "Medium": [],
+            "Hard": [],
+            "Expert": []
 
         }
     }
@@ -203,7 +214,7 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
 
     midi_export = mido.MidiFile()
     midi_export.add_track()
-    midi_export.tracks[0].append(mido.MetaMessage("set_tempo", tempo = 500000))
+    midi_export.tracks[0].append(mido.MetaMessage("set_tempo", tempo=500000))
 
     track_types = []
     anim_tracks_notes = ["lightshow_notes", "cameras_notes"]
@@ -219,14 +230,15 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
                 note_time = 0
                 note_length = 0
                 note_type = 0
-                for z,y in enumerate(x.section_data):
+                for z, y in enumerate(x.section_data):
                     if z % 3 == 0:
                         note_time = y
                     elif z % 3 == 1:
                         note_length = y
                     elif z % 3 == 2:
                         note_type = format(y, '#010b')[2:]
-                        playableQB[track_type["instrument"]][track_type["difficulty"]].append([note_time,note_length,note_type])
+                        playableQB[track_type["instrument"]][track_type["difficulty"]].append(
+                            [note_time, note_length, note_type])
                     else:
                         print("Huh?")
             if track_type["track_type"] == "Star":
@@ -242,13 +254,15 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
             prev_time = -1
             for y in x.section_data:
                 if prev_note != -1:
-                    new_track.append(blank_off.copy(note=prev_note, velocity = 0, time=int(round(mido.second2tick(y[0]/1000, 480, 500000) - prev_time, 0))))
+                    new_track.append(blank_off.copy(note=prev_note, velocity=0, time=int(
+                        round(mido.second2tick(y[0] / 1000, 480, 500000) - prev_time, 0))))
                 if prev_time != -1:
                     new_track.append(blank_on.copy(note=y[1], time=0))
                 else:
-                    new_track.append(blank_on.copy(note = y[1], time = int(round(mido.second2tick(y[0]/1000, 480, 500000), 0))))
+                    new_track.append(
+                        blank_on.copy(note=y[1], time=int(round(mido.second2tick(y[0] / 1000, 480, 500000), 0))))
                 prev_note = y[1]
-                prev_time = mido.second2tick(y[0]/1000, 480, 500000)
+                prev_time = mido.second2tick(y[0] / 1000, 480, 500000)
             tracks.append(new_track.copy())
         elif track_type["track_type"] == "lightshow":
             blank = mido.MetaMessage("text")
@@ -257,18 +271,26 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
             prev_time = -1
             for y in x.section_data:
                 if prev_time != -1:
-                    new_track.append(blank.copy(text=f"SetBlendTime {str(y.data_value[2].struct_data_struct[0].data_value)}", time=int(round(mido.second2tick(y.data_value[0].data_value/1000, 480, 500000) - prev_time, 0))))
+                    new_track.append(
+                        blank.copy(text=f"SetBlendTime {str(y.data_value[2].struct_data_struct[0].data_value)}",
+                                   time=int(round(
+                                       mido.second2tick(y.data_value[0].data_value / 1000, 480, 500000) - prev_time,
+                                       0))))
                 else:
-                    new_track.append(blank.copy(text=f"SetBlendTime {str(y.data_value[2].struct_data_struct[0].data_value)}",time = int(round(mido.second2tick(y.data_value[0].data_value/1000, 480, 500000), 0))))
-                prev_time = mido.second2tick(y.data_value[0].data_value/1000, 480, 500000)
+                    new_track.append(
+                        blank.copy(text=f"SetBlendTime {str(y.data_value[2].struct_data_struct[0].data_value)}",
+                                   time=int(
+                                       round(mido.second2tick(y.data_value[0].data_value / 1000, 480, 500000), 0))))
+                prev_time = mido.second2tick(y.data_value[0].data_value / 1000, 480, 500000)
             tracks.append(new_track.copy())
-    midi_export.add_track(name = "GH3 VENUE")
+    midi_export.add_track(name="GH3 VENUE")
     midi_export.tracks[-1] = mido.merge_tracks(x for x in tracks)
     midi_export.save(filename=f'{output}\\{song_name}.mid')
 
     # raise Exception
 
     return
+
 
 def extract_pak(pak_file, output=f'{os.getcwd()}\\PAK extract'):
     pab_file = os.path.dirname(pak_file) + f"\\{os.path.basename(pak_file[:pak_file.find('.pak')])}.pab.xen"
@@ -415,6 +437,8 @@ if __name__ == "__main__":
             output = sys.argv[sys.argv.index("-o") + 1]
         if '-hopo' in sys.argv:
             hopo = int(sys.argv[sys.argv.index("-hopo") + 1])
+        if '-singer' in sys.argv:
+            singer = sys.argv[sys.argv.index("-singer") + 1]
         else:
             hopo = 170
         if sys.argv[1] == "make_mid":
@@ -464,7 +488,9 @@ if __name__ == "__main__":
             if "_song.pak" in midqb_file.lower():
                 if "output" not in locals():
                     output = f'{os.path.dirname(midqb_file)}'
-                convert_to_gha(midqb_file, output)
+                if "singer" not in locals():
+                    singer = "gha_singer"
+                convert_to_gha(midqb_file, output, ska_switcher.lipsync_dict[singer])
             else:
                 print("Error: No song PAK file found.")
         else:
