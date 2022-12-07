@@ -285,32 +285,55 @@ def main(ska_data, singer):
     output_ska = compile_ska(split_ska, singer)
     return output_ska
 
+def error_message():
+    print("Not enough arguments to run this script. Please run this script with the ska file and your target")
+    print("Or run this script with files in the 'in' folder and a ska target.")
+    print("Allowable targets are:")
+    for x in lipsync_dict.keys():
+        print(f"\t{x}")
+    # input()
+    exit()
+
 if __name__ == "__main__":
 
-    if len(sys.argv) < 3:
-        print("Not enough arguments to run this script. Please run this script with the ska file and your target")
-        print("Allowable targets are:")
-        for x in lipsync_dict.keys():
-            print(f"\t{x}")
-        #input()
-        exit()
+    if len(sys.argv) < 2:
+        error_message()
 
+    elif len(sys.argv) == 2:
+        if sys.argv[1] not in lipsync_dict.keys():
+            error_message()
+        directory = "./in"
+        out_dir = "./out"
+        for filename in os.listdir(directory):
+            f = os.path.join(directory, filename)
+            with open(f, 'rb') as file:
+                ska_data = file.read()
+            # checking if it is a file
+            if os.path.isfile(f):
+                singer = lipsync_dict[sys.argv[1]]
+                output_ska = main(ska_data, singer)
+                try:
+                    os.makedirs(out_dir)
+                except:
+                    pass
+                with open(out_dir + "\\" + filename, 'wb') as f:
+                    ska_file = f.write(output_ska)
 
+    else:
+        with open(sys.argv[1], 'rb') as f:
+            ska_file = f.read()
 
-    with open(sys.argv[1], 'rb') as f:
-        ska_file = f.read()
+        singer = lipsync_dict[sys.argv[2]]
 
-    singer = lipsync_dict[sys.argv[2]]
+        output_ska = main(ska_file, singer)
 
-    output_ska = main(ska_file, singer)
+        out_dir = os.path.dirname(os.path.abspath(sys.argv[1])) +"\\ska_converts"
+        try:
+            os.makedirs(out_dir)
+        except:
+            pass
 
-    out_dir = os.path.dirname(os.path.abspath(sys.argv[1])) +"\\ska_converts"
-    try:
-        os.makedirs(out_dir)
-    except:
-        pass
-
-    with open(out_dir+"\\"+os.path.basename(sys.argv[1]), 'wb') as f:
-        ska_file = f.write(output_ska)
+        with open(out_dir+"\\"+os.path.basename(sys.argv[1]), 'wb') as f:
+            ska_file = f.write(output_ska)
 
     # raise Exception
