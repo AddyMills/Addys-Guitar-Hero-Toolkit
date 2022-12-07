@@ -304,7 +304,7 @@ if __name__ == "__main__":
 
     output_ska = main(ska_file, singer)
 
-    out_dir = os.path.dirname(sys.argv[1]) +"\\ska_converts"
+    out_dir = os.path.dirname(os.path.abspath(sys.argv[1])) +"\\ska_converts"
     try:
         os.makedirs(out_dir)
     except:
