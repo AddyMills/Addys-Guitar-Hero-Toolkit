@@ -126,14 +126,17 @@ def output_qb_file(qb_sections, output_file):
             sys.stdout = f
             print_qb_text_file(qb_sections)
             sys.stdout = orig_stdout
-    except:
+    except Exception as E:
         if os.path.isfile(output_file):
             os.remove(output_file)
         sys.stdout = orig_stdout
+        raise E
     return
 
 def main(file):
     file_strip = os.path.basename(file)
+    if file_strip.endswith(".xen"):
+        file_strip = file_strip[:-4]
     if not file_strip.endswith(".qb"):
         raise Exception("Not a valid file. File must be a QB file.")
     elif file_strip.endswith(".mid.qb"):

@@ -65,7 +65,7 @@ def read_qb_item(qb_file, item_type):
     read_dbg_bytes = lambda a=4: get_dbg_name(qb_file, a)
     if item_type.endswith("QbKey"):
         return read_dbg_bytes()
-    elif item_type.endswith("QbKeyString"):
+    elif "QbKeyString" in item_type:
         return read_dbg_bytes()
     elif item_type.endswith("Integer"):
         return read_int_bytes()
@@ -95,6 +95,8 @@ def read_qb_item(qb_file, item_type):
             skinny_string += chr(char)
         return skinny_string
     elif item_type.endswith("Struct"):
+        raise Exception
+    else:
         raise Exception
     return
 
@@ -350,7 +352,7 @@ def print_struct_data(struct, indent=0):
     return
 
 def output_item_data(item_data, item_type, endian = "big"):
-    simple_data = ["Integer", "Float", "QbKey"]
+    simple_data = ["Integer", "Float", "QbKey", "QbKeyStringQs"]
     for x in simple_data:
         if item_type.endswith(x):
             return item_data

@@ -9,7 +9,7 @@ sys.path.append(f"{os.getcwd()}\\midqb_gen")
 sys.path.append(f"{os.getcwd()}\\ska_switcher")
 from pak_extract import PAKExtract, QB2Text, Text2QB
 from midqb_gen import MidQbGen as mid_qb
-from ska_switcher import ska_switcher
+from ska_switcher import ska_switch
 from gh_sections import gh_sections
 from toolkit_variables import *
 from io import StringIO
@@ -84,7 +84,7 @@ def pak2mid(pakmid, song_name):
     return qb_sections, file_headers, file_headers_hex, song_files
 
 
-def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_dict["gh3_singer"]):
+def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=ska_switch.lipsync_dict["gh3_singer"]):
     if not "_song.pak" in pakmid:
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
@@ -166,7 +166,7 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_
         if x['file_name'] == f'songs/{song_name}.mid.qb':
             x["file_data"] = gh3_qb
         if ".ska" in x['file_name']:
-            x["file_data"] = ska_switcher.main(x["file_data"], singer)
+            x["file_data"] = ska_switch.main(x["file_data"], singer)
 
     gh3_array = []
     for x in song_files:
@@ -180,7 +180,7 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_
     return song_name, song_pak
 
 
-def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_dict["gha_singer"]):
+def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=ska_switch.lipsync_dict["gha_singer"]):
     if not "_song.pak" in pakmid:
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
@@ -274,9 +274,9 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=ska_switcher.lipsync_
         if ".ska" in x['file_name']:
             if re.search("[0-9][bB]\.ska", x['file_name'].lower()):
                 # raise Exception
-                x["file_data"] = ska_switcher.main(x["file_data"], ska_switcher.lipsync_dict["gha_guitarist"])
+                x["file_data"] = ska_switch.main(x["file_data"], ska_switch.lipsync_dict["gha_guitarist"])
             else:
-                x["file_data"] = ska_switcher.main(x["file_data"], singer)
+                x["file_data"] = ska_switch.main(x["file_data"], singer)
             # raise Exception
 
     # Convert dict to array of arrays
@@ -478,7 +478,7 @@ def output_mid(mid_file, output="", hopo=170, filename=""):
         f.write(pak_file)
 
 
-def qb_to_text(file, output=f'{os.getcwd()}'):
+def qb_to_text(file, output=f'{os.getcwd()}', game = "GH3"):
     qb_sections, file_name = QB2Text.main(file)
     output_file = f'{output}\\{file_name}.txt'
     dir_name = os.path.dirname(output_file)

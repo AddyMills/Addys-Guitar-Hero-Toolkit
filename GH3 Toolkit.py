@@ -15,9 +15,10 @@ menu_mods = ["-o: Specify an output folder (default is the same folder as your i
 
 def manual_input():
     main_menu = 0
+    wt_mode = 0
     # QB 2 Text, Text 2 QB, Extract PAK, Extract All
     while True:
-        print("Beginner Mode - Main Menu\n")
+        print(f"Beginner Mode - Main Menu ({'GH3' if wt_mode == 0 else 'WT/5/BH/WoR'} Mode)\n")
         print("Please type in the number from the following options (type -1 to exit):\n")
 
         # 5: extract_all - Extract a PAK file and converts all qb files into text files (beta)
@@ -151,7 +152,7 @@ if __name__ == "__main__":
                     output = f'{os.path.dirname(midqb_file)}'
                 if "singer" not in locals():
                     singer = "gha_singer"
-                song_name, song_pak = convert_to_gha(midqb_file, output, ska_switcher.lipsync_dict[singer])
+                song_name, song_pak = convert_to_gha(midqb_file, output, ska_switch.lipsync_dict[singer])
                 with open(output + f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
                     f.write(song_pak)
             else:

@@ -6,6 +6,7 @@
 */build*
 */dist*
 *.spec
+*.ska
 .idea/discord.xml
 */MidiFiles*
 QBParser/
@@ -19,4 +20,6 @@ dist/
 midqb_gen/midqb_gen*/
 pak_extract/pak_extract*/
 pak_extract/Input*/
+pak_extract/Decompressed PAKs*/
 dbg_*.py
+compile-exe.bat
