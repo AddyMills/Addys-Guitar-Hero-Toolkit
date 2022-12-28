@@ -19,3 +19,4 @@ dist/
 midqb_gen/midqb_gen*/
 pak_extract/pak_extract*/
 pak_extract/Input*/
+dbg_*.py

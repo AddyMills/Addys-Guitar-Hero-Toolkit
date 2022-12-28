@@ -2,11 +2,13 @@ from CRC import QBKey as qb_key
 import struct
 from pak_definitions import console_lookup, console_endian, qbNodeHeaders
 import os
+import sys
 
 class qb_string:
-    def __init__(self, qb_data):
+    def __init__(self, qb_data, game = "GH3"):
         self.qb_data = qb_data
         self.counter = 0
+        self.game = game
 
     def curr_char(self):
         curr_char = self.qb_data[self.counter]
@@ -283,7 +285,7 @@ def assign_data(data_type, raw_data, endian = "big"):
         bin_data = b''
     return bin_data
 
-def assign_types(sections, endian = "big"):
+def assign_types(sections, endian = "big", game = "GH3"):
 
     for x in sections:
         if type(x) == basic_data:
@@ -342,13 +344,13 @@ def conv_key(a, endian):
         return int.to_bytes(int(qb_key(a), 16), 4, endian)
 
 
-def output_bin_data(x, curr_pos, endian = "big", console = "PC"):
+def output_bin_data(x, curr_pos, endian = "big", console = "PC", game = "GH3"):
     item_bin = bytearray()
     return_data = ["String", "StringW"]
     if x.qb_type == "Array":
-        item_bin += bin_array_data(x, curr_pos)
+        item_bin += bin_array_data(x, curr_pos, console, game)
     elif x.qb_type == "Struct":
-        item_bin += bin_struct_data(x.item_data.data, curr_pos, endian, console)
+        item_bin += bin_struct_data(x.item_data.data, curr_pos, endian, console, game = game)
     elif x.qb_type in return_data:
         return x.bin_data
     else:
@@ -356,9 +358,12 @@ def output_bin_data(x, curr_pos, endian = "big", console = "PC"):
 
     return item_bin
 
-def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC"):
+def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC", game = "GH3"):
     struct_bytes = bytearray()
+
     struct_bytes += to_bin(get_node("StructHeader", console))
+
+
     if not item_data:
         struct_bytes += to_bin(0)  # First item = 0 to indicate an empty struct
     else:
@@ -366,7 +371,11 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC"):
         first_item = curr_pos + len(struct_bytes) + 4
         struct_bytes += to_bin(first_item)  # First item of the struct
         for j, i in enumerate(item_data):
-            item_type = bin_type("StructItem", i.qb_type)
+            if game == "GH3":
+                """This is a hacky way to get non-GH3 qb files compiled. Since NS changed the formats after GH3"""
+                item_type = bin_type("StructItem", i.qb_type)
+            else:
+                item_type = bin_type("Array", i.qb_type)
             struct_bytes += to_bin(get_node(item_type, console))
             struct_item_id = i.id_name if i.id_name != "no_id" else 0
             if struct_item_id == 0:
@@ -377,7 +386,7 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC"):
                 if i.qb_type == "Struct":
                     substruct_start = first_item + len(struct_bytes)
                     struct_bytes += to_bin(substruct_start, 4, endian)
-                    substruct_data = bin_struct_data(i.item_data.data, substruct_start, endian, console)
+                    substruct_data = bin_struct_data(i.item_data.data, substruct_start, endian, console, game = game)
                     struct_next = substruct_start + len(substruct_data) if j + 1 != len(item_data) else 0
                     struct_bytes += to_bin(struct_next, 4, endian)
                     struct_bytes += substruct_data
@@ -385,7 +394,7 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC"):
                 elif i.qb_type == "Array":
                     array_start = first_item + len(struct_bytes)
                     struct_bytes += to_bin(array_start, 4, endian)
-                    array_bytes = bin_array_data(i, array_start)
+                    array_bytes = bin_array_data(i, array_start, console, game)
                     array_next = array_start + len(array_bytes) if j + 1 != len(item_data) else 0
                     struct_bytes += to_bin(array_next, 4, endian)
                     struct_bytes += array_bytes
@@ -409,7 +418,7 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC"):
                 struct_bytes += to_bin(struct_next)
     return struct_bytes
 
-def bin_array_data(array_data, curr_pos, console = "PC"):
+def bin_array_data(array_data, curr_pos, console = "PC", game = "GH3"):
     array_bytes = bytearray()
     easy_arrays = ["Integer", "QbKey", "QbKeyString"]
     complex_arrays = ["Array", "Struct"]
@@ -447,7 +456,7 @@ def bin_array_data(array_data, curr_pos, console = "PC"):
                     fake_data.set_array_type(array_data.subarray_types[y])
                     fake_data.set_bin_data(x)
 
-                    subarray_bytes = bin_array_data(fake_data, fake_pos, console)
+                    subarray_bytes = bin_array_data(fake_data, fake_pos, console, game)
                     fake_pos += len(subarray_bytes)
                     subarray_data += subarray_bytes
             elif array_data.array_type == "Struct":
@@ -457,7 +466,7 @@ def bin_array_data(array_data, curr_pos, console = "PC"):
                         array_bytes += to_bin(fake_pos, 4, console_endian[console])
                     else:
                         fake_pos -= 4
-                    subarray_bytes = bin_struct_data(x.data, fake_pos, console_endian[console], console)
+                    subarray_bytes = bin_struct_data(x.data, fake_pos, console_endian[console], console, game = game)
                     fake_pos += len(subarray_bytes)
                     subarray_data += subarray_bytes
                     # raise Exception
@@ -475,8 +484,7 @@ def bin_array_data(array_data, curr_pos, console = "PC"):
 
     return array_bytes
 
-def create_qb(sections, section_type, qb_name, endian = "big", console = "PC"):
-    qbFileHeader = b'\x1C\x08\x02\x04\x10\x04\x08\x0C\x0C\x08\x02\x04\x14\x02\x04\x0C\x10\x10\x0C\x00'
+def create_qb(sections, section_type, qb_name, endian = "big", console = "PC", game = "GH3"):
     qb_pos = 28
     qb_bytes = bytearray()
     all_bytes = bytearray()
@@ -501,7 +509,7 @@ def create_qb(sections, section_type, qb_name, endian = "big", console = "PC"):
             curr_pos = update_pos(qb_pos, qb_bytes, section_bytes)
 
             if "Script" not in node_type:
-                section_bytes += output_bin_data(x, curr_pos, endian, console)
+                section_bytes += output_bin_data(x, curr_pos, endian, console, game)
             else:
                 section_bytes += x.script_data
 
@@ -511,6 +519,10 @@ def create_qb(sections, section_type, qb_name, endian = "big", console = "PC"):
                 break
 
     all_bytes += to_bin(28 + len(qb_bytes))
+    if game == "GH3":
+        qbFileHeader = b'\x1C\x08\x02\x04\x10\x04\x08\x0C\x0C\x08\x02\x04\x14\x02\x04\x0C\x10\x10\x0C\x00'
+    else:
+        qbFileHeader = b'\x1c\x00\x00\x00\x00\x00\x00\x00' + int.to_bytes(len(qb_bytes), 4, endian) + b'\x00\x00\x00\x00\x00\x00\x00\x00'
     all_bytes += qbFileHeader
     all_bytes += qb_bytes
     # raise Exception
@@ -544,7 +556,7 @@ def strip_but_not_quotes(text_data):
     return text_data_alt, strings
 
 
-def main(line_items, console = "PC", endian = "big"):
+def main(line_items, console = "PC", endian = "big", game = "GH3"):
 
     stripped_string, strings = strip_but_not_quotes(line_items)
     # Need to remove all strings so that when it's stripped, any double/triple/etc. spaces remain
@@ -552,11 +564,12 @@ def main(line_items, console = "PC", endian = "big"):
 
     for x in strings.keys(): # This adds the strings back into the file
         stripped_string = stripped_string.replace(x, strings[x], 1)
-    # raise Exception
+    #
     to_parse = qb_string(stripped_string)
     qb_name, sections = parse_data(to_parse)
     assign_types(sections, endian)
-    qb_file = create_qb(sections, "Section", qb_name, endian, console)
+    # raise Exception
+    qb_file = create_qb(sections, "Section", qb_name, endian, console, game)
 
 
     return qb_file
@@ -568,6 +581,10 @@ if __name__ == "__main__":
     directory = f".\\input Text"
     console = "PC"
     endian = "big"
+    if "-game" in sys.argv:
+        gametype = sys.argv[sys.argv.index("-game")+1].upper()
+    else:
+        gametype = "GH3"
     for file in os.listdir(directory):
         if not file.endswith(".txt"):
             continue
@@ -575,12 +592,13 @@ if __name__ == "__main__":
         file_name = file[:-4]
         with open(filename, "r") as f:
             lines = f.read()
-        output_file = f'.\\output\\Text\\{file_name}.qb'
+        output_file = f'.\\output\\Text\\{file_name}.qb.xen'
         dir_name = os.path.dirname(output_file)
         try:
             os.makedirs(dir_name)
         except:
             pass
-        qb_file = main(lines, console, endian)
+        qb_file = main(lines, console, endian, game = gametype)
+
         with open(output_file, 'wb') as f:
             f.write(qb_file)

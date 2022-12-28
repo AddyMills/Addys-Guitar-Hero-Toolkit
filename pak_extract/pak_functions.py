@@ -1,3 +1,7 @@
+import sys
+sys.path.append("../")
+
+
 from pak_classes import *
 from pak_definitions import *
 from dbg import checksum_dbg as dbg
@@ -195,6 +199,11 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
         struct_data = []
         while True:
             data_type = node_type()
+            if data_type.startswith("Array"): # This is impossible, so it must be a new type of qb
+                struct_node.set_game("GHWT")
+                data_type = "StructItem" + data_type[5:]
+            else:
+                struct_node.set_game("GH3")
             data_id = read_dbg_bytes()
             if "String" in data_type:
                 if not data_type.endswith("QbKeyString"):
@@ -232,7 +241,7 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                 array_item_count = read_int_bytes()
                 if array_item_count == 1:
                     array_list_start = qb_file.getPosition()
-                    raise Exception
+                    # raise Exception
                 else:
                     array_list_start = read_int_bytes()
                 struct_array = process_array_data(qb_file, array_item(array_node_type, array_item_count, array_list_start), qb_node_lookup)[0]
@@ -266,7 +275,7 @@ def print_struct_item(item, indent=0):
             if item.data_type == "StructItemArray":
                 #print_array_data()
                 array_type = item.struct_data_array_type
-                print_array_data(item.struct_data_array, array_type, "", id_string, indent + 1)
+                print_array_data(item.struct_data_array, array_type, "", id_string, indent)
                 """if len(item.struct_data_array) > 3:
                     print(f"{indent_val}{id_string} = [")
                     for x in item.struct_data_array:

@@ -6,17 +6,26 @@ import binascii
 toBytes = lambda a, b=4: a.to_bytes(b, "big")
 
 def pakHeaderMaker(pakbytes, pakname, offset):
-    headerext = toBytes(int(QBKey(os.path.splitext(os.path.basename(pakname))[1]), 16))
+    local_strings = [".en", ".de", ".fr", ".it", ".es"]
+    basename = os.path.splitext(os.path.basename(pakname))[0]
+    extension = os.path.splitext(os.path.basename(pakname))[1]
+    if extension in local_strings:
+        extension = basename[-3:] + extension
+        basename = basename[:-3]
+        headerext = toBytes(int(QBKey(extension), 16))
+        # raise Exception
+    else:
+        headerext = toBytes(int(QBKey(extension), 16))
     startoffset = toBytes(offset)
     filesize = toBytes(len(pakbytes))
     aContextChecksum = toBytes(0)
-    if ".qb" in pakname:
-        fullChecksum = toBytes(int(QBKey(f"songs/{os.path.basename(pakname)}"), 16))
-    elif ".ska" in pakname:
-        fullChecksum = toBytes(int(QBKey(f"{os.path.basename(pakname)[:-4]}"), 16))
+    if ".ska" in pakname:
+        fullChecksum = toBytes(int(QBKey(f"{basename}"), 16))
+        # raise Exception
     else:
-        raise Exception
-    name = f"{os.path.basename(pakname)}"
+        fullChecksum = toBytes(int(QBKey(f"songs/{basename}{extension}"), 16))
+
+    name = f"{basename}"
     if "." in name:
         name = name[0:name.find(".")]
     nameChecksum = toBytes(int(QBKey(f"{name}"), 16))
@@ -79,10 +88,13 @@ def main(midBytes, toAdd):
 if __name__ == "__main__":
     # toAdd = "D:\GitHub\Guitar-Hero-III-Tools\MIDQBgen\greengrassreal.mid.qb.xen"
     toAdd = sys.argv[1]
-    with open(toAdd, 'rb') as f:
-        midBytes = f.read()
-    if toAdd.endswith(".xen"):
-        pakname = toAdd[:-4]
-    else:
-        pakname = toAdd
-    main(midBytes, pakname)
+    pakfiles = []
+    for root, dirs, files in os.walk(toAdd, topdown = False):
+        for name in files:
+            with open(os.path.join(root, name), 'rb') as f:
+                x = f.read()
+            pakfiles.append([x, name if not name.endswith(".xen") else name[:-4]])
+            # print(os.path.join(root, name)[len(toAdd)+1:])
+    pak_file = pakMaker(pakfiles)
+    with open("output.pak.xen", 'wb') as f:
+        f.write(pak_file)

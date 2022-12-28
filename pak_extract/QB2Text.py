@@ -156,17 +156,21 @@ if __name__ == "__main__":
     # if len(sys.argv) == 1:
     directory = f".\\input QB"
     for file in os.listdir(directory):
-        if not file.endswith(".qb"):
+        if not file.endswith(".qb.xen") and not file.endswith(".qb.ps2"):
             continue
-        elif file.endswith(".mid.qb"):
-            file_name = file[:-7]
+        elif file.endswith(".mid.qb.xen") or file.endswith("mid.qb.ps2"):
+            file_name = file[:-11]
             file_headers = createHeaderDict(file_name)
         else:
-            file_name = file[:-3]
+            file_name = file[:-7]
             file_headers = createHeaderDict(file_name)
         filename = os.path.join(directory, file)
+        if file.endswith("xen"):
+            console = "PC"
+        else:
+            console = "PS2"
         with open(filename, "rb") as f:
-            qb_sections = convert_qb_file(qb_bytes(f.read()), file_name, file_headers)
+            qb_sections = convert_qb_file(qb_bytes(f.read(), console_endian[console]), file_name, file_headers, console)
         output_file = f'.\\output\\QB\\{file_name}.txt'
         dir_name = os.path.dirname(output_file)
         try:

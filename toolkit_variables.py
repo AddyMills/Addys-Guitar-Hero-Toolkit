@@ -100,7 +100,7 @@ gha_to_gh3 = {
     54: 85,
     # Longshot Cameras
     56: 91,
-    57: 82,
+    57: 117,
     # Zoom Cameras
     59: 112,
     60: 111,

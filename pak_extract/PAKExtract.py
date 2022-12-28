@@ -1,8 +1,11 @@
+import sys
+sys.path.append("../")
+
 from dbg import checksum_dbg
-from pak_classes import *
 from pak_functions import *
 from CRC import QBKey
 import os
+import zlib
 
 def main(pak, folder, endian = "big"):
     start = 0
@@ -106,6 +109,41 @@ def main(pak, folder, endian = "big"):
 
     return files
 
+def decompress_pak(comp, endian = "big"):
+    comp = compressed_pak(comp, endian)
+    decomp_file = b''
+    iters = 0
+    while True:
+        # Grab the header data for each CHNK
+        last_chunk = comp.last_chnk
+        comp.addToPos(4) # Skip the CHNK
+        header_len = comp.readBytes()
+        data_length = comp.readBytes()
+        next_chnk = comp.readBytes()
+        next_chnk_true = next_chnk + last_chunk # This is used to set the position of the bytes to the next piece to be decompped
+        next_chnk_len = comp.readBytes() # Reading this simply to move the position 4 bytes ahead
+        decomp_len = comp.readBytes()
+        decomp_offset = comp.readBytes()
+        if decomp_offset != len(decomp_file):
+            raise Exception("Chunks appear out of order. Please contact me.")
+
+        comp.setPosition(header_len + comp.last_chnk)
+        chnk_data = comp.grabData(data_length)
+        chnk_decomp = zlib.decompress(chnk_data, wbits = -15)
+        if len(chnk_decomp) != decomp_len:
+            raise Exception("Error decompressing. Length of chunk is not what it says it is.")
+        decomp_file += chnk_decomp
+        iters += 1
+        if next_chnk == 0xffffffff:
+            break
+        comp.setPosition(next_chnk_true)
+        comp.updateChnk(comp.position)
+
+    return decomp_file
+
+def compress_pak(decomp):
+
+    return
 def extract_paks():
     pabs = []
     paks = []
@@ -125,6 +163,8 @@ def extract_paks():
                 filepaths_pab.append(filename)
                 # print(f"{level_2[1]}{level_1[1]}")
             elif "pak." in filename:
+                if not filename.endswith(".pak.xen"):
+                    continue
                 paks.append(level_2[0])
                 filepaths.append(filename)
 
@@ -143,6 +183,17 @@ def extract_paks():
             print(f"Processing {os.path.basename(filepaths[y])}")
             with open(filepaths[y], 'rb') as f:
                 pak_file = f.read()
+        if pak_file[:4] == b'CHNK': # Check for xbox compressed file
+            pak_file = decompress_pak(pak_file)
+            pak_decomp_out = f'.\\Decompressed PAKs\\{os.path.basename(filepaths[y])}'
+            if not os.path.exists(pak_decomp_out):
+                dir_name = os.path.dirname(pak_decomp_out)
+                try:
+                    os.makedirs(dir_name)
+                except:
+                    pass
+                with open(pak_decomp_out, 'wb') as write_file:
+                    write_file.write(pak_file)
         files = main(pak_file, filepaths[y])
         for x in files:
             output_file = f'.\\output\\PAK{x["file_name"]}.xen'

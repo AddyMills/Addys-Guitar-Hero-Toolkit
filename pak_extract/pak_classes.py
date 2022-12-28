@@ -9,6 +9,43 @@ class pak_header:
         self.parent_object = 0
         self.flags = 0
 
+class compressed_pak:
+    def __init__(self, data, endian = "big"):
+        self.data = data
+        self.endian = endian
+        self.last_chnk = 0
+        self.position = 0
+
+    def readBytes(self, amount=4):
+        x = []
+        currPlace = self.position
+        for y in range(amount):  # Iterate through the x bytes that make up the starting number
+            x.append(self.data[y + self.position])
+            currPlace += 1
+        xBytes = bytearray(x)
+        self.position = currPlace
+        x = int.from_bytes(xBytes, self.endian)
+        return x
+
+    def updateChnk(self, update):
+        self.last_chnk = update
+
+    def grabData(self, length):
+        chunk_data = self.data[self.position:self.position+length]
+        return chunk_data
+
+
+    def getPosition(self):
+        return self.position
+
+    def setPosition(self, update_val):
+        self.position = update_val
+
+    def addToPos(self, add):
+        self.position += add
+
+
+
 class qb_bytes:
     def __init__(self, data, endian = "big"):
         self.data = data
@@ -91,6 +128,9 @@ class struct_header:
     def __str__(self):
         return f"Struct item"
 
+    def set_game(self, game_type):
+        self.game_type = game_type
+
 class struct_item:
     def __init__(self, data_type, data_id, data_value, next_item):
         self.data_type = data_type
@@ -106,6 +146,8 @@ class struct_item:
 
     def set_string_w(self, stringw):
         self.struct_data_string_w = stringw
+
+
 
 class script_item:
     def __init__(self, uncom_size, com_size, data):
