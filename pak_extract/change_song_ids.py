@@ -80,7 +80,9 @@ if __name__ == "__main__":
                 # raise Exception
                 print(f"Switch song id references in {old_name} to {x[0]}")
                 with open(f"{filepath}\\{y}", 'rb') as f:
-                    decomp_pak = decompress_pak(f.read())
+                    decomp_pak = f.read()
+                    if decomp_pak[:4] == b"CHNK":
+                        decomp_pak = decompress_pak(decomp_pak)
                 for i, z in enumerate(old_ids):
                     decomp_pak = decomp_pak.replace(z, dlc_ids[i])
                     # raise Exception

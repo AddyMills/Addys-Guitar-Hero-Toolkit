@@ -2,10 +2,11 @@ from toolkit_functions import *
 
 menu_options = ["make_mid - Create a PAK file for a custom song",
                 "extract_pak - Extract all files from a PAK file",
-                "qb2text - Convert a single QB file to a text file",
-                "text2qb - Convert a text file back into a QB file",
-                "midqb2mid - Convert a song PAK to a normal MIDI (Currently only camera and light events)",
-                "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)\n\t\tLipsync does convert, but is glitchy!"
+                "qb2text - Convert QB files to text files",
+                "text2qb - Convert text files back into QB files",
+                "midqb2mid - Convert a song PAK to a normal MIDI (Currently only camera and light events, no tempo map)",
+                "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
+                "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
                 ]
 
 menu_mods = ["-o: Specify an output folder (default is the same folder as your input file)",
@@ -53,7 +54,29 @@ def manual_input():
         elif main_menu == 5:
             song_pak_file = input("Drag in your song PAK file: ").replace("\"", "")
             output = f'{os.path.dirname(song_pak_file)}'
-            text_to_qb(song_pak_file, output)
+
+            midqb2mid(song_pak_file, output)
+        elif main_menu == 6:
+            singer_dict = {
+                "1": "gha_singer",
+                "2": "steve_singer",
+                "3": "dmc",
+                "4": "gha_guitarist"
+            }
+            midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+            output = f'{os.path.dirname(midqb_file)}'
+            print("Choose your singer: ")
+            print("1.) Default\n2.) Steven Tyler\n3.) Run DMC\n4.) Joe Perry")
+            singer = singer_dict[input("Type in the number corresponding to your singer: ")]
+            song_name, song_pak = convert_to_gha(midqb_file, output, ska_switch.lipsync_dict[singer])
+            with open(output + f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
+                f.write(song_pak)
+        elif main_menu == 7:
+            midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+            output = f'{os.path.dirname(midqb_file)}'
+            song_name, song_pak = convert_to_gh3(midqb_file, output)
+            with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
+                f.write(song_pak)
         elif main_menu == 1337:
             input("Ha! Got ourselves a leet hacker over here ")
         elif main_menu < 0:
@@ -89,10 +112,11 @@ if __name__ == "__main__":
             output = sys.argv[sys.argv.index("-o") + 1]
         if '-hopo' in sys.argv:
             hopo = int(sys.argv[sys.argv.index("-hopo") + 1])
-        if '-singer' in sys.argv:
-            singer = sys.argv[sys.argv.index("-singer") + 1]
         else:
             hopo = 170
+        if '-singer' in sys.argv:
+            singer = sys.argv[sys.argv.index("-singer") + 1]
+
         if sys.argv[1] == "make_mid":
             mid_file = sys.argv[2]
             if mid_file.lower().endswith(".mid"):

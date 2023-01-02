@@ -67,6 +67,7 @@ crc32_table = [
 
 
 def QBKey(text):
+
     text = text.lower().replace("/", "\\")
 
     text_bytes = bytes(text, 'utf-8')
@@ -82,6 +83,7 @@ def QBKey(text):
 
     # Pad to 8 characters
     res = res.zfill(8)
+
 
     return res
 

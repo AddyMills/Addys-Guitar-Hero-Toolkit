@@ -91,7 +91,7 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=ska_switch.lipsync_di
         if not warning.lower().startswith("y"):
             return -1
 
-    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
+    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")].lower()
 
     track_types = []
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
@@ -305,7 +305,7 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
 
     song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
 
-    qb_sections, file_headers, file_headers_hex = pak2mid(pakmid, song_name)
+    qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
 
     inst_types = ["Notes", "Star", "Battle"]
 
@@ -453,6 +453,8 @@ def extract_pak(pak_file, output=f'{os.getcwd()}\\PAK extract'):
     with open(pak_file, 'rb') as pak:
         pak_bytes = pak.read()
     pak_bytes += pab_bytes
+    if pak_bytes[:4] == b'CHNK':  # Check for xbox compressed file
+        pak_bytes = PAKExtract.decompress_pak(pak_bytes)
     pak_files = PAKExtract.main(pak_bytes, "")
     # raise Exception
     for x in pak_files:

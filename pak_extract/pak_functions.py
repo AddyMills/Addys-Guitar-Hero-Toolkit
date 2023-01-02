@@ -9,6 +9,7 @@ from dbg import checksum_dbg as dbg
 import CRC
 import struct
 
+float_round = 15
 
 def readFourBytes(file, start, endian="big"):
     x = []
@@ -50,19 +51,27 @@ def createHeaderDict(filename):
 def read_node(node_lookup, qb_file):
     return qb_node_list[node_lookup.index(qb_file.readBytes())]
 
+def pull_dbg_name(reference):
+    try:
+        debug_name = dbg[reference]
+        if " " in debug_name:
+            debug_name = f"`{debug_name}`"
+    except:
+        debug_name = hex(reference)
+    return debug_name
+
 
 def get_dbg_name(qb_file, length=4):
     x = qb_file.readBytes(length)
-    try:
-        debug_name = dbg[x]
-    except:
-        debug_name = hex(x)
+    debug_name = pull_dbg_name(x)
     return debug_name
 
 
 def read_qb_item(qb_file, item_type):
     read_int_bytes = lambda a=4: qb_file.readBytes(a)
     read_dbg_bytes = lambda a=4: get_dbg_name(qb_file, a)
+    endian = qb_file.endian
+    unpack_floats = lambda: struct.unpack(f'{">" if endian == "big" else "<"}f', int.to_bytes(read_int_bytes(), 4, endian))[0]
     if item_type.endswith("QbKey"):
         return read_dbg_bytes()
     elif "QbKeyString" in item_type:
@@ -76,8 +85,9 @@ def read_qb_item(qb_file, item_type):
             count += 1
             char = qb_file.readBytes(2)
             if char == 0:
-                if count % 2 != 0:
-                    qb_file.readBytes(2)
+                qb_modulo = qb_file.getPosition() % 4
+                if qb_modulo != 0:
+                    qb_file.readBytes(4 - qb_modulo)
                 break
             wide_string += chr(char)
         return wide_string
@@ -89,13 +99,36 @@ def read_qb_item(qb_file, item_type):
             char = qb_file.readBytes(1)
             if char == 0:
                 qb_modulo = qb_file.getPosition() % 4
-                trash = qb_file.readBytes(4 - qb_modulo)
+                if qb_modulo != 0:
+                    qb_file.readBytes(4 - qb_modulo)
                 # raise Exception
                 break
             skinny_string += chr(char)
         return skinny_string
     elif item_type.endswith("Struct"):
         raise Exception
+    elif "FloatsX" in item_type:
+        float_header = read_int_bytes()
+        if float_header != 0x00010000:
+            raise Exception
+        if item_type.endswith("X2"):
+            floats = []
+            for x in range(2):
+                floats.append(round(unpack_floats(), float_round))
+            floats = tuple(floats)
+            # raise Exception
+        elif item_type.endswith("X3"):
+            floats = []
+            for x in range(3):
+                floats.append(round(unpack_floats(), float_round))
+            floats = tuple(floats)
+            # raise Exception
+        else:
+            raise Exception("Unknown float structure found. Contact me to implement it.")
+        return floats
+    elif item_type.endswith("Float"):
+        float_val = round(unpack_floats(), float_round)
+        return float_val
     else:
         raise Exception
     return
@@ -118,7 +151,21 @@ def process_array_data(qb_file, array_node, qb_node_lookup):
                 offsets.append(read_int_bytes())
             for x in offsets:
                 qb_file.setPosition(x)
-                subarray = array_item(node_type(), read_int_bytes(), read_int_bytes())
+                subarray_type = node_type()
+                if subarray_type == "Floats":
+                    # print("Floats test")
+                    read_int_bytes()
+                    read_int_bytes()
+                    sub_item_count = 1
+                else:
+                    sub_item_count = read_int_bytes()
+                if sub_item_count > 1:
+                    list_start = read_int_bytes()
+                else:
+                    list_start = qb_file.position
+                subarray = array_item(subarray_type, sub_item_count, list_start)
+                """if subarray.item_count == 1:
+                    print("Subarray with one item")"""
                 array_data.append(process_array_data(qb_file, subarray, qb_node_lookup)[0])
                 subarrays.append(subarray.array_type)
         else:
@@ -150,9 +197,68 @@ def process_array_data(qb_file, array_node, qb_node_lookup):
             array_struct_header = struct_header(node_type(), read_int_bytes())
             subarray_data = process_struct_data(qb_file, array_struct_header, qb_node_lookup)
             array_data.append(struct_item("StructHeader", 0, subarray_data, 0))
+
     elif array_type in simple_array_types:
+        """if array_node.item_count == 1:
+            print("Simple array with one item")"""
         for x in range(0, array_node.item_count):
             array_data.append(str(read_qb_item(qb_file, array_node.array_type)))
+    elif "String" in array_type:
+        if "QbKeyString" in array_type:
+            raise Exception
+        if array_type.endswith("Pointer"):
+            raise Exception
+        offsets = []
+        if array_type.endswith("StringW"):
+            to_read = 2
+        else:
+            to_read = 1
+        if array_node.item_count > 1:
+            for x in range(array_node.item_count):
+                offsets.append(read_int_bytes())
+            for x in offsets:
+                string_val = ""
+                qb_file.setPosition(x)
+                curr_char = -1
+                while curr_char != 0:
+                    curr_char = qb_file.readBytes(to_read)
+                    if curr_char != 0:
+                        string_val += chr(curr_char)
+                array_data.append(string_val)
+        else:
+            string_val = ""
+            item_start = read_int_bytes()
+            qb_file.setPosition(item_start)
+            curr_char = -1
+            while curr_char != 0:
+                curr_char = qb_file.readBytes(to_read)
+                if curr_char != 0:
+                    string_val += chr(curr_char)
+            array_data.append(string_val)
+            # raise Exception
+        if qb_file.position % 4 != 0:
+            qb_file.readBytes(4 - qb_file.position % 4)
+            # raise Exception
+    elif "FloatsX" in array_type:
+        offsets = []
+        if array_node.item_count > 1:
+            for x in range(array_node.item_count):
+                offsets.append(read_int_bytes())
+            for x in offsets:
+                qb_file.setPosition(x)
+                floats_entry = read_qb_item(qb_file, array_type)
+                array_data.append(floats_entry)
+                # subarrays.append(subarray.array_type)
+                # raise Exception
+        else:
+            item_start = read_int_bytes()
+            qb_file.setPosition(item_start)
+            floats_entry = read_qb_item(qb_file, array_type)
+            array_data.append(floats_entry)
+            raise Exception
+    elif array_type == "Floats":
+        array_data = [0]
+        # print("Float test")
     else:
         raise Exception("Unknown Array Type found")
     return array_data, subarrays
@@ -162,6 +268,7 @@ def process_section_data(qb_file, section_entry, qb_node_lookup):
     node_type = lambda: read_node(qb_node_lookup, qb_file)
     read_int_bytes = lambda a=4: qb_file.readBytes(a)
     read_dbg_bytes = lambda a=4: get_dbg_name(qb_file, a)
+    endian = qb_file.endian
     # print(section_entry.section_type)
     section_type = section_entry.section_type
     if section_type.endswith("Array"):
@@ -186,7 +293,14 @@ def process_section_data(qb_file, section_entry, qb_node_lookup):
         # raise Exception
         section_data = section_entry.section_data_start
         return section_data-(2**32) if section_data >= 2**31 else section_data
+    elif section_type.endswith("Float"):
+        section_data = round(struct.unpack(f'{">" if endian == "big" else "<"}f',int.to_bytes(section_entry.section_data_start, 4, endian))[0], float_round)
+        return section_data
+    elif "QbKey" in section_type:
+        section_data = pull_dbg_name(section_entry.section_data_start)
+        return section_data
     else:
+        # raise Exception
         section_data = read_qb_item(qb_file, section_type)
     return section_data
 
@@ -227,7 +341,8 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                 # raise Exception
             elif data_type[len("StructItem"):] == "String":
                 struct_data_string = read_qb_item(qb_file, data_type)
-                qb_file.setPosition(next_item)
+                if next_item != 0:
+                    qb_file.setPosition(next_item)
                 setattr(struct_entry, "struct_data_string", struct_data_string)
                 # raise Exception
             elif data_type[len("StructItem"):] == "StringW":
@@ -237,7 +352,7 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                 byte_order = qb_file.getEndian()
                 float_bytes = int.to_bytes(int(struct_entry.data_value,16), 4, byte_order)
                 setattr(struct_entry, "data_value",
-                        struct.unpack(f'{">" if byte_order == "big" else "<"}f', float_bytes)[0])
+                        round(struct.unpack(f'{">" if byte_order == "big" else "<"}f', float_bytes)[0], float_round))
             elif data_type[len("StructItem"):] == "Array":
                 array_node_type = node_type()
                 array_item_count = read_int_bytes()
@@ -246,10 +361,20 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                     # raise Exception
                 else:
                     array_list_start = read_int_bytes()
-                struct_array = process_array_data(qb_file, array_item(array_node_type, array_item_count, array_list_start), qb_node_lookup)[0]
+                struct_array, subarrays = process_array_data(qb_file, array_item(array_node_type, array_item_count, array_list_start), qb_node_lookup)
                 setattr(struct_entry, "struct_data_array", struct_array)
                 setattr(struct_entry, "struct_data_array_type", array_node_type)
+                setattr(struct_entry, "subarray_types", subarrays)
                 # raise Exception
+            elif data_type[len("StructItem"):] == "FloatsX2":
+                struct_data_floats = read_qb_item(qb_file, data_type)
+                setattr(struct_entry, "struct_data_floats", struct_data_floats)
+            elif data_type[len("StructItem"):] == "FloatsX3":
+                struct_data_floats = read_qb_item(qb_file, data_type)
+                setattr(struct_entry, "struct_data_floats", struct_data_floats)
+                # raise Exception
+            elif data_type[len("StructItem"):] == "StringPointer":
+                raise Exception
             else:
                 pass
             struct_data.append(struct_entry)
@@ -277,23 +402,25 @@ def print_struct_item(item, indent=0):
             if item.data_type == "StructItemArray":
                 #print_array_data()
                 array_type = item.struct_data_array_type
-                print_array_data(item.struct_data_array, array_type, "", id_string, indent)
-                """if len(item.struct_data_array) > 3:
-                    print(f"{indent_val}{id_string} = [")
-                    for x in item.struct_data_array:
-                        print(f"{indent_val}\t{output_item_data(x, array_type)},")
-                    print(f"{indent_val}]")
-                else:
-                    array_string = ""
-                    for y, x in enumerate(item.struct_data_array):
-                        array_string += f"{output_item_data(x, array_type)}"
-                        if y != len(item.struct_data_array) - 1:
-                            array_string += ", "
-                    print(f"{indent_val}{id_string}", f"= [{array_string}]")"""
+                print_array_data(item.struct_data_array, array_type, item.subarray_types, id_string, indent)
+            elif "FloatsX" in item.data_type:
+                print(f"{indent_val}{id_string} = {item.struct_data_floats}")
                 # raise Exception
-            else:
+            elif "Integer" in item.data_type:
+                int_val = item.data_value
                 print(f"{indent_val}{id_string}",
-                      f'= {"$" if item.data_type.endswith("QbKeyString") else ""}{item.data_value}')
+                      f'= {int_val-(2**32) if int_val >= 2**31 else int_val}')
+            elif "QbKey" in item.data_type:
+                """if item.data_type.endswith('Qs'):
+                    print("Qs test")"""
+                print(f"{indent_val}{id_string}",
+                      f"= {'$' if item.data_type.endswith('String') else 'qbs(' if item.data_type.endswith('Qs') else ''}{hex(item.data_value) if item.data_type.endswith('Qs') else item.data_value}{')' if item.data_type.endswith('Qs') else ''}")
+            elif "0x" not in str(item.data_value):
+                print(f"{indent_val}{id_string}",
+                      f'= {item.data_value}')
+
+            else:
+                raise Exception
     else:
         print_struct_data(item, indent)
 
@@ -301,7 +428,7 @@ def print_struct_item(item, indent=0):
 
 def print_array_data(array_data, array_type, sub_array = "", id_string = "", indent = 0):
     indent_val = '\t' * indent
-    if sub_array == 1:
+    if sub_array == 1 and not array_type.endswith("Struct"):
         array_string = f"{indent_val}["
         for y, x in enumerate(array_data):
             array_string += f"{output_item_data(x, array_type)}"
@@ -312,14 +439,33 @@ def print_array_data(array_data, array_type, sub_array = "", id_string = "", ind
     elif array_type.endswith("Array"):
         print(f"{indent_val}{id_string} = [")
         for y, x in enumerate(array_data):
-            print(f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
+            """if not type(sub_array) == str:
+                print("test")"""
+            if sub_array[y].endswith("Struct"):
+                print(f"{indent_val}\t[")
+                # raise Exception
+                for s_count, struct in enumerate(array_data[y]):
+                    print(f"{indent_val}\t\t" + "{")
+                    for items in struct.data_value:
+                        print_struct_item(items, indent + 3)
+                    print(f"{indent_val}\t\t" + "}" + f"{',' if s_count != len(array_data[y]) - 1 else ''}")
+                print(f"{indent_val}\t]" + f"{',' if y != len(array_data) - 1 else ''}")
+                #raise Exception
+            else:
+                print(f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     elif array_type.endswith("Struct"):
+        """if sub_array:
+            print(f"{indent_val}[")
+        else:"""
         print(f"{indent_val}{id_string} = [")
         for y, x in enumerate(array_data):
             print(f"{indent_val}\t" + "{")
-            for z in x.data_value:
-                print_struct_item(z, indent + 2)
+            if type(x.data_value) == struct_header:
+                print(f"{indent_val}\t\tEmpty")
+            else:
+                for z in x.data_value:
+                    print_struct_item(z, indent + 2)
             print(f"{indent_val}\t" + "}" + f"{',' if y != len(array_data) - 1 else ''}")
             # raise Exception
         print(f"{indent_val}]")
@@ -343,8 +489,11 @@ def print_struct_data(struct, indent=0):
     if "struct_data_struct" in vars(struct):
         indent_val = '\t' * indent
         print(f"{indent_val}{struct.data_id} = " + "{")
-        for x in struct.struct_data_struct:
-            print_struct_item(x, indent + 1)
+        if type(struct.struct_data_struct) == struct_header:
+            print(f"{indent_val}\tEmpty")
+        else:
+            for x in struct.struct_data_struct:
+                print_struct_item(x, indent + 1)
         print(f"{indent_val}" + "}")
     else:
         print_struct_item(struct, indent)
@@ -352,15 +501,30 @@ def print_struct_data(struct, indent=0):
     return
 
 def output_item_data(item_data, item_type, endian = "big"):
-    simple_data = ["Integer", "Float", "QbKey", "QbKeyStringQs"]
+    simple_data = ["Float"]
     for x in simple_data:
         if item_type.endswith(x):
             return item_data
+    if "QbKey" in item_type:
+        """if item_type.endswith('Qs'):
+            print("Qs test")"""
+        test_data = f"{'$' if item_type.endswith('String') else 'qbs(' if item_type.endswith('Qs') else ''}{item_data}{')' if item_type.endswith('Qs') else ''}"
+        # raise Exception
+        return test_data
     if item_type.endswith("QbKeyString"):
         return f"${item_data}"
+    elif item_type.endswith("QbKeyStringQs"):
+        return f"qbs({item_data})"
     elif item_type.endswith("String") or item_type.endswith("StringW"):
         return f'{"w" if item_type.endswith("StringW") else ""}\"{item_data}\"'
-
+    elif "FloatsX" in item_type:
+        return item_data
+        # raise Exception
+    elif "Integer" in item_type:
+        int_val = item_data - (2 ** 32) if item_data >= 2 ** 31 else item_data
+        return int_val
+    elif item_type.endswith("Floats"):
+        return "Empty"
     else:
         raise Exception(f"Unknown data type {item_type} found. Please bug me to implement it!")
 
@@ -373,29 +537,10 @@ def print_qb_text_file(mid_sections):
         if x.section_type == "SectionArray":
             array_type = x.array_node_type
             # raise Exception
-            if x.section_data == [0, 0]:
+            if x.section_data == [0, 0] and "Floats" in x.array_node_type:
                 print(f'{x.section_id} = [Empty]')
             else:
                 print_array_data(x.section_data, array_type, x.subarray_types, x.section_id, 0)
-            """elif array_type == int or array_type == list:
-                if len(x.section_data) > 3:
-                    print(f'{x.section_id} = [')
-                    for y in x.section_data:
-                        print(f"\t{y},")
-                    print(']')
-                else:
-                    print(f'{x.section_id} = {x.section_data}')
-            elif array_type == struct_item:
-                print(x.section_id, "= [")
-                for y in x.section_data:
-                    print("\t{")
-                    for z in y.data_value:
-                        print_struct_item(z, 2)
-                    print("\t},")
-                print("]")
-            else:
-                print(
-                    f'{x.section_id} = [' + (", ".join(x.section_data) if x.section_data != [0, 0] else "Empty") + "]")"""
         elif x.section_type == "SectionStruct":
             print(x.section_id, "= {")
             if type(x.section_data) == struct_header:
@@ -409,29 +554,15 @@ def print_qb_text_file(mid_sections):
             print(f"{x.section_id} = {x.section_data}")
         elif x.section_type == "SectionString" or x.section_type == "SectionStringW":
             print(f"{x.section_id} = {'w' if x.section_type == 'SectionStringW' else ''}\"{x.section_data}\"")
+        elif x.section_type == "SectionFloat":
+            print(f"{x.section_id} = {x.section_data}")
+        elif "FloatsX" in x.section_type:
+            print(f"{x.section_id} = {x.section_data}")
+        elif "QbKey" in x.section_type:
+            print(f"{x.section_id} = {'$' if x.section_type.endswith('String') else 'qbs(' if x.section_type.endswith('Qs') else ''}{x.section_data}{')' if x.section_type.endswith('Qs') else ''}")
         elif x.section_type == "SectionScript":
             print("script", f"{x.section_id} = \"{x.section_data}\"")
         else:
             raise Exception("Found a section type not yet supported. Please go bug me, AddyMills, to implement it!")
-
-    return
-
-
-def print_qb_text_file_old(mid_sections):
-    for x in mid_sections:
-        if x.section_type == "SectionArray":
-            print("SectionArray", f'{x.section_id} =', (x.section_data if x.section_data != [0, 0] else "Empty"))
-
-        elif x.section_type == "SectionStruct":
-            print("SectionStruct", x.section_id, "= {")
-            if type(x.section_data) == struct_header:
-                print("\tEmpty")
-            else:
-                for y in x.section_data:
-                    if type(y) == struct_item:
-                        print_struct_item(y, 1)
-            print("}")
-        elif x.section_type == "SectionScript":
-            print(x.section_type, x.section_id)
 
     return

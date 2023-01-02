@@ -3,6 +3,7 @@ import struct
 from pak_definitions import console_lookup, console_endian, qbNodeHeaders
 import os
 import sys
+import re
 
 class qb_string:
     def __init__(self, qb_data, game = "GH3"):
@@ -80,7 +81,9 @@ def parse_array(qb_string):
     while True:
         if qb_string.end_of_data():
             break
-        array_entry = read_data(qb_string)
+        array_entry = read_data(qb_string, True)
+        """if array_entry == "}":
+            raise Exception"""
         if type(array_entry) == list:
             array_data.append(array_entry)
         else:
@@ -125,6 +128,7 @@ def parse_struct(qb_string):
     while True:
         var_name = read_data(qb_string)
         if var_name == "}":
+            # read_data(qb_string)
             break
         elif var_name == "Empty":
             read_data(qb_string)
@@ -141,8 +145,12 @@ def read_data(qb_string, array_mode = False): # Read until next whitespace and r
     parsed_data = ""
     string_mode = False
     is_string = False
+    is_local = False # Checker for localized qb strings
+    is_multifloat = False # Checker for pairs or vectors
     wide_string = False
+    qb_space = False
     special_chars = [" ", ",", "["]
+    ending_chars= ["]", "}"]
     while True:
         if qb_string.end_of_data():
             break
@@ -155,9 +163,38 @@ def read_data(qb_string, array_mode = False): # Read until next whitespace and r
                     if parsed_data.startswith("w"):
                         wide_string = True
                     parsed_data = ""
+            elif curr_char == "`":
+                if is_string:
+                    parsed_data += curr_char
+                else:
+                    qb_space = not qb_space
+                    if qb_space:
+                        parsed_data = ""
+            elif curr_char == "(":
+                if is_string:
+                    parsed_data += curr_char
+                elif parsed_data.startswith("qbs"):
+                    is_local = True
+                    parsed_data += curr_char
+                elif not parsed_data:
+                    is_multifloat = True
+                else:
+                    parsed_data += curr_char
+            elif curr_char == ")":
+                if is_string:
+                    parsed_data += curr_char
+                elif is_local:
+                    is_local = False
+                    parsed_data += curr_char
+                elif is_multifloat:
+                    is_multifloat = False
+                else:
+                    parsed_data += curr_char
             else:
                 parsed_data += curr_char
-        elif string_mode:
+        elif string_mode or qb_space:
+            parsed_data += curr_char
+        elif is_multifloat or is_local:
             parsed_data += curr_char
         elif curr_char == "[":
             parsed_data = parse_array(qb_string)
@@ -165,15 +202,24 @@ def read_data(qb_string, array_mode = False): # Read until next whitespace and r
         else:
             break
     if is_string:
+        if parsed_data.endswith("]"):
+            if parsed_data == "]":
+                raise Exception
+            else:
+                array_close = True
+                parsed_data = parsed_data[:-1]
+            #raise Exception
+        else:
+            array_close = False
         if wide_string:
-            parsed_data = f'w\"{parsed_data}\"'
+            parsed_data = f'w\"{parsed_data}\"{"]" if array_close else ""}'
             w_string = bytearray()
             """for x in parsed_data:
                 w_string += int.to_bytes(0, 1, "big")
                 w_string += bytearray(x, "latin-1")"""
             # raise Exception
         else:
-            parsed_data = f'\"{parsed_data}\"'
+            parsed_data = f'\"{parsed_data}\"{"]" if array_close else ""}'
             # parsed_data = bytearray(parsed_data, "latin-1")
 
 
@@ -215,6 +261,10 @@ def parse_data(to_parse):
     return qb_name, sections
 
 def num_type(x):
+    if "," in x:
+        floats_count = x.count(",")
+        item_type = f"FloatsX{floats_count + 1}"
+        return item_type
     if "." in x:
         return "Float"
     else:
@@ -231,11 +281,27 @@ def find_type(x):
         elif x.startswith("0x"):
             return "QbKey"
         elif x[0].isnumeric():
-            return num_type(x)
+            qb_check = re.findall(r"\D", x) # Check if it's not a QB Key that starts with a number
+            #+print("Int test")
+            if not qb_check:
+                return num_type(x)
+            elif qb_check == ['.']:
+                return num_type(x)
+            elif "," in qb_check:
+                return num_type(x)
+            elif "e-" in x:
+                return num_type(x)
+            else:
+                return "QbKey"
         elif x.startswith("-"):
             return num_type(x[1:])
         elif x.startswith("$"):
             return "QbKeyString"
+        elif x.startswith("qbs("):
+            # raise Exception
+            return "QbKeyStringQs"
+        elif x.startswith("("):
+            raise Exception
         else:
             return "QbKey"
     else:
@@ -246,19 +312,21 @@ def find_type(x):
             raise Exception
     return None
 
-def assign_data(data_type, raw_data, endian = "big"):
+def assign_data(data_type, raw_data, array_mode = False, endian = "big"):
     if data_type == "StringW":
         bin_data = bytearray()
         for y in raw_data[2:-1]:
             bin_data += ord(y).to_bytes(2, endian)
         bin_data += b'\x00' * 2
-        if len(bin_data) % 4 != 0:
-            bin_data += b'\x00' * (4 - len(bin_data) % 4)
+        if not array_mode:
+            if len(bin_data) % 4 != 0:
+                bin_data += b'\x00' * (4 - len(bin_data) % 4)
     elif data_type == "String":
         bin_data = bytearray(raw_data[1:-1], 'latin-1')
         bin_data += b'\x00'
-        if len(bin_data) % 4 != 0:
-            bin_data += b'\x00' * (4 - len(bin_data) % 4)
+        if not array_mode:
+            if len(bin_data) % 4 != 0:
+                bin_data += b'\x00' * (4 - len(bin_data) % 4)
     elif data_type == "QbKey":
         bin_data = conv_key(raw_data, endian)
     elif data_type == "QbKeyHex":
@@ -270,6 +338,9 @@ def assign_data(data_type, raw_data, endian = "big"):
     elif data_type == "QbKeyStringHex":
         # bin_data = int.to_bytes(int(raw_data, 16), 4, endian)
         bin_data = conv_key(raw_data[3:], endian)
+    elif data_type == "QbKeyStringQs":
+        bin_data = conv_key(raw_data[4:-1], endian)
+        # raise Exception
     elif data_type == "Float":
         bin_data = struct.pack(f'{">" if endian == "big" else "<"}f', float(raw_data))
     elif data_type == "Integer":
@@ -279,10 +350,14 @@ def assign_data(data_type, raw_data, endian = "big"):
             bin_data = int.to_bytes(int(raw_data)+2**32, 4, endian)
     elif data_type == "Floats":
         bin_data = b'\x00' * 8
-
-
-    else:
+    elif "FloatsX" in data_type:
+        split_data = raw_data.split(",")
         bin_data = b''
+        for x in split_data:
+            bin_data += struct.pack(f'{">" if endian == "big" else "<"}f', float(x.strip()))
+        # raise Exception
+    else:
+        raise Exception
     return bin_data
 
 def assign_types(sections, endian = "big", game = "GH3"):
@@ -294,25 +369,32 @@ def assign_types(sections, endian = "big", game = "GH3"):
                 assign_types(x.item_data.data)
             elif type(x.item_data) == str:
                 x.set_type(find_type(x.item_data))
-                x.set_bin_data(assign_data(x.qb_type, x.item_data, endian))
+                x.set_bin_data(assign_data(x.qb_type, x.item_data, endian = endian))
             elif type(x.item_data) == list:
                 x.set_type("Array")
                 if type(x.item_data[0]) == list:
+                    # raise Exception
                     x.set_array_type("Array")
                     subarray_types = []
                     subarray_bin_data = []
-                    for y in x.item_data:
+                    for counter, y in enumerate(x.item_data): # y = items
                         item_bin_data = []
                         subarray_item = find_type(y[0])
                         subarray_types.append(subarray_item)
                         if subarray_item == struct_data:
                             assign_types(y.data)
                         x.set_subarray_types(subarray_types)
-                        for z in y:
-                            item_bin_data.append(assign_data(subarray_item, z, endian))
+                        for counter_2, items in enumerate(y):
+                            if subarray_types[counter] == "Struct":
+                                assign_types(items.data, endian, game)
+                                #raise Exception
+                            elif subarray_types[counter] == "Array":
+                                raise Exception
+                            else:
+                                item_bin_data.append(assign_data(subarray_item, items, endian = endian))
                         subarray_bin_data.append(item_bin_data.copy())
                     x.set_bin_data(subarray_bin_data)
-                    # raise Exception
+                    # print("Array of Array")
                 else:
                     x.set_array_type(find_type(x.item_data[0]))
                     array_bin_data = []
@@ -320,8 +402,9 @@ def assign_types(sections, endian = "big", game = "GH3"):
                         if type(y) == struct_data:
                             assign_types(y.data)
                         else:
-                            array_bin_data.append(assign_data(x.array_type, y, endian))
+                            array_bin_data.append(assign_data(x.array_type, y, True, endian = endian))
                     x.set_bin_data(array_bin_data)
+                    continue
 
     return
 
@@ -344,15 +427,19 @@ def conv_key(a, endian):
         return int.to_bytes(int(qb_key(a), 16), 4, endian)
 
 
-def output_bin_data(x, curr_pos, endian = "big", console = "PC", game = "GH3"):
+def output_bin_data(x, curr_pos, endian = "big", console = "PC", game = "GH3", data_type = "Section"):
     item_bin = bytearray()
-    return_data = ["String", "StringW"]
+    return_data = ["String", "StringW", "QbKey", "QbKeyString", "QbKeyStringQs"]
     if x.qb_type == "Array":
         item_bin += bin_array_data(x, curr_pos, console, game)
     elif x.qb_type == "Struct":
         item_bin += bin_struct_data(x.item_data.data, curr_pos, endian, console, game = game)
     elif x.qb_type in return_data:
+        """if x.qb_type == "QbKeyStringQs":
+            print("Qs Test")"""
         return x.bin_data
+    elif "FloatsX" in x.qb_type:
+        return to_bin(get_node("Floats"), c=endian)+x.bin_data
     else:
         raise Exception
 
@@ -367,7 +454,7 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC", game = 
     if not item_data:
         struct_bytes += to_bin(0)  # First item = 0 to indicate an empty struct
     else:
-        easy_struct = ["Float", "Integer", "QbKey", "QbKeyString"]
+        easy_struct = ["Float", "Integer", "QbKey", "QbKeyString", "QbKeyStringQs"]
         first_item = curr_pos + len(struct_bytes) + 4
         struct_bytes += to_bin(first_item)  # First item of the struct
         for j, i in enumerate(item_data):
@@ -376,6 +463,8 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC", game = 
                 item_type = bin_type("StructItem", i.qb_type)
             else:
                 item_type = bin_type("Array", i.qb_type)
+            """if i.qb_type == "QbKeyStringQs":
+                print("Qs Test")"""
             struct_bytes += to_bin(get_node(item_type, console))
             struct_item_id = i.id_name if i.id_name != "no_id" else 0
             if struct_item_id == 0:
@@ -407,6 +496,15 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC", game = 
                     struct_bytes += to_bin(item_start + len(i.bin_data) if j + 1 != len(item_data) else 0, 4, endian)
                     struct_bytes += i.bin_data
                     # raise Exception
+                elif "FloatsX" in i.qb_type:
+                    """if "FloatsX2" in i.qb_type:
+                        print("Floats X2 Struct")"""
+                    item_start = first_item + len(struct_bytes)
+                    struct_bytes += to_bin(item_start, 4, endian)
+                    struct_bytes += to_bin(item_start + (len(i.bin_data) + 4) if j + 1 != len(item_data) else 0, 4, endian)
+                    struct_bytes += to_bin(get_node("Floats"))
+                    struct_bytes += i.bin_data
+                    # raise Exception
                 else:
                     raise Exception
             else:
@@ -420,7 +518,7 @@ def bin_struct_data(item_data, curr_pos, endian = "big", console = "PC", game = 
 
 def bin_array_data(array_data, curr_pos, console = "PC", game = "GH3"):
     array_bytes = bytearray()
-    easy_arrays = ["Integer", "QbKey", "QbKeyString"]
+    easy_arrays = ["Float", "Integer", "QbKey", "QbKeyString", "QbKeyStringQs"]
     complex_arrays = ["Array", "Struct"]
     bin_array_type = bin_type(array_data.qb_type, array_data.array_type)
     if array_data.array_type != "Floats":
@@ -445,20 +543,36 @@ def bin_array_data(array_data, curr_pos, console = "PC", game = "GH3"):
             subarray_data = bytearray()
             if array_data.array_type == "Array":
                 for y, x in enumerate(array_data.bin_data):
-                    # raise Exception
                     subarray_positions.append(fake_pos)
-                    if item_count != 1:
-                        array_bytes += to_bin(fake_pos, 4, console_endian[console])
+                    if array_data.subarray_types[y] == "Struct":
+                        if item_count == 1:
+                            raise Exception
+                        sub_struct = bytearray()
+                        #for counter, sub_item in enumerate(array_data.item_data):
+                        array_bytes += to_bin(fake_pos, c=endian)
+                        fake_data = basic_data(0, array_data.item_data[y])
+                        fake_data.set_type(array_data.array_type)
+                        fake_data.set_array_type(array_data.subarray_types[y])
+                        sub_struct = bin_array_data(fake_data, fake_pos, console, game)
+                        fake_pos += len(sub_struct)
+                        subarray_data += sub_struct
+                        # print("Struct in Array of Arrays")
+                        # raise Exception
+                    elif array_data.subarray_types[y] == "Array":
+                        raise Exception
                     else:
-                        fake_pos -= 4
-                    fake_data = basic_data(0,x)
-                    fake_data.set_type(array_data.array_type)
-                    fake_data.set_array_type(array_data.subarray_types[y])
-                    fake_data.set_bin_data(x)
+                        if item_count != 1:
+                            array_bytes += to_bin(fake_pos, 4, console_endian[console])
+                        else:
+                            fake_pos -= 4
+                        fake_data = basic_data(0,x)
+                        fake_data.set_type(array_data.array_type)
+                        fake_data.set_array_type(array_data.subarray_types[y])
+                        fake_data.set_bin_data(x)
 
-                    subarray_bytes = bin_array_data(fake_data, fake_pos, console, game)
-                    fake_pos += len(subarray_bytes)
-                    subarray_data += subarray_bytes
+                        subarray_bytes = bin_array_data(fake_data, fake_pos, console, game)
+                        fake_pos += len(subarray_bytes)
+                        subarray_data += subarray_bytes
             elif array_data.array_type == "Struct":
                 for y, x in enumerate(array_data.item_data):
                     subarray_positions.append(fake_pos)
@@ -471,6 +585,35 @@ def bin_array_data(array_data, curr_pos, console = "PC", game = "GH3"):
                     subarray_data += subarray_bytes
                     # raise Exception
             array_bytes += subarray_data
+            # raise Exception
+        elif "String" in array_data.array_type:
+            if "Pointer" in array_data.array_type:
+                raise Exception("Unknown Array Type found. Please bug me to implement it.")
+            first_item = curr_pos + len(array_bytes) + 4
+            array_bytes += to_bin(first_item)
+            if item_count != 1:
+                pos_count = 0
+                for string in array_data.bin_data:
+                    counter = first_item + (item_count*4) + pos_count
+                    array_bytes += to_bin(counter)
+                    pos_count += len(string)
+            for string in array_data.bin_data:
+                array_bytes += string
+            if len(array_bytes) % 4 != 0:
+                array_bytes += b'\x00' * (4 - len(array_bytes) % 4)
+            # raise Exception
+        elif "Floats" in bin_array_type:
+            if item_count != 1:
+                list_start = curr_pos + len(array_bytes) + 4
+                array_bytes += to_bin(list_start)
+                floats_data = b''
+                for number, floats in enumerate(array_data.item_data):
+                    list_pos = list_start + (len(array_data.item_data) * 4) + (len(array_data.bin_data[number]) + 4) *number
+                    array_bytes += to_bin(list_pos)
+                    floats_data += to_bin(get_node("Floats"), c = endian) + array_data.bin_data[number]
+                array_bytes += floats_data
+            else:
+                raise Exception
             # raise Exception
 
 
@@ -489,7 +632,7 @@ def create_qb(sections, section_type, qb_name, endian = "big", console = "PC", g
     qb_bytes = bytearray()
     all_bytes = bytearray()
     all_bytes += to_bin(0)
-    no_value_pointer = ["Integer"]
+    no_value_pointer = ["Float", "Integer", "QbKey","QbKeyString", "QbKeyStringQs"] # This might need updating
     testing = 0
     item_test = 54
     for y, x in enumerate(sections):
@@ -519,7 +662,7 @@ def create_qb(sections, section_type, qb_name, endian = "big", console = "PC", g
                 break
 
     all_bytes += to_bin(28 + len(qb_bytes))
-    if game == "GH3":
+    if game == "GH3" or game == "GHWT":
         qbFileHeader = b'\x1C\x08\x02\x04\x10\x04\x08\x0C\x0C\x08\x02\x04\x14\x02\x04\x0C\x10\x10\x0C\x00'
     else:
         qbFileHeader = b'\x1c\x00\x00\x00\x00\x00\x00\x00' + int.to_bytes(len(qb_bytes), 4, endian) + b'\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -543,7 +686,7 @@ def strip_but_not_quotes(text_data):
                 if read_string != "":
                     substitute = f"{to_replace}_{counter}"
                     strings[substitute] = read_string
-                    text_data_alt = text_data_alt.replace(read_string, substitute, 1)
+                    text_data_alt = text_data_alt.replace(f"\"{read_string}\"", substitute, 1)
                     read_string = ""
                     counter += 1
 
@@ -563,8 +706,11 @@ def main(line_items, console = "PC", endian = "big", game = "GH3"):
     stripped_string = " ".join(stripped_string.split()).replace(" = ", " ")
 
     for x in strings.keys(): # This adds the strings back into the file
-        stripped_string = stripped_string.replace(x, strings[x], 1)
+        stripped_string = stripped_string.replace(x, f"\"{strings[x]}\"", 1)
     #
+
+    if stripped_string == "":
+        return b''
     to_parse = qb_string(stripped_string)
     qb_name, sections = parse_data(to_parse)
     assign_types(sections, endian)
@@ -578,7 +724,10 @@ def main(line_items, console = "PC", endian = "big", game = "GH3"):
 
 
 if __name__ == "__main__":
-    directory = f".\\input Text"
+    if "-input" in sys.argv:
+        directory = sys.argv[sys.argv.index("-input")+1]
+    else:
+        directory = f".\\input Text"
     console = "PC"
     endian = "big"
     if "-game" in sys.argv:
@@ -590,6 +739,7 @@ if __name__ == "__main__":
             continue
         filename = os.path.join(directory, file)
         file_name = file[:-4]
+        print(f"Converting {file_name}")
         with open(filename, "r") as f:
             lines = f.read()
         output_file = f'.\\output\\Text\\{file_name}.qb.xen'
@@ -599,6 +749,8 @@ if __name__ == "__main__":
         except:
             pass
         qb_file = main(lines, console, endian, game = gametype)
-
+        if qb_file == b'':
+            print(f"{file_name} is blank! Empty qb file created.")
+            qb_file = b'\x00\x00\x00\x00\x00\x00\x00\x1C\x1C\x08\x02\x04\x10\x04\x08\x0C\x0C\x08\x02\x04\x14\x02\x04\x0C\x10\x10\x0C\x00'
         with open(output_file, 'wb') as f:
             f.write(qb_file)

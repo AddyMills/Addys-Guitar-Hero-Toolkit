@@ -70,6 +70,8 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
             section_header = ["id", "pak_name"]
             section_header_2 = ["data_start", "next_item"]
             section_entry = qb_section(node_type())
+            if section_entry.section_type == "Unknown":
+                raise Exception
             # Go through the section header above and generate the id and pak name
             for x in section_header:
                 if x == "id":
@@ -89,6 +91,7 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
             for x in section_header_2:
                 setattr(section_entry, f"section_{x}", read_int_bytes())
             if section_entry.section_type != "SectionScript":
+                section_start = qb_file.getPosition()
                 setattr(section_entry, f"section_data", process_section_data(qb_file, section_entry, qb_node_lookup))
                 # print(qb_file.getPosition())
                 # print(vars(section_entry))
@@ -123,9 +126,12 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
 def output_qb_file(qb_sections, output_file):
     try:
         with open(output_file, "w") as f:
-            sys.stdout = f
-            print_qb_text_file(qb_sections)
-            sys.stdout = orig_stdout
+            if len(qb_sections) == 0:
+                print(f"{os.path.basename(output_file)} is blank! Skipping...")
+            else:
+                sys.stdout = f
+                print_qb_text_file(qb_sections)
+                sys.stdout = orig_stdout
     except Exception as E:
         if os.path.isfile(output_file):
             os.remove(output_file)

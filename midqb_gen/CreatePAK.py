@@ -1,48 +1,74 @@
 import os
 import sys
 from CRC import QBKey
+from math import trunc
 import binascii
 
 toBytes = lambda a, b=4: a.to_bytes(b, "big")
 
-def pakHeaderMaker(pakbytes, pakname, offset):
+def pakHeaderMaker(pakbytes, pakname, offset, context = False):
     local_strings = [".en", ".de", ".fr", ".it", ".es"]
-    basename = os.path.splitext(os.path.basename(pakname))[0]
-    extension = os.path.splitext(os.path.basename(pakname))[1]
+    qb_name, extension = os.path.splitext(pakname)
     if extension in local_strings:
-        extension = basename[-3:] + extension
-        basename = basename[:-3]
+        extension = qb_name[-3:] + extension
+        qb_name = qb_name[:-3]
         headerext = toBytes(int(QBKey(extension), 16))
         # raise Exception
     else:
         headerext = toBytes(int(QBKey(extension), 16))
+    # raise Exception
     startoffset = toBytes(offset)
     filesize = toBytes(len(pakbytes))
-    aContextChecksum = toBytes(0)
-    if ".ska" in pakname:
-        fullChecksum = toBytes(int(QBKey(f"{basename}"), 16))
-        # raise Exception
+    if context:
+        aContextChecksum = toBytes(int(QBKey(context), 16))
     else:
-        fullChecksum = toBytes(int(QBKey(f"songs/{basename}{extension}"), 16))
+        aContextChecksum = toBytes(0)
 
-    name = f"{basename}"
-    if "." in name:
-        name = name[0:name.find(".")]
-    nameChecksum = toBytes(int(QBKey(f"{name}"), 16))
+    if ".qb" in pakname:
+        fullChecksum = toBytes(int(QBKey(pakname), 16))
+    elif ".ska" in pakname:
+        fullChecksum = toBytes(int(QBKey(f"{qb_name}"), 16))
+    elif ".qs" in pakname:
+        fullChecksum = toBytes(int(QBKey(qb_name + ".qs"), 16))
+    elif ".note" in pakname:
+        fullChecksum = toBytes(int(QBKey(pakname), 16))
+    elif ".perf" in pakname:
+        fullChecksum = toBytes(int(QBKey(pakname), 16))
+    else:
+        raise Exception
+
+    if "songs\\" in qb_name:
+        no_songs_name = os.path.basename(qb_name)
+        no_ext_name = os.path.splitext(no_songs_name)[0]
+        if ".xml" in pakname:
+            no_ext_name = os.path.splitext(no_ext_name)[0]
+    else:
+        no_ext_name = f"{qb_name}"
+
+    """if "." in no_ext_name:
+        no_ext_name = no_ext_name[0:no_ext_name.find(".")]"""
+    nameChecksum = toBytes(int(QBKey(f"{no_ext_name}"), 16))
+
     parent = toBytes(0)
     flags = toBytes(0)
+
+    """
+    Will need to set parents and children as well as flags evenutally. 
+    Probably as a different function once I add all the headers.
+    """
+
     header = bytearray()
     header += headerext + startoffset + filesize + aContextChecksum + fullChecksum + nameChecksum + parent + flags
     # print(binascii.hexlify(header, ' ', 1))
     return header
 
-def pakMaker(pakfiles):
+def pakMaker(pakfiles, songname = False):
     pakHeader = bytearray()
-    offset = 4096
+    offset = 4096 + (4096 * trunc(len(pakfiles)/128))
     files = []
     for y, x in enumerate(pakfiles):
         # print(offset)
-        pakHeader += pakHeaderMaker(x[0], x[1], offset - (32 * y))
+        pakHeader += pakHeaderMaker(x[0], x[1], offset - (32 * y), songname)
         while len(x[0]) % 32 != 0:
             x[0] += toBytes(0, 1)
             # print(len(x[0]))
@@ -88,13 +114,20 @@ def main(midBytes, toAdd):
 if __name__ == "__main__":
     # toAdd = "D:\GitHub\Guitar-Hero-III-Tools\MIDQBgen\greengrassreal.mid.qb.xen"
     toAdd = sys.argv[1]
+    if "-songname" in sys.argv:
+        songname = sys.argv[sys.argv.index("-songname")+1]
+    else:
+        songname = False
     pakfiles = []
     for root, dirs, files in os.walk(toAdd, topdown = False):
         for name in files:
-            with open(os.path.join(root, name), 'rb') as f:
+            fullpath = os.path.join(root, name)
+            with open(fullpath, 'rb') as f:
                 x = f.read()
-            pakfiles.append([x, name if not name.endswith(".xen") else name[:-4]])
+            item_name = fullpath[len(toAdd)+1:]
+            # raise Exception
+            pakfiles.append([x, item_name if not item_name.endswith(".xen") else item_name[:-4]])
             # print(os.path.join(root, name)[len(toAdd)+1:])
-    pak_file = pakMaker(pakfiles)
+    pak_file = pakMaker(pakfiles, songname)
     with open("output.pak.xen", 'wb') as f:
         f.write(pak_file)
