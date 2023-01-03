@@ -59,7 +59,7 @@ def manual_input():
         elif main_menu == 6:
             singer_dict = {
                 "1": "gha_singer",
-                "2": "steve_singer",
+                "2": "steve",
                 "3": "dmc",
                 "4": "gha_guitarist"
             }
