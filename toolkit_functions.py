@@ -370,7 +370,7 @@ def read_qs_debug():
     for x in qs_debug.keys():
         qs_debug_qb[int(CRC.QBKey(x), 16)] = qs_debug[x]
     # curr_folder = os.getcwd()
-    with open("D:/GitHub/Guitar-Hero-III-Tools/conversion_files/qs_e.txt", encoding="utf-16-le") as f:
+    with open(f"{root_folder}\\conversion_files\\qs_e.txt", encoding="utf-16-le") as f:
         qs_text = f.readlines()
     for x in qs_text:
         quoted_text = ""
@@ -1788,6 +1788,53 @@ def read_gh5_note(note_bin, drum_mode=False):
             raise Exception
     return note_file_dict
 
+def read_gh5_perf(perf_bin, song_name):
+    perf_file = BytesIO(perf_bin)
+    read_int = lambda a=4, note=perf_file: int.from_bytes(note.read(a), "big")
+    dbg = lambda check: PAKExtract.pull_dbg_name(check)
+    anim_name = {}
+    for x in ["female", "male"]:
+        for y in ["", "_alt"]:
+            struct_name = f"car_{x}{y}_anim_struct_{song_name}"
+            anim_name[hex(int(QBKey(struct_name),16))] = struct_name
+    game = {0x40a001a3: "gh5"}
+    game_id = game[read_int()]
+    # assert game_id == "gh5"
+    dlc_id = dbg(read_int())
+    entries = read_int()
+    file_type = dbg(read_int())
+    assert file_type == "perf"
+    perf_file.seek(28)
+    perf_file_dict = {}
+    cameras = {}
+    for perf_entry in range(entries):
+        entry_id = dbg(read_int())
+        if entry_id in anim_name:
+            entry_id = anim_name[entry_id]
+        entry_count = read_int()
+        entry_type = dbg(read_int())
+        if "cameras" in entry_id:
+            cameras[entry_id] = []
+            for cuts in range(entry_count):
+                cut_time = read_int()
+                cut_length = read_int(2)
+                cut_note = read_int(1)
+                cameras[entry_id].append({"time": cut_time, "length": cut_length, "note": cut_note})
+        elif "gh5_actor_loops" in entry_type:
+            perf_file_dict[entry_id] = {"guitar": {}, "bass": {}, "drum": {}, "vocals": {}}
+            for anim in ["guitar", "bass", "drum", "vocals"]:
+                for anim_type in ["pak", "anim_set", "finger_anims", "fret_anims", "strum_anims", "facial_anims"]:
+                    if anim != "drum":
+                        perf_file_dict[entry_id][anim][anim_type] = dbg(read_int())
+                    else:
+                        dbg(read_int())
+            for anim_type in ["pak", "anim_set", "facial_anims"]:
+                    perf_file_dict[entry_id]["drum"][anim_type] = dbg(read_int())
+
+
+    return cameras, perf_file_dict
+
+
 
 def add_to_midi(notes, tempo_data, tpb, vox=False, anim=False):
     timeStart = 0
@@ -1878,6 +1925,10 @@ def create_mid_from_qb(pakmid):
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
     sections_dict = get_section_dict(qb_sections, file_headers_hex)
     instruments = 0
+    use_cams = 0
+    pull_struct = 0
+    struct_string = ""
+    anim_structs = []
     for files in song_files:
         if re.search(fr"songs/{song_name}\.mid\.qs$", files["file_name"], flags=re.IGNORECASE):
             qs_dict = get_qs_strings(files["file_data"])
@@ -1886,6 +1937,10 @@ def create_mid_from_qb(pakmid):
             instruments = read_gh5_note(convert_to_gh5_bin(note_file, "note", song_name))
         elif re.search(fr"songs/{song_name}\.note$", files["file_name"], flags=re.IGNORECASE):
             instruments = read_gh5_note(files["file_data"])
+        elif re.search(fr"songs/{song_name}\.perf$", files["file_name"], flags=re.IGNORECASE):
+            cameras, anim_structs = read_gh5_perf(files["file_data"], song_name)
+            use_cams = 1
+            pull_struct = 1
     try:
         timesig = sections_dict[f"{song_name}_timesig"].section_data
         fretbars = sections_dict[f"{song_name}_fretbars"].section_data
@@ -2005,7 +2060,27 @@ def create_mid_from_qb(pakmid):
         except Exception as E:
             raise E
 
-    return new_mid
+    if use_cams:
+        new_mid.add_track(f"cameras")
+        moments = cameras["momentcameras"]
+        autocuts = cameras["autocutcameras"]
+        anim_tracks = [new_mid.tracks[-1]] + add_to_midi(moments, tempo_data, tpb)
+        anim_tracks += add_to_midi(autocuts, tempo_data, tpb)
+        anim_notes_midi = mido.merge_tracks(anim_tracks)
+        new_mid.tracks[-1] = anim_notes_midi
+
+    if pull_struct:
+        for x in anim_structs.keys():
+            struct_string += f"{x}" + " = {\n"
+            for structs in anim_structs[x].keys():
+                struct_string += "\t" + f"{structs}" + " = {\n"
+                for anims in anim_structs[x][structs].keys():
+                    struct_string += "\t\t" + f"{anims}" + f" = {anim_structs[x][structs][anims]}" + "\n"
+                struct_string += "\t}\n"
+            struct_string += "}\n"
+
+
+    return new_mid, struct_string
 
 
 if __name__ == "__main__":

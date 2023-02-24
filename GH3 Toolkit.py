@@ -10,6 +10,7 @@ menu_options = ["make_mid - Create a PAK file for a custom song",
                 "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
                 "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
                 "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
+                "make_mid_file - Convert any Guitar Hero pak file (WT and 5) to a MIDI and pull anim loop data"
                 ]
 
 menu_mods = ["-o: Specify an output folder (default is the same folder as your input file)",
@@ -97,6 +98,18 @@ def manual_input():
                 print("Conversion failed!")
                 print(E)
                 input("\nPress any key to exit.")
+        elif main_menu == 9:
+            midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+            output = f'{os.path.dirname(midqb_file)}'
+            midname = os.path.basename(midqb_file)[:os.path.basename(midqb_file).find(".")]
+            print(midname)
+            mid_file, anim_string = create_mid_from_qb(midqb_file)
+            mid_file.save(f"{output}\\{midname}.mid")
+            if anim_string:
+                anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
+                with open(f"{output}\\{midname}_scripts.txt", "w") as f:
+                    f.write(anim_string)
+            input("\nComplete! Press any key to go to the main menu.")
         elif main_menu == 1337:
             input("Ha! Got ourselves a leet hacker over here ")
         elif main_menu < 0:
@@ -252,8 +265,12 @@ if __name__ == "__main__":
                 output = f'{os.path.dirname(input_file)}'
             midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
             print(midname)
-            mid_file = create_mid_from_qb(input_file)
+            mid_file, anim_string = create_mid_from_qb(input_file)
             mid_file.save(f"{output}\\{midname}.mid")
+            if anim_string:
+                anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
+                with open(f"{output}\\{midname}_scripts.txt", "w") as f:
+                    f.write(anim_string)
         elif sys.argv[1] == "make_wt_mid":
             qb_file = mid_qb.make_wt_qb(sys.argv[2])
         else:
