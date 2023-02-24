@@ -7,7 +7,7 @@ from CRC import QBKey
 import os
 import zlib
 
-def main(pak, folder, endian = "big"):
+def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit_mode = False):
     start = 0
     headers = []
     entries = 0
@@ -28,8 +28,11 @@ def main(pak, folder, endian = "big"):
             for y, x in enumerate(pakHeader):
                 z, start = readFourBytes(pak, start, endian)
                 if x == "offset":
-                    rel_offset = (32*(entries))
-                    setattr(headers[-1], x, z + rel_offset)
+                    if wor_mode:
+                        setattr(headers[-1], x, z + pak_header_size)
+                    else:
+                        rel_offset = (32*(entries))
+                        setattr(headers[-1], x, z + rel_offset)
                     # print(z, rel_offset, z + rel_offset)
                 else:
                     if x in checksums:
@@ -39,13 +42,21 @@ def main(pak, folder, endian = "big"):
                             try:
                                 pak_name = folder[folder.rfind("\\") + 1:folder.rfind(".pak")]
                                 song_name = pak_name[:pak_name.find("_")]
-                                test_full_name = f"songs/{song_name}.mid.qb"
-                                tests = [f"songs/{song_name}.mid.qb", f"songs/{song_name}_song_scripts.qb"]
+                                song_names = [song_name]
                                 tests_checksums = []
+                                if song_name.startswith("a") or song_name.startswith("b"):
+                                    song_names.append(song_name[1:])
+                                tests = []
+                                for checks in song_names:
+                                    cur_tests = [f"songs/{checks}.mid.qb", f"songs/{checks}_song_scripts.qb",
+                                             f"songs/{checks}.mid.qs", f"songs/{checks}.note", f"songs/{checks}.perf",
+                                             f"songs/{checks}.perf.xml.qb"]
+                                    tests += cur_tests
+
                                 for c in tests:
                                     tests_checksums.append(int(QBKey(c),16))
                                 if x == "full_name_checksum":
-                                    test_qb = int(QBKey(test_full_name),16)
+                                    # test_qb = int(QBKey(test_full_name),16)
                                     if z in tests_checksums:
                                         setattr(headers[-1], x, tests[tests_checksums.index(z)])
                                     else:
@@ -72,7 +83,10 @@ def main(pak, folder, endian = "big"):
     else:
         folder_offset = os.path.dirname(folder).find("DATA")+len("DATA\\")
         main_folder_name = os.path.dirname(folder[folder_offset:])
-    subfolder_name = os.path.splitext(os.path.basename(folder))
+    if toolkit_mode:
+        subfolder_name = ("",)
+    else:
+        subfolder_name = os.path.splitext(os.path.basename(folder))
 
 
     if "." in subfolder_name[0]:
@@ -80,30 +94,38 @@ def main(pak, folder, endian = "big"):
             subfolder_name = os.path.splitext(subfolder_name[0])
     # print(subfolder_name[0])
     files = []
+    qs_crc = [f"0x{QBKey(x)}" for x in qs_extensions]
     for x in headers:
         if x.extension != ".last":
             if not x.extension.startswith("0x"):
                 try:
                     split_ext = os.path.splitext(x.full_name_checksum)
-                    if split_ext[0].startswith("c:/gh3/data/"):
-                        split_0 = f"GH3\\{split_ext[0][len('c:/gh3/data/'):]}"
-                    elif split_ext[0].startswith("c:/gh3_xp1/data/"):
-                        split_0 = f"GH3_XP1\\{split_ext[0][len('c:/gh3/data/'):]}"
-                    else:
-                        split_0 = split_ext[0]
+                    split_0 = split_ext[0]
                     split_1 = split_ext[1]
                     dir_name = os.path.dirname(split_0)
                 except:
-                    split_0 = f"{hex(x.full_name_checksum)}"
+                    split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}"
                     dir_name = ""
             else:
-                split_0 = f"{hex(x.full_name_checksum)}."
-                setattr(x, "extension", x.extension[2:])
+                if type(x.full_name_checksum) == str:
+                    split_0, split_1 = os.path.splitext(x.full_name_checksum)
+                    if ".qs" in x.full_name_checksum:
+                        if x.extension in qs_crc:
+                            setattr(x, "extension", qs_extensions[qs_crc.index(x.extension)])
+                        else:
+                            setattr(x, "extension", split_1)
+                    else:
+                        setattr(x, "extension", split_1)
+                else:
+                    split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}."
+                    setattr(x, "extension", x.extension[2:])
                 dir_name = ""
 
-
             file_data = pak[x.offset:(x.offset+x.filesize)]
-            file_name = f'{main_folder_name}\\{subfolder_name[0]}\\{split_0}{x.extension}'
+            backslash = "\\"
+            main_out = (main_folder_name + backslash) if main_folder_name != "" else ""
+            sub_out = (subfolder_name[0] + backslash) if subfolder_name[0] != "" else ""
+            file_name = f'{main_out}{sub_out}{split_0}{x.extension}'
             files.append({"file_name" : file_name, "file_data": file_data})
 
 
@@ -144,12 +166,30 @@ def decompress_pak(comp, endian = "big"):
 def compress_pak(decomp):
 
     return
+
+def check_decomp(pak_file, file_path = "", output_decomp = True):
+    if pak_file[:4] == b'CHNK':  # Check for xbox compressed file
+        pak_file = decompress_pak(pak_file)
+        if output_decomp:
+            pak_decomp_out = f'.\\Decompressed PAKs\\{file_path}'
+            if not os.path.exists(pak_decomp_out):
+                dir_name = os.path.dirname(pak_decomp_out)
+                try:
+                    os.makedirs(dir_name)
+                except:
+                    pass
+                with open(pak_decomp_out, 'wb') as write_file:
+                    write_file.write(pak_file)
+    return pak_file
+
 def extract_paks():
     pabs = []
     paks = []
     filepaths = []
     filepaths_pab = []
     pak_type = 0
+    wor_mode = 0
+    header_size = 0
     for root, dirs, files in os.walk(f".\\input PAK"):
         for f in files:
             filename = f"{root}\\{f}"
@@ -168,35 +208,29 @@ def extract_paks():
                 paks.append(level_2[0])
                 filepaths.append(filename)
 
-    """print(paks)
-    print(filepaths)
-    print(pabs)"""
     for y, x in enumerate(paks):
+        curr_file = os.path.basename(filepaths[y])
+        print(f"Processing {curr_file}")
         if x in pabs:
-            print(f"Processing {os.path.basename(filepaths[y])}")
             with open(filepaths_pab[pabs.index(x)], 'rb') as f:
-                pab_file = f.read()
-            with open(filepaths[y], 'rb') as f:
-                pak_file = f.read()
-            pak_file += pab_file
+                pab_file = check_decomp(f.read(), curr_file.replace(".pak.xen", ".pab.xen"))
         else:
-            print(f"Processing {os.path.basename(filepaths[y])}")
-            with open(filepaths[y], 'rb') as f:
-                pak_file = f.read()
-        if pak_file[:4] == b'CHNK': # Check for xbox compressed file
-            pak_file = decompress_pak(pak_file)
-            pak_decomp_out = f'.\\Decompressed PAKs\\{os.path.basename(filepaths[y])}'
-            if not os.path.exists(pak_decomp_out):
-                dir_name = os.path.dirname(pak_decomp_out)
-                try:
-                    os.makedirs(dir_name)
-                except:
-                    pass
-                with open(pak_decomp_out, 'wb') as write_file:
-                    write_file.write(pak_file)
-        files = main(pak_file, filepaths[y])
+            pab_file = b''
+        with open(filepaths[y], 'rb') as f:
+            pak_file = f.read()
+            if pak_file[:4] == b'CHNK':  # Check for WoR style PAK
+                pak_file = check_decomp(pak_file, curr_file)
+        first_file = int.from_bytes(pak_file[4:8], "big")
+        if first_file == 0:
+            wor_mode = 1
+            header_size = len(pak_file)
+        if len(pak_file) > first_file and pab_file and not wor_mode:
+            pak_file = pak_file[:first_file]
+        pak_file += pab_file
+
+        files = main(pak_file, filepaths[y], wor_mode = wor_mode, pak_header_size = header_size)
         for x in files:
-            output_file = f'.\\output\\PAK{x["file_name"]}.xen'
+            output_file = f'.\\output\\PAK\\{x["file_name"]}.xen'
             dir_name = os.path.dirname(output_file)
             try:
                 os.makedirs(dir_name)

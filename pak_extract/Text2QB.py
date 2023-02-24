@@ -1,8 +1,10 @@
+import sys
+sys.path.append("../")
+
 from CRC import QBKey as qb_key
 import struct
 from pak_definitions import console_lookup, console_endian, qbNodeHeaders
 import os
-import sys
 import re
 
 class qb_string:
@@ -366,7 +368,7 @@ def assign_types(sections, endian = "big", game = "GH3"):
         if type(x) == basic_data:
             if type(x.item_data) == struct_data:
                 x.set_type("Struct")
-                assign_types(x.item_data.data)
+                assign_types(x.item_data.data, endian = endian, game = game)
             elif type(x.item_data) == str:
                 x.set_type(find_type(x.item_data))
                 x.set_bin_data(assign_data(x.qb_type, x.item_data, endian = endian))
@@ -698,9 +700,7 @@ def strip_but_not_quotes(text_data):
 
     return text_data_alt, strings
 
-
-def main(line_items, console = "PC", endian = "big", game = "GH3"):
-
+def itemize_text(line_items, console = "PC", endian = "big", game = "GH3"):
     stripped_string, strings = strip_but_not_quotes(line_items)
     # Need to remove all strings so that when it's stripped, any double/triple/etc. spaces remain
     stripped_string = " ".join(stripped_string.split()).replace(" = ", " ")
@@ -713,7 +713,12 @@ def main(line_items, console = "PC", endian = "big", game = "GH3"):
         return b''
     to_parse = qb_string(stripped_string)
     qb_name, sections = parse_data(to_parse)
-    assign_types(sections, endian)
+    assign_types(sections, endian, game)
+    return qb_name, sections
+
+def main(line_items, console = "PC", endian = "big", game = "GH3"):
+
+    qb_name, sections = itemize_text(line_items, console, endian, game)
     # raise Exception
     qb_file = create_qb(sections, "Section", qb_name, endian, console, game)
 

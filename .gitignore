@@ -21,5 +21,7 @@ midqb_gen/midqb_gen*/
 pak_extract/pak_extract*/
 pak_extract/Input*/
 pak_extract/Decompressed PAKs*/
+pak_extract/test*/
 dbg_*.py
 compile-exe.bat
+Reaper Gen/

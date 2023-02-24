@@ -1,4 +1,4 @@
-from mido import tick2second as t2s
+from mido import tick2second as t2s, MidiTrack, MidiFile
 from midqb_classes import *
 import numpy as np
 from midqb_definitions import *
@@ -52,6 +52,18 @@ def midiProcessing(mid):
 def rollingAverage(x, y, z, a):  # x = prevTime, y = curTime, z = avgTempo, a = curTempo
     newTempo = ((x / y) * z) + (a * (y - x) / y)
     return newTempo
+
+def song_array(songMap):
+    songTime = []
+    songSeconds = []
+    songTempo = []
+    songAvgTempo = []
+    for x, y in enumerate(songMap):
+        songTime.append(y.time)
+        songSeconds.append(y.seconds)
+        songTempo.append(y.tempo)
+        songAvgTempo.append(y.avgTempo)
+    return songTime, songSeconds, songTempo, songAvgTempo
 
 
 def tempMap(mid):
@@ -425,7 +437,6 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
             "fretbars": fretbars, "leftHandAnims": leftHandAnims, "faceOffs": faceOffs, "cameras_notes": cameraNotes,
             "lightshow_notes": lightshowNotes, "lightshow": lightshowScripts}
 
-
 def makeMidQB(midQB, filename, headerDict, consoleType):
     QBItems = []
     qbFileHeader = b'\x1C\x08\x02\x04\x10\x04\x08\x0C\x0C\x08\x02\x04\x14\x02\x04\x0C\x10\x10\x0C\x00'
@@ -716,3 +727,48 @@ def makeMidQB(midQB, filename, headerDict, consoleType):
     fullqb += toBytes(0) + toBytes(filesize) + qbFileHeader + qbbytes
 
     return fullqb
+
+def make_wt_drum_anims(midi_track, tempo_data):
+    active_note = {}
+    drums_notes = {}
+    curr_time = 0
+    for event in midi_track:
+        curr_time += event.time
+        curr_secs = tempo_data.get_seconds(curr_time)  # Actually milliseconds
+        if "note" in event.type:
+            event_name = f"{event.note}-{event.channel}"
+            if event.type == "note_on" and event.velocity != 0:
+                active_note[event_name] = {"time": curr_secs, "note": event.note, "velocity": event.velocity}
+            else:
+                if event_name in active_note:
+                    new_note = active_note[event_name]
+                    new_note["length"] = curr_secs - new_note["time"]
+                    active_note.pop(event_name)
+                    velo_bin = bin(new_note["velocity"])[2:].zfill(8)
+                    midi_bin = bin(new_note["note"])[2:].zfill(8)
+                    len_bin = bin(new_note["length"])[2:].zfill(16)
+                    bin_val = int(velo_bin + midi_bin + len_bin, 2)
+                    if new_note["time"] in drums_notes:
+                        drums_notes[new_note["time"]].append(bin_val)
+                    else:
+                        drums_notes[new_note["time"]] = [bin_val]
+    drum_array = []
+    for x in sorted(drums_notes.keys()):
+        for y in drums_notes[x]:
+            drum_array += [x, y]
+    return drum_array
+
+def get_song_tempo_data(mid_file):
+    song_map = midiProcessing(mid_file)
+    tempo_data = MidiInsert(song_array(song_map))
+    tempo_data.set_seconds_array(np.array(tempo_data.songSeconds))
+    tempo_data.set_ticks_array(np.array(tempo_data.songTime))
+
+    return tempo_data
+def make_wt_qb(mid_file):
+    mid_file = MidiFile(mid_file)
+    tempo_data = get_song_tempo_data(mid_file)
+    for track in mid_file.tracks:
+        if track.name == "drums":
+            drum_anims = make_wt_drum_anims(track, tempo_data)
+    return

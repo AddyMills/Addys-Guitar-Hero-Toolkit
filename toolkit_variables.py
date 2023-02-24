@@ -136,3 +136,10 @@ gha_to_gh3 = {
     # Stagediver
     91: 117,
 }
+
+anim_struct = {
+        "guitar": {},
+        "bass": {},
+        "drum": {},
+        "vocals": {}
+    }

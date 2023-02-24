@@ -1,3 +1,5 @@
+import sys
+
 from toolkit_functions import *
 
 menu_options = ["make_mid - Create a PAK file for a custom song",
@@ -7,6 +9,7 @@ menu_options = ["make_mid - Create a PAK file for a custom song",
                 "midqb2mid - Convert a song PAK to a normal MIDI (Currently only camera and light events, no tempo map)",
                 "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
                 "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
+                "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
                 ]
 
 menu_mods = ["-o: Specify an output folder (default is the same folder as your input file)",
@@ -77,6 +80,23 @@ def manual_input():
             song_name, song_pak = convert_to_gh3(midqb_file, output)
             with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                 f.write(song_pak)
+        elif main_menu == 8:
+            midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+            output = f'{os.path.dirname(midqb_file)}'
+            new_name = randint(10000,1000000000)
+            print(f"DLC number for this file will be {new_name}\n")
+            new_name = f"dlc{new_name}"
+            print("Converting World Tour song to Guitar Hero 5")
+            try:
+                pak_data = convert_to_5(midqb_file, new_name)
+                pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
+                with open(output + f'\\{new_name}_song.pak.xen', 'wb') as f:
+                    f.write(pak_file)
+                input("\nComplete! Press any key to exit.")
+            except Exception as E:
+                print("Conversion failed!")
+                print(E)
+                input("\nPress any key to exit.")
         elif main_menu == 1337:
             input("Ha! Got ourselves a leet hacker over here ")
         elif main_menu < 0:
@@ -99,17 +119,24 @@ def print_instructions():
 
 
 if __name__ == "__main__":
-    print("Guitar Hero III Tools\n")
     if len(sys.argv) == 1:
-
+        print("Guitar Hero III Tools\n")
         begin_mode = input("No argument detected, did you want to use beginner mode? (Y/N) ")
         if begin_mode[0].lower() == "y":
             manual_input()
         else:
             print_instructions()
     else:
+        root_folder = os.path.realpath(os.path.dirname(__file__))
+        input_file = os.path.abspath(sys.argv[2])
+        if "-pak_name" in sys.argv:
+            pak_name = sys.argv[sys.argv.index("-pak_name") + 1]
+        if "-i" in sys.argv:
+            in_file = sys.argv[sys.argv.index("-i") + 1]
         if "-o" in sys.argv:
             output = sys.argv[sys.argv.index("-o") + 1]
+        if "-anim_pak" in sys.argv:
+            pak_name = sys.argv[sys.argv.index("-anim_pak") + 1]
         if '-hopo' in sys.argv:
             hopo = int(sys.argv[sys.argv.index("-hopo") + 1])
         else:
@@ -128,7 +155,7 @@ if __name__ == "__main__":
                 print("Error: No mid file found.")
                 # print_instructions()
         elif sys.argv[1] == "extract_pak":
-            pak_file = sys.argv[2].replace("\"", "")
+            pak_file = input_file.replace("\"", "")
             if pak_file.lower().endswith(".pak.xen"):
                 if "output" not in locals():
                     output = f'{os.path.dirname(pak_file)}\\extract'
@@ -136,7 +163,7 @@ if __name__ == "__main__":
             else:
                 print("Error: No PAK file found.")
         elif sys.argv[1] == "qb2text":
-            qb_file = sys.argv[2].replace("\"", "")
+            qb_file = input_file.replace("\"", "")
             if qb_file.lower().endswith(".qb"):
                 if "output" not in locals():
                     output = f'{os.path.dirname(qb_file)}'
@@ -144,7 +171,7 @@ if __name__ == "__main__":
             else:
                 print("Error: No QB file found.")
         elif sys.argv[1] == "text2qb":
-            text_file = sys.argv[2].replace("\"", "")
+            text_file = input_file.replace("\"", "")
             if text_file.lower().endswith(".txt"):
                 if "output" not in locals():
                     output = f'{os.path.dirname(text_file)}'
@@ -152,7 +179,7 @@ if __name__ == "__main__":
             else:
                 print("Error: No text file found.")
         elif sys.argv[1] == "midqb2mid":
-            midqb_file = sys.argv[2].replace("\"", "")
+            midqb_file = input_file.replace("\"", "")
             if "_song.pak" in midqb_file.lower():
                 if "output" not in locals():
                     output = f'{os.path.dirname(midqb_file)}'
@@ -160,17 +187,19 @@ if __name__ == "__main__":
             else:
                 print("Error: No song PAK file found.")
         elif sys.argv[1] == "convert_to_gh3":
-            midqb_file = sys.argv[2].replace("\"", "")
+            midqb_file = input_file.replace("\"", "")
             if "_song.pak" in midqb_file.lower():
                 if "output" not in locals():
                     output = f'{os.path.dirname(midqb_file)}'
-                song_name, song_pak = convert_to_gh3(midqb_file, output)
+                if "anim_pak" not in locals():
+                    anim_pak = ""
+                song_name, song_pak = convert_to_gh3(midqb_file, output, anim_pak = anim_pak)
                 with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                     f.write(song_pak)
             else:
                 print("Error: No song PAK file found.")
         elif sys.argv[1] == "convert_to_gha":
-            midqb_file = sys.argv[2].replace("\"", "")
+            midqb_file = input_file.replace("\"", "")
             if "_song.pak" in midqb_file.lower():
                 if "output" not in locals():
                     output = f'{os.path.dirname(midqb_file)}'
@@ -181,6 +210,52 @@ if __name__ == "__main__":
                     f.write(song_pak)
             else:
                 print("Error: No song PAK file found.")
+        elif sys.argv[1] == "convert_to_5":
+            midqb_file = input_file.replace("\"", "")
+            if "_song.pak" in midqb_file.lower():
+                if "output" not in locals():
+                    output = f'{os.path.dirname(midqb_file)}'
+                if "newname" not in locals():
+                    new_name = f"dlc{randint(10000,1000000000)}"
+                pak_data = convert_to_5(midqb_file, new_name)
+                pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
+                with open(output + f'\\b{new_name}_song.pak.xen', 'wb') as f:
+                    f.write(pak_file)
+
+        elif sys.argv[1] == "compile_pak":
+            if "in_file" not in locals():
+                in_file = f'{root_folder}\\midqb_gen\\Pak Input'
+            if "output" not in locals():
+                output = f'{in_file}\\..\\PAK compile'
+            if "pak_name" not in locals():
+                pak_name = 0
+            pak_data = []
+            for root, dirs, file in os.walk(in_file, topdown = False):
+                for name in file:
+                    to_add = os.path.join(root,name)
+                    if pak_name == 0:
+                        if ".mid.qb.xen" in to_add:
+                            pak_name = os.path.basename(to_add[len(in_file)+1:-11])
+                    with open(to_add, 'rb') as f:
+                        pak_data.append({"file_name": to_add[len(in_file)+1:], "file_data": f.read()})
+            pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], pak_name)
+            try:
+                os.makedirs(output)
+            except:
+                pass
+            with open(f"{output}\\{pak_name}.pak.xen", 'wb') as f:
+                f.write(pak_file)
+                    #print(os.path.join(root,name)[len(in_file)+1:])
+            # print()
+        elif sys.argv[1] == "make_mid_file":
+            if "output" not in locals():
+                output = f'{os.path.dirname(input_file)}'
+            midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
+            print(midname)
+            mid_file = create_mid_from_qb(input_file)
+            mid_file.save(f"{output}\\{midname}.mid")
+        elif sys.argv[1] == "make_wt_mid":
+            qb_file = mid_qb.make_wt_qb(sys.argv[2])
         else:
             print("No valid input found.\n")
             print_instructions()

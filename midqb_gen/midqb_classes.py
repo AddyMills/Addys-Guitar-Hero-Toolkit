@@ -1,4 +1,4 @@
-from mido import second2tick as s2t
+from mido import second2tick as s2t, tick2second as t2s
 from midqb_definitions import *
 from CRC import QBKey
 
@@ -259,6 +259,308 @@ class QBItem:
     def __str__(self):
         return f"QB Item {self.name}, type {self.node}, CRC {''.join('{:02x}'.format(x) for x in self.hexname)}"
 
+
 class rbVenueCut:
     def __init__(self):
         return
+
+class gh5_base_entry:
+    def __init__(self):
+        self.type = ""
+        self.entries = []
+        self.modulo = 1
+
+    def set_type(self, type):
+        self.type = type
+
+    def set_name(self, name):
+        self.name = name
+
+    def set_size(self, size):
+        self.size = size
+
+    def set_qb_string(self, qb):
+        self.qb_string = qb
+
+    def set_modulo(self, modulo):
+        self.modulo = modulo
+
+    def add_item(self, item):
+        if not item:
+            return
+        if type(item) == list:
+            if type(item[0]) == list:
+                for arrays in item:
+                    self.add_item(arrays)
+            else:
+                self.entries += item
+        else:
+            self.entries.append(item)
+
+    def process_vox(self, entry, qb_string, vox_name, size, modulo = 1):
+        self.add_item(entry)
+        self.set_name(vox_name)
+        self.set_qb_string(qb_string)
+        self.set_size(size)
+        self.modulo = modulo
+
+    def add_array_entry(self, stuff_array, endian = "big"):
+        if stuff_array == -1:
+            return
+        for entry in stuff_array:
+            adjust = 0
+            entry_time = entry[0]
+            if entry_time > 2**31:
+                adjust = entry_time - 2**32
+                entry_time = 0
+            entry_length = entry[1] + adjust
+            self.entries += [entry_time, entry_length]
+
+    def trunc_time(self, entry):
+        time_trunc = int(str(entry).zfill(6)[-2:])
+        if time_trunc == 99:
+            new_time = entry + 1
+        elif time_trunc >= 67:
+            new_time = entry - (time_trunc - 67)
+        elif time_trunc >= 33:
+            new_time = entry - (time_trunc - 33)
+        else:
+            new_time = entry - time_trunc
+        return new_time
+
+    def __str__(self):
+        return f"{self.type} array with {int(len(self.entries)/self.modulo)} items"
+
+class gh5_instrument_base(gh5_base_entry):
+    def __init__(self, instrument, diff):
+        super().__init__()
+        self.instrument = instrument
+        self.diff = diff
+        self.skip_warning = "0"
+        self.modulo = 2
+
+    def weird_note(self, time, issue = "Weird note"):
+        if self.skip_warning.lower() != "skip":
+            print(f"{issue} found in {self.diff} {self.instrument} at {time}!\nContact me!")
+            self.skip_warning = input("Should be fine to continue, though.\n\nPress Enter to continue or type 'skip' to skip future warnings: ")
+        return
+
+    def set_gh5_name(self):
+        self.name = self.instrument.lower() + self.diff.lower() + self.type.lower().replace(" ", "")
+
+    def __str__(self):
+        return f"{self.diff} {self.instrument} {self.type} node containing {int(len(self.entries)/2)} items."
+
+class gh5_star_note(gh5_instrument_base):
+    def __init__(self, instrument, diff):
+        super().__init__(instrument, diff)
+        self.type = "Star Power"
+        self.size = 6
+        self.qb_string = "gh5_star_note"
+        self.set_gh5_name()
+
+class gh5_special_note(gh5_instrument_base):
+
+    def __init__(self, instrument, diff, special_type):
+        super().__init__(instrument, diff)
+        self.type = special_type
+        self.size = 8
+        self.qb_string = f"gh5_{special_type.lower()}_note"
+        self.set_gh5_name()
+
+
+class gh5_instrument_note(gh5_instrument_base):
+    def __init__(self, instrument, diff):
+        super().__init__(instrument, diff)
+        self.type = "Instrument"
+        self.size = 8
+        self.qb_string = "gh5_instrument_note"
+        self.set_gh5_name()
+
+
+    def add_entry(self, note_array, endian = "big"):
+        if note_array == -1:
+            return
+        for enum, entry in enumerate(note_array):
+            if enum % 2 == 0: # Time value
+                self.entries.append(entry)
+            else:
+                prev_time = self.entries[-1]
+                value_bin = '{0:032b}'.format(entry)
+                green = value_bin[15]
+                red = value_bin[14]
+                yellow = value_bin[13]
+                blue = value_bin[12]
+                orange = value_bin[11]
+                purple = value_bin[10]
+                hopo_note = value_bin[9]
+                green_sus = value_bin[8] # Sus notes are also accents on drums
+                red_sus = value_bin[7]
+                yellow_sus = value_bin[6]
+                blue_sus = value_bin[5]
+                orange_sus = value_bin[4]
+                bit_3 = value_bin[3]
+                double_kick = value_bin[2] # 2x drum note
+                bit_1 = value_bin[1]
+                bit_0 = value_bin[0]
+                """if int(bit_3) or int(bit_1) or int(bit_0):
+                    self.weird_note(self.entries[-1])"""
+
+                length = value_bin[16:]
+                """if prev_time == 249727 and self.name == "drumsexpertinstrument":
+                    print("Test here")
+                if self.name == "drumsexpertinstrument":
+                    print("Test here")"""
+                if self.instrument == "Drums":
+                    """if not int(purple) and int(double_kick) and self.diff == "Expert":
+                        self.weird_note(self.entries[-1], "2x note, but no 1x note")"""
+                    notes_play = "0" + double_kick + purple + orange + blue + yellow + red + green
+                    """if self.diff == "Expert":
+                        print()"""
+                else:
+                    if int(double_kick):
+                        self.weird_note(self.entries[-1], "Double kick note in non-drums instrument")
+                    notes_play = "0"+hopo_note+purple+orange+blue+yellow+red+green
+                sus_notes = "000" + orange_sus + blue_sus + yellow_sus + red_sus + green_sus
+                bin_note = int(length+notes_play+sus_notes, 2)
+                self.entries.append(bin_note)
+                # raise Exception
+
+    def __str__(self):
+        return f"{self.diff} {self.instrument} {self.type} node containing {int(len(self.entries)/self.modulo)} items."
+
+class gh5_cameras(gh5_base_entry):
+    def __init__(self, convert = "gh5"):
+        super().__init__()
+        self.type = "Camera"
+        self.autocut = []
+        self.moment = []
+        self.modulo = 3
+        self.time_change = 0
+        self.orig_time = 0
+        self.sec_cam = 99
+        self.convert = convert
+
+
+    def add_entry(self, note_array, endian = "big"):
+        for enum, entry in enumerate(note_array):
+            if enum % 2 == 0: # Time value
+                time_trunc = int(str(entry).zfill(6)[-2:])
+                new_time = self.trunc_time(entry)
+                self.autocut.append(new_time)
+                self.orig_time = entry
+                self.time_change = entry - new_time
+                # self.autocut.append(entry)
+            else:
+
+                prev_time = self.autocut[-1]
+                value_bin = '{0:032b}'.format(entry)
+                velocity = value_bin[0:8]
+                midi_note = value_bin[8:16]
+                length = value_bin[16:]
+
+                velocity_val = int(velocity, 2)
+                midi_note_val = int(midi_note, 2)
+                if self.convert == "gh5":
+                    if midi_note_val >= 110: # This is the "debug face cam" in GH5/BH/WoR resulting in an extreme closeup
+                        self.autocut.pop()
+                        continue # Since there are no post-process effects in GH5/BH/WoR, these will get deleted
+                    if midi_note_val in range(40, 42):
+                        print(f"Unsupported note {midi_note_val} found at {self.autocut[-1]}. Swapping cut for orbit")
+                        midi_note_val = 74
+                length_val_orig = int(length, 2)
+                new_time = self.trunc_time(self.orig_time + length_val_orig)
+                length_val = self.trunc_time(new_time - prev_time)
+                # print()
+                if midi_note_val < 7 or midi_note_val >= 90:
+                    self.moment += [self.autocut[-1], length_val, midi_note_val]
+                    self.autocut.pop()
+                elif midi_note_val in range(33,37):
+                    self.moment += [prev_time, length_val, midi_note_val]
+                    self.autocut += [length_val, gh5_camera_dict[midi_note_val]]
+                else:
+                    self.autocut += [length_val, midi_note_val]
+
+    def create_cam_dict(self):
+        self.auto_dict = {}
+        self.moment_dict = {}
+        self.moment_cuts_used = []
+        time = 0
+        for count, x in enumerate(self.autocut):
+            if count % 3 == 0:
+                time = x
+            elif count % 3 != 1:
+                if not time in self.auto_dict:
+                    self.auto_dict[time] = x
+                else:
+                    self.auto_dict[time] = [self.auto_dict[time]]
+                    self.auto_dict[time].append(x)
+
+        for count, x in enumerate(self.moment):
+            if count % 3 == 0:
+                time = x
+            elif count % 3 != 1:
+                if not time in self.moment_dict:
+                    self.moment_dict[time] = x
+                else:
+                    self.moment_dict[time] = [self.moment_dict[time]]
+                    self.moment_dict[time].append(x)
+                if x not in self.moment_cuts_used:
+                    self.moment_cuts_used.append(x)
+
+    def set_secondary_cam(self, sec_cam):
+        self.sec_cam = sec_cam
+        new_moment = []
+        for enum, moment in enumerate(self.moment):
+            if enum % 3 == 2:
+                if moment == 99:
+                    new_moment.append(sec_cam)
+                else:
+                    new_moment.append(moment)
+            else:
+                new_moment.append(moment)
+        self.moment = new_moment
+
+
+    def __str__(self):
+        return f"{self.type} array with {int(len(self.autocut)/self.modulo)} autocut and {int(len(self.moment)/self.modulo)} moment items"
+
+class gh5_band_clip:
+    def __init__(self, player, start, anim):
+        self.name = player
+        self.startnode = start
+        self.anim = anim
+        self.startframe = 0
+        self.endframe = 0
+        self.timefactor = 1
+        if player == "guitarist" or player == "bassist":
+            self.ik_targetl = "guitar"
+            self.ik_targetr = "guitar"
+        else:
+            self.ik_targetl = "slave"
+            self.ik_targetr = "slave"
+        self.strum = "TRUE"
+        self.fret = "TRUE"
+        self.chord = "TRUE"
+
+class MidiInsert:
+    def __init__(self, data_tuple, tpb = 480):
+        self.songTime = data_tuple[0]
+        self.songSeconds = data_tuple[1]
+        self.songTempo = data_tuple[2]
+        self.songAvgTempo = data_tuple[3]
+        self.tpb = tpb
+
+    def set_seconds_array(self, seconds):
+        self.secondsArray = seconds
+
+    def set_ticks_array(self, ticks):
+        self.ticksArray = ticks
+
+    def get_seconds(self, curr_time):
+        map_lower = self.ticksArray[self.ticksArray <= curr_time].max()
+        arrIndex = self.songTime.index(map_lower)
+        ticksFromChange = curr_time - self.songTime[arrIndex]
+        timeFromChange = t2s(ticksFromChange, self.tpb, self.songTempo[arrIndex])
+        true_time = timeFromChange + self.songSeconds[arrIndex]
+        return int(round(true_time, 3)*1000)

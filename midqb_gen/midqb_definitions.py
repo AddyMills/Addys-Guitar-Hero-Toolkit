@@ -48,7 +48,7 @@ charts = ["song", "Star", "StarBattleMode"]
 others = ["_FaceOffP1", "_FaceOffP2", "_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
           "_scripts_notes", "_anim_notes", "_triggers_notes", "_cameras_notes", "_lightshow_notes", "_crowd_notes",
           "_drums_notes", "_performance_notes", "_scripts", "_anim", "_triggers", "_cameras", "_lightshow", "_crowd",
-          "_drums", "_performance"]
+          "_drums", "_performance", "_facial", "_localized_strings"]
 
 play_events = ["[mellow]", "[play]", "[intense]", "[play_solo]"]
 idle_events = ["[idle]", "[idle_realtime]", "[idle_intense]"]
@@ -64,6 +64,13 @@ valid_camera_notes_gha = []
 
 valid_lightshow_notes = [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 56, 57, 58, 60, 61, 62, 63, 64, 65,
                          66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76]
+
+gh5_camera_dict = { # This dict is to grab camera cuts to add to a gh5-style perf file
+    33: 8,
+    34: 13,
+    35: 23,
+    36: 18
+}
 
 anims_guitar = []  # MIDI Note 127-118 is Lead left hand anims, 110-101 is Bass/Rhythm left hand notes
 stances = ["Stance_A", "Stance_B", "Stance_C", "jump", "special", "Solo", "kick"]

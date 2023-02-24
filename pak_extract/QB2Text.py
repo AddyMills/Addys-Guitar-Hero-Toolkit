@@ -3,7 +3,7 @@ from pak_functions import *
 from pak_classes import *
 import os
 import sys
-import CRC
+
 
 orig_stdout = sys.stdout
 
@@ -13,7 +13,7 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     qb_node_lookup = qb_type_lookup[console]
     # print(qb_node_lookup)
     qb_filesize = qb_file.getFilesize()
-
+    file_headers_hex = create_hex_headers(file_headers)
     node_type = lambda: read_node(qb_node_lookup, qb_file)
     read_int_bytes = lambda a = 4: qb_file.readBytes(a)
     read_dbg_bytes = lambda a = 4: get_dbg_name(qb_file, a)
@@ -21,103 +21,57 @@ def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     count = 0
     test_run = 0
     section_list = []
-    if test_run: # Set test_run to 1 to print more details and let you step through a qb file per section header if you wish
-        # Please see production code below for comments
-        while test_count != count:
-            while qb_file.getPosition() < qb_filesize:
-                section_header = ["id", "pak_name"]
-                section_header_2 = ["data_start", "next_item"]
-                section_entry = qb_section(node_type())
+    while qb_file.getPosition() < qb_filesize:
+        section_header = ["id", "pak_name"]
+        section_header_2 = ["data_start", "next_item"]
+        section_entry = qb_section(node_type())
+        if section_entry.section_type == "Unknown":
+            raise Exception
+        # Go through the section header above and generate the id and pak name
+        for x in section_header:
+            dbg_name = read_dbg_bytes()
+            if dbg_name.startswith("0x"):
+                if dbg_name in file_headers_hex.keys():
+                    dbg_name = file_headers_hex[dbg_name]
 
-                for x in section_header:
-                    if x == "id":
-                        dbg_name = read_dbg_bytes()
-                        if type(dbg_name) == int:
-                            if dbg_name in file_headers.values():
-                                dbg_name = list(file_headers.keys())[list(file_headers.values()).index(dbg_name)]
-                    else:
-                        dbg_name = read_dbg_bytes()
-                        if type(dbg_name) == int:
-                            test_midname = f"songs/{file_name}.mid.qb"
-                            if dbg_name == int(CRC.QBKey(test_midname), 16):
-                                dbg_name = test_midname
 
-                    setattr(section_entry, f"section_{x}", dbg_name)
-                    # raise Exception
-                for x in section_header_2:
-                    setattr(section_entry, f"section_{x}", read_int_bytes())
-                if section_entry.section_type != "SectionScript":
-                    setattr(section_entry, f"section_data",
-                            process_section_data(qb_file, section_entry, qb_node_lookup))
-                    print(qb_file.getPosition())
-                    print(vars(section_entry))
-                    section_list.append(section_entry)
-                else:
-                    script_crc = hex(read_dbg_bytes())
-                    setattr(section_entry, "script_crc", script_crc)
-                    script_uncom_size = read_int_bytes()
-                    setattr(section_entry, "script_uncom_size", script_uncom_size)
-                    script_com_size = read_int_bytes()
-                    setattr(section_entry, "script_com_size", script_com_size)
-                    if script_com_size % 4 != 0:
-                        script_com_size += (4 - (script_com_size % 4))
-                    script_data = int.to_bytes(read_int_bytes(script_com_size), script_com_size, endian)
-                    setattr(section_entry, f"section_data", script_data)
-                    section_list.append(section_entry)
-        raise Exception
-    else: #Default code. Could probably put this in a function to reduce repetitive code, but I'm lazy to copy over the variables
-        while qb_file.getPosition() < qb_filesize:
-            section_header = ["id", "pak_name"]
-            section_header_2 = ["data_start", "next_item"]
-            section_entry = qb_section(node_type())
-            if section_entry.section_type == "Unknown":
-                raise Exception
-            # Go through the section header above and generate the id and pak name
-            for x in section_header:
-                if x == "id":
-                    dbg_name = read_dbg_bytes()
-                    if type(dbg_name) == int:
-                        if dbg_name in file_headers.values():
-                            dbg_name = list(file_headers.keys())[list(file_headers.values()).index(dbg_name)]
-                else:
-                    dbg_name = read_dbg_bytes()
-                    if type(dbg_name) == int:
-                        test_midname = f"songs/{file_name}.mid.qb"
-                        if dbg_name == int(CRC.QBKey(test_midname),16):
-                            dbg_name = test_midname
+            setattr(section_entry, f"section_{x}", dbg_name)
+            """if "performance" in dbg_name:
+                print()"""
+            # raise Exception
+        for x in section_header_2:
+            setattr(section_entry, f"section_{x}", read_int_bytes())
+        if section_entry.section_type != "SectionScript":
+            section_start = qb_file.getPosition()
+            setattr(section_entry, f"section_data", process_section_data(qb_file, section_entry, qb_node_lookup))
+            if section_entry.section_type.endswith("Struct"):
+                section_entry.make_dict()
+                #print()
+            # print(qb_file.getPosition())
+            # print(vars(section_entry))
+            section_list.append(section_entry)
+        else:
+            script_data = bytearray()
+            script_crc = int.to_bytes(read_int_bytes(), 4, endian)
+            setattr(section_entry, "script_crc", script_crc)
+            script_uncom_size = read_int_bytes()
+            setattr(section_entry, "script_uncom_size", script_uncom_size)
+            script_com_size = read_int_bytes()
+            setattr(section_entry, "script_com_size", script_com_size)
+            script_data += script_crc
+            script_data += int.to_bytes(script_uncom_size, 4, endian)
+            script_data += int.to_bytes(script_com_size, 4, endian)
 
-                setattr(section_entry, f"section_{x}", dbg_name)
-                # raise Exception
-            for x in section_header_2:
-                setattr(section_entry, f"section_{x}", read_int_bytes())
-            if section_entry.section_type != "SectionScript":
-                section_start = qb_file.getPosition()
-                setattr(section_entry, f"section_data", process_section_data(qb_file, section_entry, qb_node_lookup))
-                # print(qb_file.getPosition())
-                # print(vars(section_entry))
-                section_list.append(section_entry)
-            else:
-                script_data = bytearray()
-                script_crc = int.to_bytes(read_int_bytes(), 4, endian)
-                setattr(section_entry, "script_crc", script_crc)
-                script_uncom_size = read_int_bytes()
-                setattr(section_entry, "script_uncom_size", script_uncom_size)
-                script_com_size = read_int_bytes()
-                setattr(section_entry, "script_com_size", script_com_size)
-                script_data += script_crc
-                script_data += int.to_bytes(script_uncom_size, 4, endian)
-                script_data += int.to_bytes(script_com_size, 4, endian)
+            script_data += int.to_bytes(read_int_bytes(script_com_size), script_com_size, endian)
+            if script_com_size % 4 != 0:
+                offset_amount = (4 - (script_com_size % 4))
+                read_int_bytes(offset_amount)
+            script_data = " ".join("{:02x}".format(c) for c in script_data)
+            setattr(section_entry, f"section_data", script_data)
 
-                script_data += int.to_bytes(read_int_bytes(script_com_size), script_com_size, endian)
-                if script_com_size % 4 != 0:
-                    offset_amount = (4 - (script_com_size % 4))
-                    read_int_bytes(offset_amount)
-                script_data = " ".join("{:02x}".format(c) for c in script_data)
-                setattr(section_entry, f"section_data", script_data)
-
-                section_list.append(section_entry)
-            count += 1
-                # raise Exception
+            section_list.append(section_entry)
+        count += 1
+            # raise Exception
 
 
     # raise Exception
@@ -169,10 +123,14 @@ if __name__ == "__main__":
             continue
         elif file.endswith(".mid.qb.xen") or file.endswith("mid.qb.ps2"):
             file_name = file[:-11]
-            file_headers = createHeaderDict(file_name)
         else:
             file_name = file[:-7]
-            file_headers = createHeaderDict(file_name)
+        file_name_head = file_name
+        if "." in file_name_head:
+            file_name_head = file_name_head[:file_name_head.find(".")]
+        if file_name_head.endswith("song_scripts"):
+            file_name_head = file_name_head[:file_name_head.find("_song_scripts")]
+        file_headers = createHeaderDict(file_name_head)
         filename = os.path.join(directory, file)
         if file.endswith("xen"):
             console = "PC"

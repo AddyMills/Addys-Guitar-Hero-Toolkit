@@ -92,14 +92,27 @@ class qb_section:
         self.section_id = new_id
 
     def set_pak_name(self, pak_name):
-        self.pak_name = pak_name
+        self.section_pak_name = pak_name
 
     def set_data(self, qb_data):
         self.section_data = qb_data
 
+    def set_all(self, id, qb_data, pak_name):
+        self.set_new_id(id)
+        self.set_data(qb_data)
+        self.set_pak_name(pak_name)
+
     def set_array_node_type(self, node_type):
         self.array_node_type = node_type
         self.subarray_types = []
+        self.section_data = []
+
+    def swap_names(self, old_name, new_name):
+        for x in vars(self):
+            if type(getattr(self, x)) != str:
+                continue
+            if old_name in getattr(self, x):
+                setattr(self, x, getattr(self, x).replace(old_name, new_name))
 
     def make_empty(self):
         self.section_type = "SectionArray"
@@ -109,6 +122,23 @@ class qb_section:
         self.section_next_item = 0
         self.section_data = [0, 0]
         self.array_node_type = "Floats"
+
+    def make_dict(self):
+        if "SectionStruct" in self.section_type:
+            if type(self.section_data) == list:
+                self.data_dict = {}
+                for x in self.section_data:
+                    if x.data_type.endswith("Struct"):
+                        self.data_dict[x.data_id] = x.data_dict
+                    elif x.data_type.endswith("Array"):
+                        self.data_dict[x.data_id] = x.struct_data_array
+                    elif x.data_type.endswith("ItemString"):
+                        self.data_dict[x.data_id] = x.struct_data_string
+                    elif x.data_type.endswith("StringW"):
+                        self.data_dict[x.data_id] = x.struct_data_string_w
+                    else:
+                        self.data_dict[x.data_id] = x.data_value
+
 
 class array_item:
     def __init__(self, array_type, item_count, list_start):
@@ -137,12 +167,57 @@ class struct_item:
         self.data_id = data_id
         self.data_value = data_value
         self.next_item = next_item
+        self.data_dict = {}
+        if data_type == "StructItemStruct":
+            self.struct_data_struct = data_value
+        elif data_type == "StructItemString":
+            self.struct_data_string = data_value
+        elif data_type == "StructItemArray":
+            self.struct_data_array = data_value
+            self.struct_data_array_type = "ArrayStruct"
+            self.subarray_types = 0
 
     def __str__(self):
         if self.data_type == "StructItemStruct":
-            return
+            return f"{self.data_id} {self.data_dict}"
+        elif self.data_type == "StructItemArray":
+            return f"{self.data_type} {self.data_id} with {len(self.struct_data_array)} items"
         else:
             return f"{self.data_type} {self.data_value}"
+
+    def make_dict(self):
+        if "struct_data_struct" in self.__dict__:
+            if type(self.struct_data_struct) != struct_header:
+                for x in self.struct_data_struct:
+                    if x.data_type.endswith("Struct"):
+                        self.data_dict[x.data_id] = x.data_dict
+                    elif x.data_type.endswith("Array"):
+                        self.data_dict[x.data_id] = x.struct_data_array
+                    elif x.data_type.endswith("ItemString"):
+                        self.data_dict[x.data_id] = x.struct_data_string
+                    elif x.data_type.endswith("StringW"):
+                        self.data_dict[x.data_id] = x.struct_data_string_w
+                    else:
+                        self.data_dict[x.data_id] = x.data_value
+        elif self.data_type == "StructHeader":
+            if type(self.data_value) != struct_header:
+                for x in self.data_value:
+                    if x.data_type.endswith("Struct"):
+                        self.data_dict[x.data_id] = x.data_dict
+                    elif x.data_type.endswith("Array"):
+                        self.data_dict[x.data_id] = x.struct_data_array
+                    elif x.data_type.endswith("ItemString"):
+                        self.data_dict[x.data_id] = x.struct_data_string
+                    elif x.data_type.endswith("StringW"):
+                        self.data_dict[x.data_id] = x.struct_data_string_w
+                    else:
+                        self.data_dict[x.data_id] = x.data_value
+
+    def make_empty_array(self):
+        self.data_type = "StructItemArray"
+        self.data_value = [0]
+        self.struct_data_array = [0]
+        self.struct_data_array_type = "Floats"
 
     def set_string_w(self, stringw):
         self.struct_data_string_w = stringw

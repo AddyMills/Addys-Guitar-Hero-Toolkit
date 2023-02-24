@@ -1,15 +1,17 @@
 import sys
-sys.path.append("../")
 
+sys.path.append("../")
 
 from pak_classes import *
 from pak_definitions import *
 from dbg import checksum_dbg as dbg
+from copy import deepcopy
 
 import CRC
 import struct
 
 float_round = 15
+
 
 def readFourBytes(file, start, endian="big"):
     x = []
@@ -38,18 +40,54 @@ def createHeaderDict(filename):
                         headers.append(f"{filename}_{y}_{z}")
                     else:
                         headers.append(f"{filename}_{x}_{y}_{z}")
+        for z in face_off:
+            if x == "":
+                headers.append(f"{filename}_{z}")
+            else:
+                headers.append(f"{filename}_{x}_{z}")
 
     for x in others:
         headers.append(f"{filename}{x}")
 
+    for x in others_wt:
+        headers.append(f"{filename}{x}")
+
+    for x in markers_wt:
+        headers.append(f"{filename}{x}")
+
+    for x in drum_wt:
+        for y in difficulties:
+            headers.append(f"{filename}_{y}_{x}")
+
+    for x in vocals_wt:
+        headers.append(f"{filename}_vocals{x}")
+
+    headers.append(f"{filename}_song_vocals")
+    headers.append(f"{filename}_lyrics")
+
+    for x in songs_folder:
+        headers.append(f"songs/{filename}{x}")
+
+    for x in anims_pre:
+        headers.append(f"{x}{filename}")
+
     for x in headers:
-        headerDict[x] = int(CRC.QBKey(x), 16)
+        int_val = int(CRC.QBKey(x), 16)
+        headerDict[x] = hex(int_val)
 
     return headerDict
 
 
+def create_hex_headers(header_dict):
+    file_headers_hex = {}
+    for x in header_dict.keys():
+        file_headers_hex[header_dict[x]] = x
+    return file_headers_hex
+
+
 def read_node(node_lookup, qb_file):
     return qb_node_list[node_lookup.index(qb_file.readBytes())]
+
 
 def pull_dbg_name(reference):
     try:
@@ -71,7 +109,8 @@ def read_qb_item(qb_file, item_type):
     read_int_bytes = lambda a=4: qb_file.readBytes(a)
     read_dbg_bytes = lambda a=4: get_dbg_name(qb_file, a)
     endian = qb_file.endian
-    unpack_floats = lambda: struct.unpack(f'{">" if endian == "big" else "<"}f', int.to_bytes(read_int_bytes(), 4, endian))[0]
+    unpack_floats = lambda: \
+        struct.unpack(f'{">" if endian == "big" else "<"}f', int.to_bytes(read_int_bytes(), 4, endian))[0]
     if item_type.endswith("QbKey"):
         return read_dbg_bytes()
     elif "QbKeyString" in item_type:
@@ -190,6 +229,7 @@ def process_array_data(qb_file, array_node, qb_node_lookup):
                 subarray_data = process_struct_data(qb_file, array_struct_header, qb_node_lookup)
                 # array_data += subarray_data
                 array_data.append(struct_item("StructHeader", 0, subarray_data, 0))
+                array_data[-1].make_dict()
                 # raise Exception
         else:
             item_start = read_int_bytes()
@@ -197,7 +237,7 @@ def process_array_data(qb_file, array_node, qb_node_lookup):
             array_struct_header = struct_header(node_type(), read_int_bytes())
             subarray_data = process_struct_data(qb_file, array_struct_header, qb_node_lookup)
             array_data.append(struct_item("StructHeader", 0, subarray_data, 0))
-
+            array_data[-1].make_dict()
     elif array_type in simple_array_types:
         """if array_node.item_count == 1:
             print("Simple array with one item")"""
@@ -280,21 +320,24 @@ def process_section_data(qb_file, section_entry, qb_node_lookup):
             item_count = read_int_bytes()
             if item_count == 1:
                 list_start = 0
-                section_data, subarrays = process_array_data(qb_file, array_item(array_node_type, item_count, list_start),
-                                                  qb_node_lookup)
+                section_data, subarrays = process_array_data(qb_file,
+                                                             array_item(array_node_type, item_count, list_start),
+                                                             qb_node_lookup)
             else:
                 list_start = read_int_bytes()
-                section_data, subarrays = process_array_data(qb_file, array_item(array_node_type, item_count, list_start),
-                                              qb_node_lookup)
+                section_data, subarrays = process_array_data(qb_file,
+                                                             array_item(array_node_type, item_count, list_start),
+                                                             qb_node_lookup)
             setattr(section_entry, "subarray_types", subarrays)
     elif section_type.endswith("Struct"):
         section_data = process_struct_data(qb_file, struct_header(node_type(), read_int_bytes()), qb_node_lookup)
     elif section_type.endswith("Integer"):
         # raise Exception
         section_data = section_entry.section_data_start
-        return section_data-(2**32) if section_data >= 2**31 else section_data
+        return section_data - (2 ** 32) if section_data >= 2 ** 31 else section_data
     elif section_type.endswith("Float"):
-        section_data = round(struct.unpack(f'{">" if endian == "big" else "<"}f',int.to_bytes(section_entry.section_data_start, 4, endian))[0], float_round)
+        section_data = round(struct.unpack(f'{">" if endian == "big" else "<"}f',
+                                           int.to_bytes(section_entry.section_data_start, 4, endian))[0], float_round)
         return section_data
     elif "QbKey" in section_type:
         section_data = pull_dbg_name(section_entry.section_data_start)
@@ -315,12 +358,13 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
         struct_data = []
         while True:
             data_type = node_type()
-            if data_type.startswith("Array"): # This is impossible, so it must be a new type of qb
+            if data_type.startswith("Array"):  # This is impossible, so it must be a new type of qb
                 struct_node.set_game("GHWT")
                 data_type = "StructItem" + data_type[5:]
             else:
                 struct_node.set_game("GH3")
             data_id = read_dbg_bytes()
+            """Test Here"""
             if "String" in data_type:
                 if not data_type.endswith("QbKeyString"):
                     data_value = read_int_bytes()
@@ -338,6 +382,7 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                 struct_data_struct = process_struct_data(qb_file, struct_header(node_type(), read_int_bytes()),
                                                          qb_node_lookup)
                 setattr(struct_entry, "struct_data_struct", struct_data_struct)
+                struct_entry.make_dict()
                 # raise Exception
             elif data_type[len("StructItem"):] == "String":
                 struct_data_string = read_qb_item(qb_file, data_type)
@@ -350,7 +395,7 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                 setattr(struct_entry, "struct_data_string_w", struct_data_string_w)
             elif data_type[len("StructItem"):] == "Float":
                 byte_order = qb_file.getEndian()
-                float_bytes = int.to_bytes(int(struct_entry.data_value,16), 4, byte_order)
+                float_bytes = int.to_bytes(int(struct_entry.data_value, 16), 4, byte_order)
                 setattr(struct_entry, "data_value",
                         round(struct.unpack(f'{">" if byte_order == "big" else "<"}f', float_bytes)[0], float_round))
             elif data_type[len("StructItem"):] == "Array":
@@ -361,7 +406,8 @@ def process_struct_data(qb_file, struct_node, qb_node_lookup):
                     # raise Exception
                 else:
                     array_list_start = read_int_bytes()
-                struct_array, subarrays = process_array_data(qb_file, array_item(array_node_type, array_item_count, array_list_start), qb_node_lookup)
+                struct_array, subarrays = process_array_data(qb_file, array_item(array_node_type, array_item_count,
+                                                                                 array_list_start), qb_node_lookup)
                 setattr(struct_entry, "struct_data_array", struct_array)
                 setattr(struct_entry, "struct_data_array_type", array_node_type)
                 setattr(struct_entry, "subarray_types", subarrays)
@@ -400,7 +446,7 @@ def print_struct_item(item, indent=0):
             print(f"{indent_val}{id_string}", f'= {"w" if item.data_type.endswith("StringW") else ""}\"{item_data}\"')
         else:
             if item.data_type == "StructItemArray":
-                #print_array_data()
+                # print_array_data()
                 array_type = item.struct_data_array_type
                 print_array_data(item.struct_data_array, array_type, item.subarray_types, id_string, indent)
             elif "FloatsX" in item.data_type:
@@ -409,7 +455,7 @@ def print_struct_item(item, indent=0):
             elif "Integer" in item.data_type:
                 int_val = item.data_value
                 print(f"{indent_val}{id_string}",
-                      f'= {int_val-(2**32) if int_val >= 2**31 else int_val}')
+                      f'= {int_val - (2 ** 32) if int_val >= 2 ** 31 else int_val}')
             elif "QbKey" in item.data_type:
                 """if item.data_type.endswith('Qs'):
                     print("Qs test")"""
@@ -426,7 +472,8 @@ def print_struct_item(item, indent=0):
 
     return
 
-def print_array_data(array_data, array_type, sub_array = "", id_string = "", indent = 0):
+
+def print_array_data(array_data, array_type, sub_array="", id_string="", indent=0):
     indent_val = '\t' * indent
     if sub_array == 1 and not array_type.endswith("Struct"):
         array_string = f"{indent_val}["
@@ -450,9 +497,10 @@ def print_array_data(array_data, array_type, sub_array = "", id_string = "", ind
                         print_struct_item(items, indent + 3)
                     print(f"{indent_val}\t\t" + "}" + f"{',' if s_count != len(array_data[y]) - 1 else ''}")
                 print(f"{indent_val}\t]" + f"{',' if y != len(array_data) - 1 else ''}")
-                #raise Exception
+                # raise Exception
             else:
-                print(f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
+                print(
+                    f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     elif array_type.endswith("Struct"):
         """if sub_array:
@@ -473,7 +521,7 @@ def print_array_data(array_data, array_type, sub_array = "", id_string = "", ind
     elif len(array_data) > 3:
         print(f"{indent_val}{id_string} = [")
         for y, x in enumerate(array_data):
-            print(f"{indent_val}\t{output_item_data(x, array_type)}{',' if y != len(array_data)-1 else ''}")
+            print(f"{indent_val}\t{output_item_data(x, array_type)}{',' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     else:
         array_string = ""
@@ -484,6 +532,7 @@ def print_array_data(array_data, array_type, sub_array = "", id_string = "", ind
         print(f"{indent_val}{id_string}", f"= [{array_string}]")
 
     return
+
 
 def print_struct_data(struct, indent=0):
     if "struct_data_struct" in vars(struct):
@@ -500,7 +549,8 @@ def print_struct_data(struct, indent=0):
 
     return
 
-def output_item_data(item_data, item_type, endian = "big"):
+
+def output_item_data(item_data, item_type, endian="big"):
     simple_data = ["Float"]
     for x in simple_data:
         if item_type.endswith(x):
@@ -528,9 +578,11 @@ def output_item_data(item_data, item_type, endian = "big"):
     else:
         raise Exception(f"Unknown data type {item_type} found. Please bug me to implement it!")
 
-def find_array_type(array_data):
 
+def find_array_type(array_data):
     return
+
+
 def print_qb_text_file(mid_sections):
     print(f"qb_file = {mid_sections[0].section_pak_name}")
     for x in mid_sections:
@@ -559,10 +611,123 @@ def print_qb_text_file(mid_sections):
         elif "FloatsX" in x.section_type:
             print(f"{x.section_id} = {x.section_data}")
         elif "QbKey" in x.section_type:
-            print(f"{x.section_id} = {'$' if x.section_type.endswith('String') else 'qbs(' if x.section_type.endswith('Qs') else ''}{x.section_data}{')' if x.section_type.endswith('Qs') else ''}")
+            print(
+                f"{x.section_id} = {'$' if x.section_type.endswith('String') else 'qbs(' if x.section_type.endswith('Qs') else ''}{x.section_data}{')' if x.section_type.endswith('Qs') else ''}")
         elif x.section_type == "SectionScript":
             print("script", f"{x.section_id} = \"{x.section_data}\"")
         else:
             raise Exception("Found a section type not yet supported. Please go bug me, AddyMills, to implement it!")
 
     return
+
+def new_facial_anim_gh5(time, instrument, face_type):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "name", instrument, 0))
+    params_list.append(struct_item("StructItemString", "fa_type", face_type, 0))
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_ChangeFacialAnims", 0)
+    time = struct_item("StructItemInteger", "time", time, 0)
+    facial_anim = struct_item("StructHeader", 0, [time, scr, params], 0)
+    return facial_anim
+
+def new_play_loop(time, instrument, anim_type=0):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "name", instrument, 0))
+    if anim_type:
+        params_list.append(struct_item("StructItemQbKey", "male", f"{anim_type}", 0))
+        params_list.append(struct_item("StructItemQbKey", "female", f"{anim_type}_F", 0))
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_PlayLoop", 0)
+    time = struct_item("StructItemInteger", "time", time, 0)
+    play_loop = struct_item("StructHeader", 0, [time, scr, params], 0)
+
+    return play_loop
+
+def new_play_clip(time, clip, start, end = 0):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "clip", clip, 0))
+    params_list.append(struct_item("StructItemInteger", "startframe", start, 0))
+    if end:
+        params_list.append(struct_item("StructItemInteger", "endframe", end, 0))
+    params_list.append(struct_item("StructItemInteger", "timefactor", 1, 0))
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_PlayClip", 0)
+    time = struct_item("StructItemInteger", "time", time, 0)
+    play_clip = struct_item("StructHeader", 0, [time, scr, params], 0)
+
+    return play_clip
+
+def camera_band_clip(cameras):
+    cameras_qb = []
+    for x in cameras:
+        slot = struct_item("StructItemInteger", "slot", x["slot"], 0)
+        name = struct_item("StructItemString", "name", x["name"], 0)
+        anim = struct_item("StructItemQbKey", "anim", x["anim"], 0)
+        cameras_qb.append(struct_item("StructHeader", 0, [slot, name, anim], 0))
+    camera_array = struct_item("StructItemArray", "cameras", cameras_qb, 0)
+    return camera_array
+
+
+def new_band_clip_gh5(char_class):
+    char_type = {"name": "StructItemQbKey", "startnode": "StructItemString", "anim": "StructItemQbKey",
+                 "startframe": "StructItemInteger", "endframe": "StructItemInteger", "timefactor": "StructItemInteger",
+                 "ik_targetl": "StructItemQbKey", "ik_targetr": "StructItemQbKey", "strum": "StructItemQbKey",
+                 "fret": "StructItemQbKey", "chord": "StructItemQbKey"}
+    char_array = []
+    for x in ["name", "startnode", "anim", "startframe", "endframe", "timefactor", "ik_targetl", "ik_targetr", "strum",
+              "fret", "chord"]:
+        if not getattr(char_class, x):
+            pass
+            """if x != "endframe" and x != "anim":
+                char_array.append(struct_item(char_type[x], x, getattr(char_class, x), 0))"""
+        else:
+            char_array.append(struct_item(char_type[x], x, getattr(char_class, x), 0))
+
+    return char_array
+
+
+
+# LZSS code
+
+RINGBUFFERSIZE = 4096
+MATCHLIMIT = 18
+THRESHOLD = 2
+
+
+def write_out(x, p_out):
+    p_out.append(x)
+    return p_out
+
+
+def read_into(p_in, decode_len):
+    if decode_len == 0:
+        return None, decode_len
+    decode_len -= 1
+    return p_in.pop(0), decode_len
+
+
+def decode_lzss(p_in, p_out, decode_len):
+    r = RINGBUFFERSIZE - MATCHLIMIT
+    flags = 0
+    while True:
+        if (flags >> 1) & 256 == 0:
+            c, decode_len = read_into(p_in, decode_len)
+            if c is None:
+                break
+            flags = c | 0xff00
+        if flags & 1:
+            c, decode_len = read_into(p_in, decode_len)
+            if c is None:
+                break
+            p_out = write_out(c, p_out)
+            r = (r + 1) % RINGBUFFERSIZE
+        else:
+            i, decode_len = read_into(p_in, decode_len)
+            j = p_in.pop(0)
+            i |= ((j & 0xf0) << 4)
+            j = (j & 0x0f) + THRESHOLD
+            for k in range(j + 1):
+                c = p_out[(i + k) % RINGBUFFERSIZE]
+                p_out = write_out(c, p_out)
+                r = (r + 1) % RINGBUFFERSIZE
+    return p_out

@@ -43,18 +43,17 @@ qbNodeHeaders = {
 }
 
 qb_node_list = ["Unknown", "SectionInteger", "SectionFloat", "SectionString", "SectionStringW", "SectionFloatsX2",
-               "SectionFloatsX3", "SectionScript", "SectionStruct", "SectionArray", "SectionQbKey",
-               "SectionQbKeyString", "SectionStringPointer", "SectionQbKeyStringQs", "ArrayInteger", "ArrayFloat",
-               "ArrayString", "ArrayStringW", "ArrayFloatsX2", "ArrayFloatsX3", "ArrayStruct", "ArrayArray",
-               "ArrayQbKey", "ArrayQbKeyString", "ArrayStringPointer", "ArrayQbKeyStringQs", "StructItemInteger",
-               "StructItemFloat", "StructItemString", "StructItemStringW", "StructItemFloatsX2", "StructItemFloatsX3",
-               "StructItemStruct", "StructItemArray", "StructItemQbKey", "StructItemQbKeyString",
-               "StructItemStringPointer", "StructItemQbKeyStringQs", "Floats", "StructHeader"]
+                "SectionFloatsX3", "SectionScript", "SectionStruct", "SectionArray", "SectionQbKey",
+                "SectionQbKeyString", "SectionStringPointer", "SectionQbKeyStringQs", "ArrayInteger", "ArrayFloat",
+                "ArrayString", "ArrayStringW", "ArrayFloatsX2", "ArrayFloatsX3", "ArrayStruct", "ArrayArray",
+                "ArrayQbKey", "ArrayQbKeyString", "ArrayStringPointer", "ArrayQbKeyStringQs", "StructItemInteger",
+                "StructItemFloat", "StructItemString", "StructItemStringW", "StructItemFloatsX2", "StructItemFloatsX3",
+                "StructItemStruct", "StructItemArray", "StructItemQbKey", "StructItemQbKeyString",
+                "StructItemStringPointer", "StructItemQbKeyStringQs", "Floats", "StructHeader"]
 
-simple_array_types = ["ArrayFloat", "ArrayQbKey","ArrayQbKeyString", "ArrayQbKeyStringQs"]
+simple_array_types = ["ArrayFloat", "ArrayQbKey", "ArrayQbKeyString", "ArrayQbKeyStringQs"]
 simple_struct_items = ["StructItemQbKeyString"]
 hard_struct_items = ["StructItemStruct"]
-
 
 qb_type_lookup = {
     "Wii": [0x00000000, 0x00200100, 0x00200200, 0x00200300, 0x00200400, 0x00200500, 0x00200600, 0x00200700, 0x00200A00,
@@ -106,10 +105,27 @@ console_endian = {
     "PC WPC": "little"
 }
 
-playableParts = ["", "rhythm", "guitarcoop", "rhythmcoop"]  # Blank one is for guitar in the headers
+playableParts = ["", "rhythm", "guitarcoop", "rhythmcoop", "drum", "aux"]  # Blank one is for guitar in the headers
 difficulties = ["Easy", "Medium", "Hard", "Expert"]
-charts = ["song", "Star", "StarBattleMode"]
-others = ["_FaceOffP1", "_FaceOffP2", "_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
+charts = ["song", "Star", "StarBattleMode", "Tapping", "WhammyController"]
+face_off = ["FaceOffP1", "FaceOffP2", "FaceOffStar"]
+others = ["_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
           "_scripts_notes", "_anim_notes", "_triggers_notes", "_cameras_notes", "_lightshow_notes", "_crowd_notes",
           "_drums_notes", "_performance_notes", "_scripts", "_anim", "_triggers", "_cameras", "_lightshow", "_crowd",
           "_drums", "_performance"]
+
+markers_wt = ["_guitar_markers", "_rhythm_markers", "_drum_markers"]
+
+others_wt = ["_facial", "_localized_strings", "_scriptevents", "_song_startup"]
+
+drum_wt = ["DrumFill", "DrumUnmute"]
+
+vocals_wt = ["_freeform", "_phrases", "_note_range", "_markers"]
+
+songs_folder = [f".mid.qb", f"_song_scripts.qb",
+                f".mid.qs", f".note", f".perf",
+                f".perf.xml.qb"]
+
+qs_extensions = [".qs.de", ".qs.en", ".qs.es", ".qs.fr", ".qs.it"]
+
+anims_pre = ["car_female_anim_struct_", "car_male_anim_struct_", "car_female_alt_anim_struct_", "car_male_alt_anim_struct_"]

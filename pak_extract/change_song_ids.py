@@ -3,9 +3,14 @@ This script automates converting a song's id to another id.
 It's kind of a special use case right now, but this will be updated for an easier conversion later.
 """
 import sys
+sys.path.append("../")
 sys.path.append("../create_audio")
-from PAKExtract import *
+sys.path.append("../midqb_gen")
+sys.path.append("../pak_extract")
+
 from create_audio.audio_functions import *
+from toolkit_functions import convert_to_5
+from midqb_gen import CreatePAK
 import os
 import time
 
@@ -58,6 +63,10 @@ if __name__ == "__main__":
     t0 = time.process_time()
     song_files = []
     filesfolder = sys.argv[1]
+    if "World Tour" in filesfolder:
+        simple_anim = True
+    else:
+        simple_anim = False
     with os.scandir(filesfolder) as songs:
         for x in songs:
             dlc_name = x.name.split(" - ")[0]
@@ -68,27 +77,38 @@ if __name__ == "__main__":
     new_file_root = "04 Re-Encrypted DLC Disk Files"
 
 
-
     for x in song_files:
-        dlc_ids = generate_ids(x[0])
         filepath = f"{x[1]}\\{old_file_root}"
         savepath = f"{x[1]}\\{new_file_root}"
+        pak_data = ""
+        pak_anim = ""
+        drum_anim = ""
         for y in os.listdir(f"{filepath}"):
             if os.path.isfile(f"{filepath}\\{y}"):
-                old_name = y.split("_")[0]
-                old_ids = generate_ids(old_name)
-                # raise Exception
-                print(f"Switch song id references in {old_name} to {x[0]}")
+                if "_song.pak.xen" in y.lower():
+                    pak_data = f"{filepath}\\{y}"
+                    old_name = y.split("_")[0]
+                    old_ids = generate_ids(old_name)
+                    # raise Exception
+                elif "_anim" in y.lower():
+                    pak_anim = f"{filepath}\\{y}"
+                elif ".mid" in y.lower():
+                    drum_anim = f"{filepath}\\{y}"
+                    print(f"MIDI File: {y} found.")
+                else:
+                    print(f"Unknown file {y} found. Skipping...")
+
+                """ Only for BH/GH5 style PAKs
                 with open(f"{filepath}\\{y}", 'rb') as f:
                     decomp_pak = f.read()
                     if decomp_pak[:4] == b"CHNK":
                         decomp_pak = decompress_pak(decomp_pak)
                 for i, z in enumerate(old_ids):
-                    decomp_pak = decomp_pak.replace(z, dlc_ids[i])
-                    # raise Exception
-                with open(f"{savepath}\\b{x[0].lower()}_song.pak.xen", 'wb') as f:
-                    f.write(decomp_pak)
+                    decomp_pak = decomp_pak.replace(z, dlc_ids[i])  
+                """
+
             else:
+                continue
                 folderpath = f"{filepath}\\{y}"
                 foldersavepath = f"{savepath}\\{y}"
                 for z in os.listdir(f"{folderpath}"):
@@ -114,6 +134,14 @@ if __name__ == "__main__":
                     with open(f"{foldersavepath}\\a{no_ext}.fsb.xen", 'wb') as f:
                         f.write(audio)
                     # raise Exception
+        if pak_data:
+            print(f"Switching song id references in {old_name} to {x[0]}")
+            pak_data = convert_to_5(pak_data.lower(), x[0], anim_pak = pak_anim, drum_anim = drum_anim, simple_anim = simple_anim)
+            pak_file = CreatePAK.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], x[0])
+            # raise Exception
+            with open(f"{savepath}\\b{x[0].lower()}_song.pak.xen", 'wb') as f:
+                f.write(pak_file)
+            print("\n")
     t1 = time.process_time()
     print(t1 - t0)
 
