@@ -1628,7 +1628,7 @@ def read_wt_event(events, lights=0, vh=0):
     return event_arr
 
 
-def set_note_type(note, accents):
+def set_note_type(note, accents, ghost = 0):
     note_type = {"green": 1 << 0,
                  "red": 1 << 1,
                  "yellow": 1 << 2,
@@ -1647,6 +1647,10 @@ def set_note_type(note, accents):
                 note_dict["velocity"] = 127
             else:
                 note_dict["velocity"] = 100
+            note_entry.append(note_dict)
+        elif value & ghost:
+            note_dict = {"colour": colour}
+            note_dict["velocity"] = 1
             note_entry.append(note_dict)
 
     return note_entry
@@ -1725,11 +1729,14 @@ def read_gh5_note(note_bin, drum_mode=False):
             for entry in range(entry_count):
                 entry_time = read_int()
                 entry_length = read_int(2)
-                entry_note = set_note_type(read_int(1), read_int(1))
+                drum_note = read_int(1)
+                drum_accent = read_int(1)
                 if entry_type == "gh6_expert_drum_note":
-                    unk = read_int(1)
-                    if unk:
-                        print(f"Unknown flag found for Expert drums at {entry_time}.")
+                    drum_ghost = read_int(1)
+                    entry_note = set_note_type(drum_note, drum_accent, drum_ghost)
+
+                else:
+                    entry_note = set_note_type(drum_note, drum_accent)
                 for note in entry_note:
                     note_file_dict[entry_id].append({"time": entry_time, "length": entry_length,
                                                      "note": base_notes[note["colour"]] + (12 * note_mult[entry_diff]),
@@ -1821,15 +1828,19 @@ def read_gh5_perf(perf_bin, song_name):
                 cut_note = read_int(1)
                 cameras[entry_id].append({"time": cut_time, "length": cut_length, "note": cut_note})
         elif "gh5_actor_loops" in entry_type:
-            perf_file_dict[entry_id] = {"guitar": {}, "bass": {}, "drum": {}, "vocals": {}}
-            for anim in ["guitar", "bass", "drum", "vocals"]:
-                for anim_type in ["pak", "anim_set", "finger_anims", "fret_anims", "strum_anims", "facial_anims"]:
-                    if anim != "drum":
-                        perf_file_dict[entry_id][anim][anim_type] = dbg(read_int())
-                    else:
-                        dbg(read_int())
-            for anim_type in ["pak", "anim_set", "facial_anims"]:
-                    perf_file_dict[entry_id]["drum"][anim_type] = dbg(read_int())
+            try:
+                perf_file_dict[entry_id] = {"guitar": {}, "bass": {}, "drum": {}, "vocals": {}}
+                for anim in ["guitar", "bass", "vocals", "drum"]:
+                    for anim_type in ["pak", "anim_set", "finger_anims", "fret_anims", "strum_anims", "facial_anims"]:
+                        if anim != "drum":
+                            perf_file_dict[entry_id][anim][anim_type] = dbg(read_int())
+                        else:
+                            dbg(read_int())
+                for anim_type in ["pak", "anim_set", "facial_anims"]:
+                        perf_file_dict[entry_id]["drum"][anim_type] = dbg(read_int())
+            except:
+                perf_file_dict = {}
+                break
 
 
     return cameras, perf_file_dict
@@ -2069,7 +2080,7 @@ def create_mid_from_qb(pakmid):
         anim_notes_midi = mido.merge_tracks(anim_tracks)
         new_mid.tracks[-1] = anim_notes_midi
 
-    if pull_struct:
+    if pull_struct and anim_structs:
         for x in anim_structs.keys():
             struct_string += f"{x}" + " = {\n"
             for structs in anim_structs[x].keys():
