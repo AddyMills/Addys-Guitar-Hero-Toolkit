@@ -470,7 +470,7 @@ def perf_2_bin(perf_file, song_name):
 def convert_to_gh5_bin(raw_file, file_type, song_name="", **kwargs):
     if file_type == "note" or file_type == "perf":
         header = bytearray()
-        header += b'\x40\xa0\x00\xd2'  # Game id
+        header += b'\x40\xa0\x00\xd2' if file_type == "note" else b'\x40\xa0\x01\xa3'  # Game id
         header += qbkey_hex(song_name)  # DLC_id
         header += int.to_bytes(len(raw_file) if file_type == "note" else 6, 4, "big")  # Number of entries
         header += qbkey_hex(file_type)  # "Note" or "Perf" to hex
