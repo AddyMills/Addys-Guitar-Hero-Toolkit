@@ -55,7 +55,7 @@ def generate_ids(shortname):
         id_list.append(int.to_bytes(int(QBKey(f"{x}{shortname}"), 16), 4, "big"))
 
     for x in ids_song:
-        id_list.append(int.to_bytes(int(QBKey(f"songs\{shortname}{x}"), 16), 4, "big"))
+        id_list.append(int.to_bytes(int(QBKey(f"songs\\{shortname}{x}"), 16), 4, "big"))
 
     return id_list
 

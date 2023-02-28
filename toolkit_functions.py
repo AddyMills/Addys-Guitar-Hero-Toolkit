@@ -1797,6 +1797,7 @@ def read_gh5_note(note_bin, drum_mode=False):
 
 def read_gh5_perf(perf_bin, song_name):
     perf_file = BytesIO(perf_bin)
+    perf_size = perf_file.getbuffer().nbytes
     read_int = lambda a=4, note=perf_file: int.from_bytes(note.read(a), "big")
     dbg = lambda check: PAKExtract.pull_dbg_name(check)
     anim_name = {}
@@ -1828,6 +1829,8 @@ def read_gh5_perf(perf_bin, song_name):
                 cut_note = read_int(1)
                 cameras[entry_id].append({"time": cut_time, "length": cut_length, "note": cut_note})
         elif "gh5_actor_loops" in entry_type:
+            if "type" not in perf_file_dict.keys():
+                perf_file_dict["type"] = "gh5"
             try:
                 perf_file_dict[entry_id] = {"guitar": {}, "bass": {}, "drum": {}, "vocals": {}}
                 for anim in ["guitar", "bass", "vocals", "drum"]:
@@ -1841,6 +1844,24 @@ def read_gh5_perf(perf_bin, song_name):
             except:
                 perf_file_dict = {}
                 break
+        elif "gh6_actor_loops" in entry_type:
+            if "type" not in perf_file_dict.keys():
+                perf_file_dict["type"] = "gh6"
+            perf_file_dict[entry_id] = {"guitar": [], "bass": [], "vocals": [], "drum": [], "other": []}
+            curr_sect = 0
+            anim_loops = []
+            for actor in ["guitar", "bass", "vocals", "drum", "other"]:
+                for loop in range(50):
+                    curr_loop = read_int()
+                    if curr_loop == 0:
+                        if anim_loops:
+                            perf_file_dict[entry_id][actor] = anim_loops.copy()
+                            anim_loops = []
+                        continue
+                    else:
+                        anim_loops.append(dbg(curr_loop))
+            # perf_file_dict[entry_id] = anim_loops.copy()
+
 
 
     return cameras, perf_file_dict
@@ -2081,14 +2102,26 @@ def create_mid_from_qb(pakmid):
         new_mid.tracks[-1] = anim_notes_midi
 
     if pull_struct and anim_structs:
-        for x in anim_structs.keys():
-            struct_string += f"{x}" + " = {\n"
-            for structs in anim_structs[x].keys():
-                struct_string += "\t" + f"{structs}" + " = {\n"
-                for anims in anim_structs[x][structs].keys():
-                    struct_string += "\t\t" + f"{anims}" + f" = {anim_structs[x][structs][anims]}" + "\n"
-                struct_string += "\t}\n"
-            struct_string += "}\n"
+        if anim_structs["type"] == "gh5":
+            anim_structs.pop("type")
+            for x in anim_structs.keys():
+                struct_string += f"{x}" + " = {\n"
+                for structs in anim_structs[x].keys():
+                    struct_string += "\t" + f"{structs}" + " = {\n"
+                    for anims in anim_structs[x][structs].keys():
+                        struct_string += "\t\t" + f"{anims}" + f" = {anim_structs[x][structs][anims]}" + "\n"
+                    struct_string += "\t}\n"
+                struct_string += "}\n"
+        else:
+            anim_structs.pop("type")
+            for x in anim_structs.keys():
+                struct_string += f"{x}" + " = {\n"
+                for structs in anim_structs[x].keys():
+                    struct_string += "\t" + f"{structs}" + " = {\n"
+                    for anims in anim_structs[x][structs]:
+                        struct_string += "\t\t" + f"{anims}" + "\n"
+                    struct_string += "\t}\n"
+                struct_string += "}\n"
 
 
     return new_mid, struct_string
