@@ -61,6 +61,7 @@ gha_to_gh3 = {
     14: 84,
     15: 86,
     # Drummer Cameras
+    17: 100,
     18: 100,
     19: 92,
     20: 92,
@@ -138,8 +139,49 @@ gha_to_gh3 = {
 }
 
 anim_struct = {
-        "guitar": {},
-        "bass": {},
-        "drum": {},
-        "vocals": {}
-    }
+    "guitar": {},
+    "bass": {},
+    "drum": {},
+    "vocals": {}
+}
+
+allowed_anims_gh3 = [
+    "band_playsimpleanim",
+    "band_playanim",
+    "band_playidle",
+    "band_playfacialanim",
+    "band_setstrumstyle",
+    "band_changestance",
+    "band_stopstrumming",
+    "band_enablearms",
+    "band_disablearms",
+    "band_setposition",
+    "band_disablemovement",
+    "band_enablemovement",
+    "band_walktonode",
+    "band_turntoface",
+    "band_rotatetofacenode",
+    "band_facenode",
+    "band_faceaudience",
+    "band_playattackanim",
+    "band_playresponseanim",
+    "bassist_should_use_guitarist_commands",
+    "crowd_startlighters",
+    "crowd_stoplighters",
+    "crowd_stagediver_hide",
+    "crowd_stagediver_jump"
+]
+
+allowed_anims_gha = [
+    "band_forcetostance",
+    "band_movetonode",
+    "band_movetostartnode"
+]
+
+gha_play_anims = ["BackPlay", "Somersault"]
+gha_anim_swaps = {
+    "kneesolo": "solo",
+    "somersault": "special",
+    "backplay": "jump",
+    "joeperryspin": "special",
+}

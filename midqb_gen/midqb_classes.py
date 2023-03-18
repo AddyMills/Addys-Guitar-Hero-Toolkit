@@ -32,10 +32,12 @@ class Note:  # Every note will be its own class to determine what kind of chord 
             self.length = length
 
     def setForcing(self, hopo = 170, tbp = 480, hmxmode = 1):
+        value = self.getValue()
         if self.prev_note == 0:
             return
-
-        value = self.getValue()
+        if value == self.prev_note.getValue():
+            self.force = 0
+            return
         if value not in single_notes:
             return
         if self.prev_note.getValue() not in single_notes:

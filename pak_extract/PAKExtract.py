@@ -118,7 +118,7 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
                         setattr(x, "extension", split_1)
                 else:
                     split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}."
-                    setattr(x, "extension", x.extension[2:])
+
                 dir_name = ""
 
             file_data = pak[x.offset:(x.offset+x.filesize)]
@@ -187,12 +187,14 @@ def extract_paks():
     paks = []
     filepaths = []
     filepaths_pab = []
+    
     pak_type = 0
     wor_mode = 0
     header_size = 0
     for root, dirs, files in os.walk(f".\\input PAK"):
         for f in files:
-            filename = f"{root}\\{f}"
+            filename = f"{root}\\{f}".lower()
+            name_check = [filename.endswith(".pak.xen"), filename.endswith(".pak.ps3")]
             level_1 = os.path.splitext(os.path.basename(filename))
             level_2 = os.path.splitext(level_1[0])
             if pak_type == 0:
@@ -203,7 +205,7 @@ def extract_paks():
                 filepaths_pab.append(filename)
                 # print(f"{level_2[1]}{level_1[1]}")
             elif "pak." in filename:
-                if not filename.endswith(".pak.xen"):
+                if not any(name_check):
                     continue
                 paks.append(level_2[0])
                 filepaths.append(filename)

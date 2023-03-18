@@ -685,6 +685,18 @@ def new_band_clip_gh5(char_class):
 
     return char_array
 
+def new_stance_gh3(time, name, stance):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "name", name, 0))
+    params_list.append(struct_item("StructItemQbKey", "stance", stance, 0))
+
+    time = struct_item("StructItemInteger", "time", time, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_ChangeStance", 0)
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+
+    new_stance = struct_item("StructHeader", 0, [time, scr, params], 0)
+    return new_stance
+
 
 
 # LZSS code

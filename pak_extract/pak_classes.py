@@ -213,6 +213,24 @@ class struct_item:
                     else:
                         self.data_dict[x.data_id] = x.data_value
 
+    def reprocess_dict(self):
+        for ind, item in enumerate(self.data_dict):
+            if self.data_type == 'StructHeader':
+                curr_data = self.data_value[ind]
+            elif self.data_type == 'StructItemStruct':
+                curr_data = self.struct_data_struct[ind]
+            else:
+                raise Exception("Data Type not yet implemented for reprocessing. Please contact me")
+            data_check = curr_data.data_type
+            if data_check == 'StructItemInteger' or data_check == 'StructItemQbKey':
+                if self.data_dict[item] != curr_data.data_value:
+                    curr_data.data_value = self.data_dict[item]
+            elif type(self.data_dict[item]) == dict:
+                curr_data.reprocess_dict()
+            else:
+                raise Exception("Data Type not yet implemented for reprocessing. Please contact me")
+        # print()
+
     def make_empty_array(self):
         self.data_type = "StructItemArray"
         self.data_value = [0]

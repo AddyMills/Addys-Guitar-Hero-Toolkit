@@ -9,17 +9,21 @@ from CRC import QBKey
 import binascii
 
 toBytes = lambda a, b=4: a.to_bytes(b, "big")
+footer = toBytes(int(("AB" * 4) + ("00" * 12) + ("AB" * 496), 16), 512)
 
 def pakHeaderMaker(pakbytes, pakname, offset, context = False):
     pakname = pakname.lower().replace("/", "\\").replace(".xen","")
     local_strings = [".en", ".de", ".fr", ".it", ".es"]
     qb_name, extension = os.path.splitext(pakname)
+
     if extension in local_strings:
         extension = qb_name[-3:] + extension
         qb_name = qb_name[:-3]
         headerext = toBytes(int(QBKey(extension), 16))
         # raise Exception
     else:
+        if ".0x" in extension:
+            extension = extension[1:]
         headerext = toBytes(int(QBKey(extension), 16))
     # raise Exception
     startoffset = toBytes(offset)
@@ -81,7 +85,7 @@ def pakHeaderMaker(pakbytes, pakname, offset, context = False):
     # print(binascii.hexlify(header, ' ', 1))
     return header
 
-def pakMaker(pakfiles, songname = False):
+def pakMaker(pakfiles, songname = False, split_head = False):
     pakHeader = bytearray()
     offset = 4096 + (4096 * trunc(len(pakfiles)/128))
     files = []
@@ -104,22 +108,33 @@ def pakMaker(pakfiles, songname = False):
         pakHeader += toBytes(0)
     pakHeader += toBytes(int("897ABB4A6AF98ED1", 16), 8) # Always is this. No idea what the strings are pre-checksum
     pakHeader += toBytes(0, 8)
+
     # Pad out the pak Header to 4096. Could technically be larger than 4096, but unlikely for songs
-    while len(pakHeader) % 4096 != 0:
-        pakHeader += toBytes(0, 1)
+    if len(pakHeader) % 4096 != 0:
+        pakHeader += b'\x00' * (4096 - (len(pakHeader) % 4096))
+
     # Create actual PAK file
     pakFile = bytearray()
-    pakFile += pakHeader
-    # Write each padded file to the PAK
-    for x in files:
-        pakFile += x
-
-    # Write the last entry, plus pad out the PAK file to the % 512 bytes
-    pakFile += toBytes(int(("AB" * 4) + ("00" * 12) + ("AB" * 496), 16), 512)
+    pabFile = bytearray()
     # print(len(pakFile))
-
+    pakFile += pakHeader
         # pakHeader += pakHeaderMaker(x[0], x[1], offset)
-    return pakFile
+    if not split_head:
+
+        # Write each padded file to the PAK
+        for x in files:
+            pakFile += x
+
+        # Write the last entry, plus pad out the PAK file to the % 512 bytes
+        pakFile += footer
+        return pakFile
+    else:
+        for x in files:
+            pabFile += x
+
+        # Write the last entry, plus pad out the PAK file to the % 512 bytes
+        pabFile += footer
+        return pakFile, pabFile
 
 
 def main(midBytes, toAdd):
@@ -133,6 +148,7 @@ def main(midBytes, toAdd):
 
     return
 
+
 if __name__ == "__main__":
     # toAdd = "D:\GitHub\Guitar-Hero-III-Tools\MIDQBgen\greengrassreal.mid.qb.xen"
     root_folder = os.path.realpath(os.path.dirname(__file__))
@@ -142,19 +158,29 @@ if __name__ == "__main__":
         pak_name = sys.argv[sys.argv.index("-pak_name") + 1]
     else:
         pak_name = False
+    if "-split" in sys.argv:
+        split = True
+    else:
+        split = False
     pak_data = []
     for root, dirs, files in os.walk(to_add, topdown = False):
         for name in files:
             fullpath = os.path.join(root, name)
-            if not pak_name:
-                if ".mid.qb.xen" in fullpath:
-                    pak_name = os.path.basename(fullpath[len(to_add) + 1:-11])
             with open(fullpath, 'rb') as f:
                 x = f.read()
             item_name = fullpath[len(to_add) + 1:]
             # raise Exception
             pak_data.append([x, item_name if not item_name.endswith(".xen") else item_name[:-4]])
             # print(os.path.join(root, name)[len(toAdd)+1:])
-    pak_file = pakMaker(pak_data, pak_name)
-    with open(f"{output}\\{'b' if 'dlc' in str(pak_name) else ''}{pak_name if pak_name else 'output'}{'_song' if 'dlc' in str(pak_name) else ''}.pak.xen", 'wb') as f:
-        f.write(pak_file)
+
+    filename = f"{output}\\{'b' if 'dlc' in str(pak_name) else ''}{pak_name if pak_name else 'output'}{'_song' if 'dlc' in str(pak_name) else ''}"
+    if not split:
+        pak_file = pakMaker(pak_data, pak_name, split)
+        with open(f"{filename}.pak.xen", 'wb') as f:
+            f.write(pak_file)
+    else:
+        pak_file, pab_file = pakMaker(pak_data, pak_name, split)
+        with open(f"{filename}.pak.xen", 'wb') as f:
+            f.write(pak_file)
+        with open(f"{filename}.pab.xen", 'wb') as f:
+            f.write(pab_file)

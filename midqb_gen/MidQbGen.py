@@ -21,7 +21,7 @@ def make_mid(midfile, hopo, filename = "", consoleType = 1):
     midQB = makeMidQB(midParsed, filename, headerDict, consoleType)
     """with open(f"{filename}_song.mid.qb", 'wb') as f:
         f.write(midQB)"""
-    pakFile = pakMaker([[midQB, f"{filename}.mid.qb"]])
+    pakFile = pakMaker([[midQB, f"songs\\{filename}.mid.qb"]])
 
     return pakFile, filename
 

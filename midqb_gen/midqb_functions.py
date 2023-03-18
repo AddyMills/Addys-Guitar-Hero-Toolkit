@@ -200,6 +200,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
             "Hard": {"force_on": 0, "force_off": 0},
             "Expert": {"force_on": 0, "force_off": 0}
         }
+
         try:
             instrument = playTracksDict[track.name]
         except:
@@ -217,6 +218,8 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                 if x.type == 'text':
                     # print(msg, timeSec)
                     if x.text.startswith("[section"):
+                        if x.text.startswith("[section_"):
+                            x.text = x.text.replace("_", " ", 1)
                         try:
                             markers.append(markerNode(timeSec, sections[x.text.split(" ")[1][:-1]].title()))
                         except:
@@ -227,16 +230,21 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                         except:
                             markers.append(markerNode(timeSec, x.text[1:-1].title()))
                     elif x.text == '[end]':
-                        endEvent = timeSec
+                        end_event_secs = timeSec
+                        end_event_ticks = time
                         break
             elif track.name == "GH3 VENUE":
                 if x.type == "note_on":
                     if x.note in valid_camera_notes_gh3:
                         if x.velocity != 0:
                             if len(cameraNotes) >= 1:
-                                cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
+                                camera_length = timeSec - cameraNotes[-1].time
+                                if camera_length > 0:
+                                    cameraNotes[-1].setLength(timeSec - cameraNotes[-1].time)
+                                else:
+                                    continue
                             cameraNotes.append(AnimNote(timeSec, x.note))
-                    if x.note in valid_lightshow_notes:
+                    elif x.note in valid_lightshow_notes:
                         if x.velocity != 0:
                             lightshowNotes.append(AnimNote(timeSec, x.note))
                 elif x.type == "text":
@@ -395,10 +403,10 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
                     y.setForcing(hopoThreshold, mid.ticks_per_beat, hmxmode)
 
     # print(playableQB)
-    if not "endEvent" in locals():
+    if not "end_event_secs" in locals():
         raise Exception("Invalid MIDI: No [end] event found. Cannot parse MIDI.")
     if cameraNotes:
-        cameraNotes[-1].setLength(endEvent - cameraNotes[-1].time)
+        cameraNotes[-1].setLength(end_event_secs - cameraNotes[-1].time)
     time = 0
     currTS = 0
     numer = timeSigs[currTS].numerator
@@ -406,7 +414,7 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
     # print(numer, denom, timeSigs[currTS].time)
     # print(timeSigs[0])
     currTS += 1
-    while time < endEvent:
+    while time < end_event_ticks:
         currChange = changes[len(ticksArray[ticksArray <= time]) - 1]  # time, tempo, avgTempo
         timeSec = timeInSecs(currChange, mid, time)
         try:
@@ -423,6 +431,9 @@ def parseGH3QB(mid, hopoThreshold, hmxmode = 1, spNote=116):
         # print(time, timeSec)
         fretbars.append(timeSec)
         time += fretbarDistance
+
+
+    # print(fretbars[-1])
 
     for x in playableQB:
         for i, y in enumerate(playableQB[x]):

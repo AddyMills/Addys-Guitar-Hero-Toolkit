@@ -105,7 +105,9 @@ def read_gh3(ska_file):
         if info_size != 0:
             trans_sizes[x] = info_size
     ska_dict["quat_sizes"] = quat_sizes
+    # ska_dict["quat_total"] = sum(quat_sizes.values())
     ska_dict["trans_sizes"] = trans_sizes
+    # ska_dict["trans_total"] = sum(trans_sizes.values())
     ska_dict["bone_range_low"] = sorted(quat_sizes.keys())[0]
     ska_dict["quats"] = ska_file.data[ska_dict["quat_pos"]:ska_dict["trans_pos"]]
     ska_dict["trans"] = ska_file.data[ska_dict["trans_pos"]:ska_dict["bonesize_quat_pos"]]
