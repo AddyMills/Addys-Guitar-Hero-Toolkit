@@ -26,6 +26,10 @@ from mido import MidiFile, MidiTrack, second2tick as s2t, Message, MetaMessage
 """from random import randint
 from create_audio import audio_functions"""
 
+orig_std = sys.stdout
+
+def set_std_out(loc):
+    sys.stdout = loc
 
 def round_time(entry):
     time_trunc = int(str(entry).zfill(6)[-2:])
@@ -94,12 +98,18 @@ def get_track_type(track_name):
 
 
 def pak2mid(pakmid, song_name):
-    with open(pakmid, 'rb') as pak:
-        mid_bytes = pak.read()
-    mid_bytes = PAKExtract.check_decomp(mid_bytes, output_decomp=False)
+    if pakmid.lower().endswith(".mid"):
+        with open(os.devnull, "w") as fake:
+            set_std_out(fake)
+            mid_bytes, song_name = output_mid_gh3(pakmid, 170)
+        set_std_out(orig_std)
+    else:
+        with open(pakmid, 'rb') as pak:
+            mid_bytes = pak.read()
+        mid_bytes = PAKExtract.check_decomp(mid_bytes, output_decomp=False)
     song_files = PAKExtract.main(mid_bytes, f"{song_name}_song.pak", toolkit_mode=True)
     song_names = [song_name]
-    starts = ["a", "b"]
+    starts = ["a", "b", "c"]
     if song_name[0] in starts:
         song_names.append(song_name[1:])
     for x in song_files:
@@ -336,13 +346,13 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gh3_sin
 
 
 def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_singer"]):
-    if not "_song.pak" in pakmid:
-        warning = input(
-            "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
-        if not warning.lower().startswith("y"):
-            return -1
-
-    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
+    if "_song.pak" in pakmid:
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
+    elif ".mid" in pakmid:
+        print("MIDI file found for GHA conversion.")
+        print("This tool cannot convert directly to GHA yet.")
+        print("Converting to GH3 first.")
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find(".mid")]
 
     track_types = []
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
@@ -371,11 +381,12 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_sin
             rhythm_parts.append(rhythm_section)
 
     # Swap camera cuts
-    for x in sections_dict[f"{song_name}_cameras_notes"].section_data:
-        if type(gh3_to_gha[x[1]]) == list:
-            x[1] = random.choice(gh3_to_gha[x[1]])
-        else:
-            x[1] = gh3_to_gha[x[1]]
+    if not sections_dict[f"{song_name}_cameras_notes"].is_empty():
+        for x in sections_dict[f"{song_name}_cameras_notes"].section_data:
+            if type(gh3_to_gha[x[1]]) == list:
+                x[1] = random.choice(gh3_to_gha[x[1]])
+            else:
+                x[1] = gh3_to_gha[x[1]]
 
     # Add left-hand anims to rhythm player
     if sections_dict[f"{song_name}_anim_notes"].section_data != [0, 0]:
@@ -390,16 +401,17 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_sin
         sections_dict[f"{song_name}_anim_notes"].section_data = new_anims
         sections_dict[f"{song_name}_anim_notes"].subarray_types = new_anims_type
 
-    for x in sections_dict[f"{song_name}_markers"].section_data:
-        if x.data_value[1].data_type == "StructItemQbKeyString":
-            x.data_value[1].data_type = "StructItemStringW"
-            marker_hex = x.data_value[1].data_value
-            if "markers_text" in marker_hex:
-                new_marker = gh_sections[int(marker_hex[-8:], 16)]
-            else:
-                new_marker = "No Section Name"
-            x.data_value[1].set_string_w(new_marker)
-            x.data_value[1].data_value = new_marker
+    if not sections_dict[f"{song_name}_markers"].is_empty():
+        for x in sections_dict[f"{song_name}_markers"].section_data:
+            if x.data_value[1].data_type == "StructItemQbKeyString":
+                x.data_value[1].data_type = "StructItemStringW"
+                marker_hex = x.data_value[1].data_value
+                if "markers_text" in marker_hex:
+                    new_marker = gh_sections[int(marker_hex[-8:], 16)]
+                else:
+                    new_marker = "No Section Name"
+                x.data_value[1].set_string_w(new_marker)
+                x.data_value[1].data_value = new_marker
 
     # Add rhythm notes to total package
     gha_dict = {}
@@ -1545,12 +1557,10 @@ def extract_pak(pak_file, output=f'{os.getcwd()}\\PAK extract'):
     return
 
 
-def output_mid(mid_file, output="", hopo=170, filename=""):
+def output_mid_gh3(mid_file, hopo=170, filename=""):
     pak_file, filename = mid_qb.make_mid(mid_file, hopo, filename)
-    if output == "":
-        output = os.path.dirname(mid_file)
-    with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
-        f.write(pak_file)
+    return pak_file, filename
+
 
 
 def qb_to_text(file, output=f'{os.getcwd()}', game="GH3"):

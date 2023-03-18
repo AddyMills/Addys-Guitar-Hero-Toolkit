@@ -123,6 +123,11 @@ class qb_section:
         self.section_data = [0, 0]
         self.array_node_type = "Floats"
 
+    def is_empty(self):
+        if any([self.array_node_type == "Floats", self.section_data == [0, 0]]):
+            return True
+        return False
+
     def make_dict(self):
         if "SectionStruct" in self.section_type:
             if type(self.section_data) == list:

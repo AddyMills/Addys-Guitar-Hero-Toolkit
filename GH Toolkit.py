@@ -47,7 +47,7 @@ def manual_input():
                 mid_file = input(
                     "Drag in your mid file (make sure the name of the file is the internal name of your custom): ").replace(
                     "\"", "")
-                output_mid(mid_file)
+                output_mid_gh3(mid_file)
                 input("Done! Press Enter to go back to the Main Menu. ")
             elif main_menu == 2:
                 pak_file = input("Drag in your PAK file: ").replace("\"", "")
@@ -175,7 +175,11 @@ if __name__ == "__main__":
                     if "output" not in locals():
                         output = ""
                     # raise Exception
-                    output_mid(mid_file, output, hopo)
+                    pak_file, filename = output_mid_gh3(mid_file, hopo)
+                    if output == "":
+                        output = os.path.dirname(mid_file)
+                    with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
+                        f.write(pak_file)
                 else:
                     print("Error: No mid file found.")
                     # print_instructions()
@@ -217,7 +221,7 @@ if __name__ == "__main__":
                     print("Error: No song PAK file found.")
             elif sys.argv[1] == "convert_to_gha":
                 midqb_file = input_file.replace("\"", "")
-                if "_song.pak" in midqb_file.lower():
+                if "_song.pak" in midqb_file.lower() or ".mid" in midqb_file.lower():
                     if "output" not in locals():
                         output = f'{os.path.dirname(midqb_file)}'
                     if "singer" not in locals():
