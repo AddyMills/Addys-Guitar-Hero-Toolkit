@@ -23,8 +23,8 @@ from copy import deepcopy
 from CRC import qbkey_hex, QBKey
 from dbg import checksum_dbg
 from mido import MidiFile, MidiTrack, second2tick as s2t, Message, MetaMessage
-"""from random import randint
-from create_audio import audio_functions"""
+from random import randint
+# from create_audio import audio_functions
 
 orig_std = sys.stdout
 

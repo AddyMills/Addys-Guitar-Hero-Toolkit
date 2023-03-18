@@ -69,13 +69,20 @@ def manual_input():
                     "3": "dmc",
                     "4": "gha_guitarist"
                 }
-                midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+                midqb_file = input("Drag in your song PAK or MIDI file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
-                print("Choose your singer: ")
-                print("1.) Default\n2.) Steven Tyler\n3.) Run DMC\n4.) Joe Perry")
-                singer = singer_dict[input("Type in the number corresponding to your singer: ")]
+                if midqb_file.lower().endswith(".mid"):
+                    singer = singer_dict["1"]
+                else:
+                    print("Choose your singer: ")
+                    print("1.) Default\n2.) Steven Tyler\n3.) Run DMC\n4.) Joe Perry")
+                    singer = singer_dict[input("Type in the number corresponding to your singer: ")]
                 song_name, song_pak = convert_to_gha(midqb_file, output, lipsync_dict[singer])
-                with open(output + f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
+                if midqb_file.lower().endswith(".mid"):
+                    pak_name = f'\\{song_name}_song.pak.xen'
+                else:
+                    pak_name = f'\\{song_name}_song_GHA.pak.xen'
+                with open(output + pak_name, 'wb') as f:
                     f.write(song_pak)
             elif main_menu == 6:
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
