@@ -41,7 +41,7 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
                         except:
                             try:
                                 pak_name = folder[folder.rfind("\\") + 1:folder.rfind(".pak")]
-                                song_name = pak_name[:pak_name.find("_")]
+                                song_name = pak_name[:pak_name.find("_s")]
                                 song_names = [song_name]
                                 tests_checksums = []
                                 if song_name.startswith("a") or song_name.startswith("b"):
@@ -104,7 +104,13 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
                     split_1 = split_ext[1]
                     dir_name = os.path.dirname(split_0)
                 except:
-                    split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}"
+                    if all([x.full_name_checksum == 0, x.no_ext_name_checksum == 0]):
+                        if type(x.context_checksum) == str:
+                            split_0 = x.context_checksum
+                        else:
+                            split_0 = hex(x.context_checksum)
+                    else:
+                        split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}"
                     dir_name = ""
             else:
                 if type(x.full_name_checksum) == str:
@@ -116,6 +122,8 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
                             setattr(x, "extension", split_1)
                     else:
                         setattr(x, "extension", split_1)
+                elif all([x.full_name_checksum == 0,  x.no_ext_name_checksum == 0, type(x.context_checksum) == str]):
+                    split_0 = x.context_checksum
                 else:
                     split_0 = f"{hex(x.full_name_checksum)}.{hex(x.no_ext_name_checksum) if type(x.no_ext_name_checksum) == int else x.no_ext_name_checksum}."
 

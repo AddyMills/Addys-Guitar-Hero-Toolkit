@@ -4,6 +4,7 @@ sys.path.append("../")
 
 from pak_classes import *
 from pak_definitions import *
+
 from dbg import checksum_dbg as dbg
 from copy import deepcopy
 
@@ -592,7 +593,11 @@ def print_qb_text_file(mid_sections):
             if x.section_data == [0, 0] and "Floats" in x.array_node_type:
                 print(f'{x.section_id} = [Empty]')
             else:
-                print_array_data(x.section_data, array_type, x.subarray_types, x.section_id, 0)
+                try:
+                    subarray_types = x.subarray_types
+                except:
+                    subarray_types = []
+                print_array_data(x.section_data, array_type, subarray_types, x.section_id, 0)
         elif x.section_type == "SectionStruct":
             print(x.section_id, "= {")
             if type(x.section_data) == struct_header:
@@ -620,10 +625,31 @@ def print_qb_text_file(mid_sections):
 
     return
 
+def new_lipsync(time, instrument, ska_file):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "name", instrument, 0))
+    params_list.append(struct_item("StructItemQbKey", "anim", ska_file, 0))
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_PlayFacialAnim", 0)
+    time = struct_item("StructItemInteger", "time", time, 0)
+    lipsync = struct_item("StructHeader", 0, [time, scr, params], 0)
+    return lipsync
+
 def new_facial_anim_gh5(time, instrument, face_type):
     params_list = []
     params_list.append(struct_item("StructItemQbKey", "name", instrument, 0))
     params_list.append(struct_item("StructItemString", "fa_type", face_type, 0))
+    params = struct_item("StructItemStruct", "params", params_list, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_ChangeFacialAnims", 0)
+    time = struct_item("StructItemInteger", "time", time, 0)
+    facial_anim = struct_item("StructHeader", 0, [time, scr, params], 0)
+    return facial_anim
+
+def new_facial_anim_gh5_gender(time, instrument, face_anims):
+    params_list = []
+    params_list.append(struct_item("StructItemQbKey", "name", instrument, 0))
+    params_list.append(struct_item("StructItemQbKey", "ff_anims", face_anims[0], 0))
+    params_list.append(struct_item("StructItemQbKey", "mf_anims", face_anims[1], 0))
     params = struct_item("StructItemStruct", "params", params_list, 0)
     scr = struct_item("StructItemQbKey", "scr", "Band_ChangeFacialAnims", 0)
     time = struct_item("StructItemInteger", "time", time, 0)
@@ -656,6 +682,25 @@ def new_play_clip(time, clip, start, end = 0):
     play_clip = struct_item("StructHeader", 0, [time, scr, params], 0)
 
     return play_clip
+
+def make_light_struct(script_data):
+    final_struct = struct_data()
+    time = basic_data("time", script_data.time)
+    time.set_type("Integer")
+    time.set_bin_data(struct.pack(">i", script_data.time))
+    scr = basic_data("scr", script_data.type)
+    scr.set_type("QbKey")
+    scr.set_bin_data(bytes.fromhex(CRC.QBKey(script_data.type)))
+    params_struct = struct_data()
+    params_list = []
+    for x in script_data.data:
+        params_list.append(basic_data(x["param"], x["data"]))
+        params_list[-1].set_type("Float")
+        params_list[-1].set_bin_data(struct.pack(">f", x["data"]))
+    params_struct.add_multiple_basic(params_list)
+    params = basic_data("params", params_struct)
+    final_struct.add_multiple_basic([time, scr, params])
+    return final_struct
 
 def camera_band_clip(cameras):
     cameras_qb = []
@@ -696,6 +741,7 @@ def new_stance_gh3(time, name, stance):
 
     new_stance = struct_item("StructHeader", 0, [time, scr, params], 0)
     return new_stance
+
 
 
 

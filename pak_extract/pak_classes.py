@@ -114,9 +114,9 @@ class qb_section:
             if old_name in getattr(self, x):
                 setattr(self, x, getattr(self, x).replace(old_name, new_name))
 
-    def make_empty(self):
+    def make_empty(self, new_id = ""):
         self.section_type = "SectionArray"
-        self.section_id = 0
+        self.section_id = 0 if not new_id else new_id
         self.section_pak_name = 0
         self.section_data_start = 0
         self.section_next_item = 0
@@ -244,6 +244,69 @@ class struct_item:
 
     def set_string_w(self, stringw):
         self.struct_data_string_w = stringw
+
+class basic_data:
+    def __init__(self, id_name, item_data):
+        self.id_name = id_name
+        if item_data:
+            self.item_data = item_data
+        else:
+            self.item_data = ["Empty"]
+            self.set_array_type("Floats")
+            self.set_type("Array")
+
+    def __str__(self):
+        return f"{self.id_name}: {self.item_data}"
+
+    def set_type(self, qb_type):
+        self.qb_type = qb_type
+
+    def set_bin_data(self, bin_data):
+        self.bin_data = bin_data
+
+    def set_array_type(self, array_type):
+        self.array_type = array_type
+
+    def set_subarray_types(self, subarray_types):
+        self.subarray_types = subarray_types
+
+    def set_qb_name(self, qb_name):
+        self.qb_name = qb_name
+
+class script_data:
+    def __init__(self, id_name, script_data):
+        self.id_name = id_name
+        self.script_data = script_data
+        self.qb_type = "Script"
+
+    def __str__(self):
+        return f"{self.id_name}: {self.script_data}"
+
+class struct_data:
+    def __init__(self):
+        self.data_type = "Struct"
+        self.data = []
+
+    def add_data(self, var_name = "", var_data = ""):
+        if type(var_data) == basic_data:
+            self.data.append(var_data)
+        else:
+            self.data.append(basic_data(var_name, var_data))
+
+    def add_multiple_basic(self, basic_list):
+        if type(basic_list) == list:
+            self.data += basic_list
+
+
+    def set_name(self, sect_name):
+        self.sect_name = sect_name
+
+    def set_all(self, sect_name, var_name,  var_data):
+        self.sect_name = sect_name
+        self.add_data(var_name, var_data)
+
+    def __str__(self):
+        return f"Struct container with {len(self.data)} items"
 
 
 

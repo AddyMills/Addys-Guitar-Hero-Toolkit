@@ -9,10 +9,11 @@ NO_SEP_TIME = 1 << 28 # If set, only 2 bytes for time, else 4
 COMP_FLAGS = 1 << 23 # If set, compression flags exist in the time values
 PARTIAL_ANIM = 1 << 19 # If set, the ska file has a partial anim footer
 BIG_TIME = 1 << 8 # Time goes above 2047 if set
+SINGLE_FRAME = 1 << 6 # Single anim frames.
 
 
 class ska_bytes:
-    def __init__(self, ska, endian = r"big"):
+    def __init__(self, ska, endian = r"big"): # Assumes all ska files are big
         self.debug = 0
         self.bone_count = 0
         self.flags = 0
@@ -26,6 +27,7 @@ class ska_bytes:
         self.data = ska
         self.endian = endian
         self.big_time = 0
+        self.pointerframes = {}
 
 
         self.read_header()
@@ -33,24 +35,28 @@ class ska_bytes:
         self.trans_sizes = self.get_bone_size(self.bonesize_trans_pos)
         if self.flags & PARTIAL_ANIM:
             self.partial_anim()
-        self.quat_frames = self.read_quats()
-        self.trans_frames = self.read_trans()
+        if self.flags & SINGLE_FRAME:
+            self.quat_frames = self.read_single(self.quat_pos, self.quat_sizes)
+            self.trans_frames = self.read_single(self.trans_pos, self.trans_sizes)
+        else:
+            self.quat_frames = self.read_quats()
+            self.trans_frames = self.read_trans()
         if self.custom_keys:
             self.custom_key_data = self.read_custom_keys()
-        if self.pointerblock_offset > 0:
+        if self.pointerblock_offset > 0 and self.pointerblock_offset < len(self.data):
             self.read_pointer_block()
 
 
 
     def read_header(self):
         self.version = int.from_bytes(self.data[0x20:0x24], self.endian)
-        if self.version == 0x48:
+        if self.version == 0x48: # GH3 and GHA style headers
             # Header is 128 bytes long
             self.data_start = 0x80
             self.position = 0x08
             ska_order = ["file_size", "anim_offset", "null_offset", "pointerblock_offset", "partial_anim_offset",
                          "d_offset", "version", "flags"]
-        elif self.version == 0x68:
+        elif self.version == 0x68: # GHWT and up style headers
             # Header is 256 bytes long
             self.data_start = 0x100
             self.position = 0x00
@@ -67,17 +73,37 @@ class ska_bytes:
             self.big_time = 1
 
         self.duration = self.readFloat()
+        self.duration_frames_60 = round(self.duration * 60)
+        self.duration_frames_30 = round(self.duration * 30)
         self.unk_byte = self.readBytes(1)
         setattr(self, "bone_count", self.readBytes(1))
+        if self.bone_count == 128 and self.version == 0x48:
+            self.ska_source = "steve"
+        elif self.bone_count == 128:
+            self.ska_source = "wt_rocker"
+        elif self.bone_count == 125:
+            self.ska_source = "gh3_guitarist"
+        elif self.bone_count == 121:
+            self.ska_source = "gh3_singer"
+        elif self.bone_count == 118:
+            self.ska_source = "gha_singer"
+        elif self.bone_count == 115:
+            self.ska_source = "dmc_singer"
+        elif self.bone_count <= 3 and not (self.flags & PARTIAL_ANIM):
+            self.ska_source = "camera"
+        else:
+            self.ska_source = "other"
         setattr(self, "quat_changes",  self.readBytes(2)) # Total # of quaternion changes in file
         if self.version == 0x48:
             floats = 2
         else:
             floats = 4
+        self.float_pairs = []
         for vec in range(0, floats):
             float_pair = []
             for y in range(0, 4):
                 float_pair.append(self.readFloat())
+            self.float_pairs.append(float_pair.copy())
             setattr(self, f"float_pair_{vec}", float_pair.copy())
         setattr(self, "trans_changes", self.readBytes(2))
         setattr(self, "custom_keys", self.readBytes(2))
@@ -134,9 +160,29 @@ class ska_bytes:
         self.partial_bones.sort()
         return
 
+    def read_single(self, pos, bone_sizes):
+        if pos == 0:
+            return
+        self.setPosition(pos)
+        frames = {}
+        for bone in range(self.bone_count):
+            if bone_sizes[bone] == 0:
+                continue
+            bone_ref = 0
+            bone_check = bone_sizes[bone]
+            while bone_ref < bone_check:
+                x_val, y_val, z_val, w_val = self.readFloat(), self.readFloat(), self.readFloat(), self.readFloat()
+                bone_ref += 16
+
+            frames[bone] = [x_val, y_val, z_val, w_val].copy()
+        return frames
+
+
+
     def read_quats(self):
         if self.quat_pos == 0:
             return
+        NEG_W = 1 << 15
         COMP_FLAG = 1 << 14
         COMP_X = 1 << 13
         COMP_Y = 1 << 12
@@ -156,21 +202,24 @@ class ska_bytes:
         quat_frames = {}
         total_changes = 0
         for bone in range(self.bone_count):
-            if self.partial_bones:
-                if bone not in self.partial_bones:
-                    continue
+            if self.quat_sizes[bone] == 0:
+                continue
             frames = {}
             bone_ref = 0
             bone_check = self.quat_sizes[bone]
             while bone_ref < bone_check:
                 bone_ref += time_a + time_b
                 total_read = 0
+
                 if self.flags & COMP_FLAGS:
                     x_bits = 0
                     y_bits = 0
                     z_bits = 0
                     quat_time = self.readBytes(time_a)
                     comp_time = self.readBytes(time_b)
+                    if comp_time & NEG_W:
+                        print(f"Negative W value found. Bone {bone}, at time {quat_time}")
+                        input("Press Enter to Continue")
                     quat_time += comp_time & MASK
                     """if quat_time == 3006:
                         print()"""
@@ -241,8 +290,7 @@ class ska_bytes:
                     y_val = y_val - 65536 if y_val > 32767 else y_val
                     z_val = z_val - 65536 if z_val > 32767 else z_val
                 if quat_time in frames:
-                    print()
-
+                    print("Something weird happened with the quat time")
                 if quat_time != 57005: # DEAD DEAD signifying the end of the quat
                     frames[quat_time] = [x_val, y_val, z_val].copy()
                 """else:
@@ -342,13 +390,14 @@ class ska_bytes:
                     curr_off = self.position
                     self.setPosition(bone_off)
                     curr_time = self.readBytes(2)
-                    if curr_time > 0b100000000000000:
+                    if curr_time >= 0b100000000000000:
                         curr_time = curr_time & 0b11111111111
                     if x in times:
                         times[x].append(curr_time)
                     else:
                         times[x] = [curr_time]
                     self.setPosition(curr_off)
+        self.pointerframes = times
         # print()
 
     def getEndian(self):

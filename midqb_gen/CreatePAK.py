@@ -11,7 +11,7 @@ import binascii
 toBytes = lambda a, b=4: a.to_bytes(b, "big")
 footer = toBytes(int(("AB" * 4) + ("00" * 12) + ("AB" * 496), 16), 512)
 
-def pakHeaderMaker(pakbytes, pakname, offset, context = False):
+def pakHeaderMaker(pakbytes, pakname, offset, context = False, *args):
     pakname = pakname.lower().replace("/", "\\").replace(".xen","")
     local_strings = [".en", ".de", ".fr", ".it", ".es"]
     qb_name, extension = os.path.splitext(pakname)
@@ -28,7 +28,7 @@ def pakHeaderMaker(pakbytes, pakname, offset, context = False):
     # raise Exception
     startoffset = toBytes(offset)
     filesize = toBytes(len(pakbytes))
-    if context:
+    if context and not "no_check" in args:
         aContextChecksum = toBytes(int(QBKey(context), 16))
     else:
         aContextChecksum = toBytes(0)
@@ -85,13 +85,13 @@ def pakHeaderMaker(pakbytes, pakname, offset, context = False):
     # print(binascii.hexlify(header, ' ', 1))
     return header
 
-def pakMaker(pakfiles, songname = False, split_head = False):
+def pakMaker(pakfiles, songname = False, split_head = False, *args):
     pakHeader = bytearray()
     offset = 4096 + (4096 * trunc(len(pakfiles)/128))
     files = []
     for y, x in enumerate(pakfiles):
         # print(offset)
-        pakHeader += pakHeaderMaker(x[0], x[1], offset - (32 * y), songname)
+        pakHeader += pakHeaderMaker(x[0], x[1], offset - (32 * y), songname, *args)
         while len(x[0]) % 32 != 0:
             x[0] += toBytes(0, 1)
             # print(len(x[0]))
@@ -102,7 +102,7 @@ def pakMaker(pakfiles, songname = False, split_head = False):
     pakHeader += toBytes(int(QBKey(".last"), 16))
     pakHeader += toBytes(offset - (32 * len(files))) #Offset of entry is relative start of entry in header file
     pakHeader += toBytes(4)
-    if songname:
+    if songname and "check" in args:
         pakHeader += toBytes(int(QBKey(songname), 16))
     else:
         pakHeader += toBytes(0)
@@ -162,6 +162,10 @@ if __name__ == "__main__":
         split = True
     else:
         split = False
+    if "no_check" in sys.argv:
+        check = "no_check"
+    else:
+        check = "check"
     pak_data = []
     for root, dirs, files in os.walk(to_add, topdown = False):
         for name in files:
@@ -170,16 +174,16 @@ if __name__ == "__main__":
                 x = f.read()
             item_name = fullpath[len(to_add) + 1:]
             # raise Exception
-            pak_data.append([x, item_name if not item_name.endswith(".xen") else item_name[:-4]])
+            pak_data.append([x, item_name if not any([item_name.lower().endswith(".xen"), item_name.lower().endswith(".ps3")]) else item_name[:-4]])
             # print(os.path.join(root, name)[len(toAdd)+1:])
 
     filename = f"{output}\\{'b' if 'dlc' in str(pak_name) else ''}{pak_name if pak_name else 'output'}{'_song' if 'dlc' in str(pak_name) else ''}"
     if not split:
-        pak_file = pakMaker(pak_data, pak_name, split)
+        pak_file = pakMaker(pak_data, pak_name, split, check)
         with open(f"{filename}.pak.xen", 'wb') as f:
             f.write(pak_file)
     else:
-        pak_file, pab_file = pakMaker(pak_data, pak_name, split)
+        pak_file, pab_file = pakMaker(pak_data, pak_name, split, check)
         with open(f"{filename}.pak.xen", 'wb') as f:
             f.write(pak_file)
         with open(f"{filename}.pab.xen", 'wb') as f:

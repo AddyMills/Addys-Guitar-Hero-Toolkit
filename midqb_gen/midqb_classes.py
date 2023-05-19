@@ -20,6 +20,7 @@ class Note:  # Every note will be its own class to determine what kind of chord 
         self.force = 0
         self.force_on = 0
         self.force_off = 0
+        self.extended = 0
         self.tap = 0
         self.length = 1  # Default length of 1 ms to make note appear, but no sustain yet
         self.prev_note = prevNote
@@ -93,6 +94,10 @@ class Note:  # Every note will be its own class to determine what kind of chord 
                     count += 1
         return f"{notes} {'note' if count == 1 else 'chord'} at {self.time} with note length {self.length}.{' Forced' if self.force == 1 else ''}"
 
+class WT_Note(Note):
+    def __init__(self, time, prevNote, currTempChange, colour):
+        super().__init__(time, prevNote, currTempChange)
+        setattr(self, colour, 1)
 
 class NoteChart:
     def __init__(self, part, diff):
@@ -101,7 +106,7 @@ class NoteChart:
         self.notes = []
 
     def __str__(self):
-        return f"Part {self.part if self.part != '' else 'Guitar'}, {self.diff}, {self.notes} in chart"
+        return f"Part {self.part if self.part != '' else 'Guitar'}, {self.diff}, {int(len(self.notes)/2)} in chart"
 
 
 class AnimNote:
@@ -114,10 +119,15 @@ class AnimNote:
         return f"Anim note {self.note} at {self.time} lasting {self.length}"
 
     def setLength(self, length):
-        if length != 1:
-            self.length = length - 1
-        else:
-            self.length = length
+        self.length = length
+
+class AnimNoteWT(AnimNote):
+    def __init__(self, time, note, velocity):
+        super().__init__(time, note)
+        self.velocity = velocity
+
+    def __str__(self):
+        return f"Anim note {self.note} at {self.time} with velocity {self.velocity} lasting {self.length}"
 
 
 class StarPower:
@@ -143,6 +153,7 @@ class StarPowerPhrase(StarPower):  # Star Power phrases. To be used for each dif
 
     def incNotes(self):
         self.notes += 1
+
 
 
 class FaceOffSection:  # Class to determine each section. Meant to be put into an array
@@ -319,6 +330,7 @@ class gh5_base_entry:
             self.entries += [entry_time, entry_length]
 
     def trunc_time(self, entry):
+        return entry
         time_trunc = int(str(entry).zfill(6)[-2:])
         if time_trunc == 99:
             new_time = entry + 1
@@ -447,11 +459,15 @@ class gh5_cameras(gh5_base_entry):
     def add_entry(self, note_array, endian = "big"):
         for enum, entry in enumerate(note_array):
             if enum % 2 == 0: # Time value
-                time_trunc = int(str(entry).zfill(6)[-2:])
-                new_time = self.trunc_time(entry)
+                if entry != 0:
+                    time_adj = entry-33
+                else:
+                    time_adj = 0
+                time_adj = entry
+                new_time = self.trunc_time(time_adj)
                 self.autocut.append(new_time)
-                self.orig_time = entry
-                self.time_change = entry - new_time
+                self.orig_time = time_adj
+                self.time_change = time_adj - new_time
                 # self.autocut.append(entry)
             else:
 
@@ -470,7 +486,7 @@ class gh5_cameras(gh5_base_entry):
                     if midi_note_val in range(40, 42):
                         print(f"Unsupported note {midi_note_val} found at {self.autocut[-1]}. Swapping cut for orbit")
                         midi_note_val = 74
-                length_val_orig = int(length, 2)
+                length_val_orig = int(length, 2) # - 33
                 new_time = self.trunc_time(self.orig_time + length_val_orig)
                 length_val = self.trunc_time(new_time - prev_time)
                 # print()

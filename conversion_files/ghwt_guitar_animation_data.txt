@@ -6632,8 +6632,8 @@ GSB_NoTempo_Begin_WCM = {
 	}
 	anims = {
 		bassist = GSB_B_NoTempo_UJ_01
-		Guitarist = GSB_G_NoTempo_UJ_01
-		vocalist = g_jimi_win_01
+		vocalist = GSB_G_NoTempo_UJ_01
+		guitarist = g_jimi_win_01
 	}
 	arms = {
 		Guitarist = {
@@ -6676,14 +6676,14 @@ GSB_NoTempo_Begin_WCM = {
 }
 G_Wind_Cries_Mary01_WCM = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_Wind_Cries_Mary_01
+		guitarist = G_Wind_Cries_Mary_01
 	}
 	Measures = 3
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -6693,7 +6693,7 @@ G_Wind_Cries_Mary01_WCM = {
 	}
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_Wind_Cries_Mary_01_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -6702,13 +6702,13 @@ G_Wind_Cries_Mary01_WCM = {
 }
 G_Wind_Cries_Mary02_WCM = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_Wind_Cries_Mary_02
+		guitarist = G_Wind_Cries_Mary_02
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -6719,7 +6719,7 @@ G_Wind_Cries_Mary02_WCM = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_Wind_Cries_Mary_02_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -6728,13 +6728,13 @@ G_Wind_Cries_Mary02_WCM = {
 }
 G_Wind_Cries_Mary03_WCM = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_Wind_Cries_Mary_03
+		guitarist = G_Wind_Cries_Mary_03
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -6745,7 +6745,7 @@ G_Wind_Cries_Mary03_WCM = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_Wind_Cries_Mary_03_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -6754,13 +6754,13 @@ G_Wind_Cries_Mary03_WCM = {
 }
 G_Wind_Cries_Mary04_WCM = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_Wind_Cries_Mary_04
+		guitarist = G_Wind_Cries_Mary_04
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -6771,7 +6771,7 @@ G_Wind_Cries_Mary04_WCM = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_Wind_Cries_Mary_04_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17253,13 +17253,13 @@ B_Attached01 = {
 }
 G_PurpleHaze_01 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_01
+		guitarist = G_PurpleHaze_01
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17270,19 +17270,19 @@ G_PurpleHaze_01 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_01_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_01_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_01_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17291,13 +17291,13 @@ G_PurpleHaze_01 = {
 }
 G_PurpleHaze_02 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_02
+		guitarist = G_PurpleHaze_02
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17308,19 +17308,19 @@ G_PurpleHaze_02 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_02_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_02_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_02_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17329,13 +17329,13 @@ G_PurpleHaze_02 = {
 }
 G_PurpleHaze_03 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_03
+		guitarist = G_PurpleHaze_03
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17346,19 +17346,19 @@ G_PurpleHaze_03 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_03_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_03_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_03_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17367,13 +17367,13 @@ G_PurpleHaze_03 = {
 }
 G_PurpleHaze_04 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_04
+		guitarist = G_PurpleHaze_04
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17384,19 +17384,19 @@ G_PurpleHaze_04 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_04_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_04_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_04_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17405,13 +17405,13 @@ G_PurpleHaze_04 = {
 }
 G_PurpleHaze_05 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_05
+		guitarist = G_PurpleHaze_05
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17422,19 +17422,19 @@ G_PurpleHaze_05 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_05_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_05_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_05_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17443,13 +17443,13 @@ G_PurpleHaze_05 = {
 }
 G_PurpleHaze_06 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_06
+		guitarist = G_PurpleHaze_06
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17460,19 +17460,19 @@ G_PurpleHaze_06 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_06_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_06_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_06_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
@@ -17481,13 +17481,13 @@ G_PurpleHaze_06 = {
 }
 G_PurpleHaze_07 = {
 	startnodes = {
-		vocalist = "vocalist_start"
+		guitarist = "guitarist_start"
 	}
 	anims = {
-		vocalist = G_PurpleHaze_07
+		guitarist = G_PurpleHaze_07
 	}
 	arms = {
-		vocalist = {
+		guitarist = {
 			ik_targetl = slave
 			ik_targetr = slave
 			strum = OFF
@@ -17498,19 +17498,19 @@ G_PurpleHaze_07 = {
 	Measures = 3
 	cameras = [
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_07_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_07_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
-			name = "TRG_Geo_Camera_Performance_SING01"
+			name = "TRG_Geo_Camera_Performance_GUIT01"
 			Anim = G_PurpleHaze_07_c03
 			Venues = [Venue1, Venue3]
 			weight = 1

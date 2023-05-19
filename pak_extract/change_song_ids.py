@@ -14,7 +14,7 @@ from midqb_gen import CreatePAK
 import os
 import time
 
-console = "ps3"
+console = "xen"
 
 ids_pre = ["_song_scripts",
            "_scriptevents",
@@ -46,6 +46,30 @@ ids_song = [".mid.qb",
             "_song_scripts.qb"
             ]
 
+ghsh_reanim = {
+    406: "CaughtInAMosh",
+    409: "CultofPersonality",
+    411: "FreeBird",
+    412: "Freya",
+    414: "HeartShapedBox",
+    415: "HeyYou",
+    416: "HitMeWithYourBestShot",
+    417: "ILoveRockAndRoll",
+    418: "IWannaRock",
+    423: "MessageInABottle",
+    424: "MissMurder",
+    425: "MonkeyWrench",
+    428: "NoOneKnows",
+    429: "NothinButAGoodTime",
+    430: "PlayWithMe",
+    431: "PsychobillyFreakout",
+    433: "RockAndRollAllNite",
+    435: "ShoutAtTheDevil",
+    442: "TheTrooper",
+    447: "Woman",
+    448: "YYZ",
+}
+
 def generate_ids(shortname):
     id_list = [int.to_bytes(int(QBKey(shortname),16), 4, "big")]
 
@@ -64,26 +88,33 @@ if __name__ == "__main__":
     t0 = time.process_time()
     song_files = []
     filesfolder = sys.argv[1]
-    if "World Tour" in filesfolder:
-        simple_anim = True
-    else:
-        simple_anim = False
+
     with os.scandir(filesfolder) as songs:
         for x in songs:
             dlc_name = x.name.split(" - ")[0]
             filepath = x.path
             song_files.append([dlc_name, filepath])
 
-    old_file_root = "03 Disk Files"
-    new_file_root = "04 Re-Encrypted DLC Disk Files"
+    if "Re-animated" in filesfolder:
+        old_file_root = ""
+        new_file_root = ""
+    else:
+        old_file_root = "03 Disk Files"
+        new_file_root = "04 Re-Encrypted DLC Disk Files"
 
 
     for x in song_files:
-        filepath = f"{x[1]}\\{old_file_root}"
-        savepath = f"{x[1]}\\{new_file_root}"
+        if old_file_root:
+            filepath = f"{x[1]}\\{old_file_root}"
+        else:
+            filepath = f"{x[1]}"
+        if new_file_root:
+            savepath = f"{x[1]}\\{new_file_root}"
+        else:
+            savepath = f"{x[1]}"
         pak_data = ""
         pak_anim = ""
-        drum_anim = ""
+        override_mid = ""
         try:
             for y in os.listdir(f"{filepath}"):
                 if os.path.isfile(f"{filepath}\\{y}"):
@@ -96,7 +127,7 @@ if __name__ == "__main__":
                     elif "_anim" in y.lower():
                         pak_anim = f"{filepath}\\{y}"
                     elif ".mid" in y.lower():
-                        drum_anim = f"{filepath}\\{y}"
+                        override_mid = f"{filepath}\\{y}"
                         print(f"MIDI File: {y} found.")
                     else:
                         print(f"Unknown file {y} found. Skipping...")
@@ -111,7 +142,7 @@ if __name__ == "__main__":
                     """
 
                 else:
-                    continue
+                    # continue
                     folderpath = f"{filepath}\\{y}"
                     foldersavepath = f"{savepath}\\{y}"
                     for z in os.listdir(f"{folderpath}"):
@@ -147,12 +178,17 @@ if __name__ == "__main__":
             continue
         if pak_data:
             print(f"Switching song id references in {old_name} to {x[0]}")
-            pak_data = convert_to_5(pak_data.lower(), x[0], anim_pak = pak_anim, drum_anim = drum_anim, simple_anim = simple_anim)
+            if "World Tourasdasd" in filesfolder:
+                decomp_ska = True
+            else:
+                decomp_ska = False
+            pak_data = convert_to_5(pak_data.lower(), x[0], anim_pak = pak_anim, override_mid = override_mid,
+                                    decomp_ska = decomp_ska)
             pak_file = CreatePAK.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], x[0])
             # raise Exception
             with open(f"{savepath}\\b{x[0].lower()}_song.pak.xen", 'wb') as f:
                 f.write(pak_file)
-            print("\n")
+            print()
     t1 = time.process_time()
     print(t1 - t0)
 

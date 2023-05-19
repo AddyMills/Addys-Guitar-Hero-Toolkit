@@ -1,0 +1,1 @@
+pyinstaller -p "D:\GitHub\Guitar-Hero-III-Tools\create_audio" -p D:\GitHub\Guitar-Hero-III-Tools\midqb_gen -p D:\GitHub\Guitar-Hero-III-Tools\pak_extract -p D:\GitHub\Guitar-Hero-III-Tools\ska_switcher -p D:\GitHub\Guitar-Hero-III-Tools --onefile --add-data "debug.txt;." --add-data "conversion_files;conversion_files" "GH Toolkit.py"

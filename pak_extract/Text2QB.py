@@ -4,6 +4,7 @@ sys.path.append("../")
 from CRC import QBKey as qb_key
 import struct
 from pak_definitions import console_lookup, console_endian, qbNodeHeaders
+from pak_classes import basic_data, script_data, struct_data
 import os
 import re
 
@@ -29,53 +30,6 @@ class qb_string:
             return False
         else:
             return True
-
-
-class basic_data:
-    def __init__(self, id_name, item_data):
-        self.id_name = id_name
-        self.item_data = item_data
-
-    def __str__(self):
-        return f"{self.id_name}: {self.item_data}"
-
-    def set_type(self, qb_type):
-        self.qb_type = qb_type
-
-    def set_bin_data(self, bin_data):
-        self.bin_data = bin_data
-
-    def set_array_type(self, array_type):
-        self.array_type = array_type
-
-    def set_subarray_types(self, subarray_types):
-        self.subarray_types = subarray_types
-
-    def set_qb_name(self, qb_name):
-        self.qb_name = qb_name
-
-class script_data:
-    def __init__(self, id_name, script_data):
-        self.id_name = id_name
-        self.script_data = script_data
-        self.qb_type = "Script"
-
-    def __str__(self):
-        return f"{self.id_name}: {self.script_data}"
-
-class struct_data:
-    def __init__(self):
-        self.data_type = "Struct"
-        self.data = []
-
-    def add_data(self, var_name, var_data):
-        self.data.append(basic_data(var_name, var_data))
-
-    def set_name(self, sect_name):
-        self.sect_name = sect_name
-
-    def __str__(self):
-        return f"Struct container with {len(self.data)} items"
 
 
 def parse_array(qb_string):
@@ -306,6 +260,10 @@ def find_type(x):
             raise Exception
         else:
             return "QbKey"
+    elif type(x) == int:
+        return "Integer"
+    elif type(x) == float:
+        return "Float"
     else:
         # raise Exception
         if type(x) == struct_data:

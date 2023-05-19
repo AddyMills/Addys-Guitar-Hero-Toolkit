@@ -19,7 +19,12 @@ output/
 scratchpad/
 build/
 dist/
+test*/
+tofix*
+*.mid
 midqb_gen/midqb_gen*/
+midqb_gen/PAK Folders*/
+midqb_gen/PAK Compile*/
 pak_extract/pak_extract*/
 pak_extract/Input*/
 pak_extract/Decompressed PAKs*/
@@ -29,3 +34,4 @@ compile-exe.bat
 Reaper Gen/
 tofix.txt
 *.pyproj
+libmp3lame*

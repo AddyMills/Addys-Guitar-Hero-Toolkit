@@ -1,8 +1,11 @@
+import os.path
 import sys
 import traceback
+import re
 
 from toolkit_functions import *
-
+from random import randint
+from create_audio import audio_functions
 
 debug = 0
 
@@ -47,7 +50,12 @@ def manual_input():
                 mid_file = input(
                     "Drag in your mid file (make sure the name of the file is the internal name of your custom): ").replace(
                     "\"", "")
-                output_mid_gh3(mid_file)
+
+                output = f'{os.path.dirname(mid_file)}'
+                pak_file, filename = output_mid_gh3(mid_file)
+
+                with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
+                    f.write(pak_file)
                 input("Done! Press Enter to go back to the Main Menu. ")
             elif main_menu == 2:
                 pak_file = input("Drag in your PAK file: ").replace("\"", "")
@@ -145,15 +153,24 @@ def print_instructions():
         print(f"{x}")
     return
 
+def launch_gui(ghproj = ""):
+    root_folder = os.path.realpath(os.path.dirname(__file__))
+    sys.path.append(f"{root_folder}\\gui")
+    from gui import toolkit_gui
+    toolkit_gui.open_gui(sys.argv, proj_file = ghproj)
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        print("Guitar Hero III Tools\n")
+        launch_gui()
+        '''print("Guitar Hero III Tools\n")
         begin_mode = input("No argument detected, did you want to use beginner mode? (Y/N) ")
         if begin_mode[0].lower() == "y":
             manual_input()
         else:
-            print_instructions()
+            print_instructions()'''
+    elif sys.argv[1].endswith(".ghproj"):
+        launch_gui(ghproj = sys.argv[1])
     else:
         try:
             root_folder = os.path.realpath(os.path.dirname(__file__))
@@ -243,11 +260,11 @@ if __name__ == "__main__":
                 if "_song.pak" in midqb_file.lower():
                     if "output" not in locals():
                         output = f'{os.path.dirname(midqb_file)}'
-                    if "newname" not in locals():
-                        new_name = f"dlc{randint(10000,1000000000)}"
-                    pak_data = convert_to_5(midqb_file, new_name)
-                    pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
-                    with open(output + f'\\b{new_name}_song.pak.xen', 'wb') as f:
+                    if "pak_name" not in locals():
+                        pak_name = f"dlc{randint(10000,1000000000)}"
+                    pak_data = convert_to_5(midqb_file, pak_name)
+                    pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], pak_name)
+                    with open(output + f'\\b{pak_name}_song.pak.xen', 'wb') as f:
                         f.write(pak_file)
 
             elif sys.argv[1] == "compile_pak":
@@ -307,9 +324,19 @@ if __name__ == "__main__":
             elif sys.argv[1] == "extract_fsb":
                 if "output" not in locals():
                     output = f'{os.path.dirname(input_file)}'
-                with open(sys.argv[2], "rb") as f:
+                fsbpath = sys.argv[2]
+                dat = b''
+                with open(fsbpath, "rb") as f:
                     fsb = f.read()
-                fsb_ext = audio_functions.extract_fsb(fsb)
+                if ".fsb" in fsbpath:
+                    datpath = f"{fsbpath[:fsbpath.find('.fsb')]}.dat.xen"
+                    if os.path.isfile(datpath):
+                        with open(datpath, 'rb') as f:
+                            dat = f.read()
+                filename = os.path.basename(fsbpath)
+                if re.search(r'^[a-c]dlc', filename, flags=re.IGNORECASE):
+                    filename = filename[1:]
+                fsb_ext = audio_functions.extract_fsb(fsb, filename, datfile = dat)
                 for key, value in fsb_ext.items():
                     output_file = os.path.join(output, key)
                     with open(output_file, 'wb') as f:
