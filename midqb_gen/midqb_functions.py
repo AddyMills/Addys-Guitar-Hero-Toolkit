@@ -312,7 +312,10 @@ def active_note_check(x, active_notes, timeSec, midi_track, track): # midi_track
 
 def parse_wt_qb(mid, hopo, *args, **kwargs):
     changes, ticks = tempMap(mid)
-
+    if "force_only" in args:
+        time_hopos = False
+    else:
+        time_hopos = True
     split_list = lambda l_in: [l_in[i:i + 2] for i in range(0, len(l_in), 2)]
 
     global sp_note
@@ -760,7 +763,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         # Set hopos
                         if not prev_time == 0:
                             curr_colours = "".join(sorted(gem["colour_name"]))
-                            if all([gem["time_tick"] - prev_time <= hopo, len(gem["colours"]) == 1, prev_colours != curr_colours]):
+                            if all([gem["time_tick"] - prev_time <= hopo, len(gem["colours"]) == 1,
+                                    prev_colours != curr_colours, time_hopos]):
                                 gem["colours"].append(6)
                             prev_time = gem["time_tick"]
                             prev_colours = curr_colours
@@ -777,11 +781,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 temp_colour = timestamps[time_array[index]]["colours"]
                                 if index == 0:
                                     continue
-                                elif len(temp_colour) > 1:
+                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
+                                    continue
+                                elif len(temp_colour) > 1 and "gh5_mode" not in args:
                                     if "gh3_mode" in args and 6 in temp_colour:
                                         temp_colour.remove(6)
-                                    continue
-                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
                                     continue
                                 else:
                                     timestamps[time_array[index]]["colours"].append(6)
@@ -828,7 +832,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         mod_bin = double_bits + mod_bin
 
                     mod_bin = mod_bin.zfill(9)
-
+                    sep_kick = 0
                     if not drums:
                         notes_bin = make_bin_notes(gem)
                     elif gem["length_sec_kick"]:
@@ -836,14 +840,16 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         notes_bin = make_bin_notes(gem)
                         kick_note = make_bin_notes({"colours": [5]})
                         len_bin_kick = bin(gem["length_sec_kick"])[2:].zfill(16)
-                        play_notes[diff].notes.append(int(mod_bin + kick_note + len_bin_kick, 2))
-                        play_notes[diff].notes.append(enum)
+                        sep_kick = int(mod_bin + kick_note + len_bin_kick, 2)
                         mod_bin = "0000" + mod_bin[4:]
                     else:
                         notes_bin = make_bin_notes(gem)
 
                     note_val = mod_bin + notes_bin + len_bin
                     play_notes[diff].notes.append(int(note_val, 2))
+                    if sep_kick:
+                        play_notes[diff].notes.append(enum)
+                        play_notes[diff].notes.append(sep_kick)
             playable_qb[instrument] = play_notes.copy()
             playable_star_power[instrument] = play_star.copy()
             playable_fo_star_power[instrument] = play_star_fo.copy()

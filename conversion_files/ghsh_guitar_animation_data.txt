@@ -2529,25 +2529,25 @@ HeartShapedBox_Guit_Matt_Bulls_075 = {
 		Guitarist = "guitarist_start"
 	}
 	anims = {
-		Guitarist = Guit_Matt_Bulls_075
+		Guitarist = guit_Matt_Bulls_075_01
 	}
 	Measures = 3
 	cameras = [
 		{
 			name = "TRG_Geo_Camera_Performance_GUIT01"
-			Anim = Guit_Matt_Bulls_075_c01
+			Anim = guit_Matt_Bulls_075_01_c01
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
 			name = "TRG_Geo_Camera_Performance_GUIT01"
-			Anim = Guit_Matt_Bulls_075_c02
+			Anim = guit_Matt_Bulls_075_01_c02
 			Venues = [Venue1, Venue3]
 			weight = 1
 		},
 		{
 			name = "TRG_Geo_Camera_Performance_GUIT01"
-			Anim = Guit_Matt_Bulls_075_c03
+			Anim = guit_Matt_Bulls_075_01_c03
 			Venues = [Venue1, Venue3]
 			weight = 1
 		}
@@ -10927,7 +10927,7 @@ HitMeWithYourBestShot_GSB_StartSing_Pan01 = {
 	anims = {
 		vocalist = GSB_S_StartSing_Pan01
 		Guitarist = GSB_G_StartSing_Pan01
-		bassist = GSB_B_Sing2Cam02
+		bassist = GSB_B_StartSing_Pan01
 	}
 	Measures = 3
 	cameras = [

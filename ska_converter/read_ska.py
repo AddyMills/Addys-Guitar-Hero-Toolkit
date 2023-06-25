@@ -139,6 +139,11 @@ def main(func, write = False, **kwargs):
                 ska_orig = f.read()
                 ska_file = ska_bytes(ska_orig)
 
+            """if ska_file.comp_bits:
+                print(x.name)
+                continue
+            else:
+                continue"""
             new_ska = func(ska_file, game = game, quats_mult = quats_mult, ska_switch = ska_switch)
 
             if write == True:
@@ -153,4 +158,4 @@ if __name__ == "__main__":
     if "-debug" in sys.argv:
         debug(make_modern_ska)
     else:
-        main(make_modern_ska, True, game = "GH5", quats_mult=1, ska_switch = "wt_rocker")
+        main(make_modern_ska, True, game = "GHWT", quats_mult=1, ska_switch = "wt_rocker")

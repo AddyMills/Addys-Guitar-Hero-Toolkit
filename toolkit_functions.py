@@ -5,6 +5,7 @@ import re
 import mido
 import CRC
 import numpy as np
+import struct
 
 root_folder = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{root_folder}\\pak_extract")
@@ -32,18 +33,26 @@ def set_std_out(loc):
 
 
 def round_time(entry):
-    return entry
+    # return entry
     time_trunc = int(str(entry).zfill(6)[-2:])
-    if time_trunc == 99:
+    if time_trunc == 0 or time_trunc == 33 or time_trunc == 67:
+        new_time = entry
+    elif time_trunc == 99:
         new_time = entry + 1
-    elif time_trunc >= 67:
-        new_time = entry - (time_trunc - 67)
-    elif time_trunc >= 33:
-        new_time = entry - (time_trunc - 33)
+    elif time_trunc < 33:
+        new_time = int(str(entry)[:-2] + str(33))
+    elif time_trunc < 67:
+        new_time = int(str(entry)[:-2] + str(67))
     else:
-        new_time = entry - time_trunc
+        new_time = int(str(entry)[:-2] + str(99)) + 1
     return new_time
 
+def cam_len_check(cam_len):
+    if str(cam_len).endswith("34"):
+        cam_len -= 1
+    elif str(cam_len).endswith("66"):
+        cam_len += 1
+    return cam_len
 
 def get_rhythm_headers(song_name):
     rhythm_parts = []
@@ -756,7 +765,7 @@ def get_section_dict(qb_sections, file_headers_hex):
 
 def perf_struct(female_struct, male_struct):
     wor_anims = gen_wor_anim_sets()
-    for struct in [female_struct, male_struct]:
+    for enum, struct in enumerate([female_struct, male_struct]):
         struct_perf = []
         for instrument in ["guitar", "bass"]:
             for perf_type in ["pak", "anim_set", "finger_anims", "fret_anims", "strum_anims", "facial_anims"]:
@@ -765,8 +774,11 @@ def perf_struct(female_struct, male_struct):
                         input(f"{struct[instrument]['pak']} is not a WOR anim, please check")
                 struct_perf.append(struct[instrument][perf_type])
         # Vocals anims in GH5/6 use 3 exclusive values, and 3 the same
-        if struct["vocals"]["pak"].lower() not in wor_anims:
-            input(f"{struct['vocals']['pak']} is not a WOR anim, please check")
+        try:
+            if struct["vocals"]["pak"].lower() not in wor_anims:
+                input(f"{struct['vocals']['pak']} is not a WOR anim, please check")
+        except:
+            struct["vocals"] = {'pak': "L_SING_JeffS_LowKey_anims",'anim_set': "L_SING_JeffS_Lowkey_anims_set", 'facial_anims': f"facial_anims_{'fe' if enum == 0 else ''}male_rocker"}
         struct_perf += [struct["vocals"]["pak"], struct["vocals"]["anim_set"], "guitarist_finger_anims_car_female",
                         "fret_anims_rocker", "car_female_normal", struct["vocals"]["facial_anims"]]
         # Drums are all default
@@ -790,27 +802,32 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
         male_struct = deepcopy(anim_struct)
         female_struct = deepcopy(anim_struct)
         female_anims = ["judita", "ginger", "morgan", "amanda", "debbie", "natalie", "haley"]
-        special_anim_names = {"l_guit_chrisvance_bulls_anims": "L_GUIT_ChrisV_Bulls_F_anims",
-                              "l_guit_chrisvance_damnit_anims": "L_GUIT_ChrisV_Damnit_F_anims",
-                              "l_guit_chrisvance_joker_anims": "L_GUIT_ChrisV_Joker_F_anims",
-                              "l_guit_davidicus_bulls_anims": "L_GUIT_Davdics_Bulls_F_anims",
-                              "l_guit_davidicus_damnit2_anims": "L_GUIT_Davdics_Damnit2_F_anims",
-                              "l_guit_davidicus_damnit_anims": "L_GUIT_Davdics_Damnit_F_anims",
-                              "l_guit_davidicus_joker_anims": "L_GUIT_Davdics_Joker_F_anims",
-                              "l_guit_morgan_4horsemen_anims": "L_GUIT_Morgan_4Horse_M_anims",
-                              "l_guit_morgan_bleedingme_anims": "L_GUIT_Morgan_BleedMe_M_anims",
-                              "l_sing_morgan_bleedingns_anims": "L_SING_Morgan_BleedNS_M_anims",
-                              "l_guit_chrisvance_bulls_anims_set": "L_GUIT_ChrisV_Bulls_F_anims_set",
-                              "l_guit_chrisvance_damnit_anims_set": "L_GUIT_ChrisV_Damnit_F_anims_set",
-                              "l_guit_chrisvance_joker_anims_set": "L_GUIT_ChrisV_Joker_F_anims_set",
-                              "l_guit_davidicus_bulls_anims_set": "L_GUIT_Davdics_Bulls_F_anims_set",
-                              "l_guit_davidicus_damnit2_anims_set": "L_GUIT_Davdics_Damnit2_F_anims_set",
-                              "l_guit_davidicus_damnit_anims_set": "L_GUIT_Davdics_Damnit_F_anims_set",
-                              "l_guit_davidicus_joker_anims_set": "L_GUIT_Davdics_Joker_F_anims_set",
-                              "l_guit_morgan_4horsemen_anims_set": "L_GUIT_Morgan_4Horse_M_anims_set",
-                              "l_guit_morgan_bleedingme_anims_set": "L_GUIT_Morgan_BleedMe_M_anims_set",
-                              "l_sing_morgan_bleedingns_anims_set": "L_SING_Morgan_BleedNS_M_anims_set",
-                              }
+        special_anim_names = {
+            "l_guit_chrisvance_bulls_anims": "L_GUIT_ChrisV_Bulls_F_anims",
+            "l_guit_chrisvance_damnit_anims": "L_GUIT_ChrisV_Damnit_F_anims",
+            "l_guit_chrisvance_joker_anims": "L_GUIT_ChrisV_Joker_F_anims",
+            "l_guit_davidicus_bulls_anims": "L_GUIT_Davdics_Bulls_F_anims",
+            "l_guit_davidicus_damnit2_anims": "L_GUIT_Davdics_Damnit2_F_anims",
+            "l_guit_davidicus_damnit_anims": "L_GUIT_Davdics_Damnit_F_anims",
+            "l_guit_davidicus_joker_anims": "L_GUIT_Davdics_Joker_F_anims",
+            "l_guit_morgan_4horsemen_anims": "L_GUIT_Morgan_4Horse_M_anims",
+            "l_guit_morgan_bleedingme_anims": "L_GUIT_Morgan_BleedMe_M_anims",
+            "l_sing_morgan_bleedingns_anims": "L_SING_Morgan_BleedNS_M_anims",
+            "l_guit_chrisvance_bulls_anims_set": "L_GUIT_ChrisV_Bulls_F_anims_set",
+            "l_guit_chrisvance_damnit_anims_set": "L_GUIT_ChrisV_Damnit_F_anims_set",
+            "l_guit_chrisvance_joker_anims_set": "L_GUIT_ChrisV_Joker_F_anims_set",
+            "l_guit_davidicus_bulls_anims_set": "L_GUIT_Davdics_Bulls_F_anims_set",
+            "l_guit_davidicus_damnit2_anims_set": "L_GUIT_Davdics_Damnit2_F_anims_set",
+            "l_guit_davidicus_damnit_anims_set": "L_GUIT_Davdics_Damnit_F_anims_set",
+            "l_guit_davidicus_joker_anims_set": "L_GUIT_Davdics_Joker_F_anims_set",
+            "l_guit_morgan_4horsemen_anims_set": "L_GUIT_Morgan_4Horse_M_anims_set",
+            "l_guit_morgan_bleedingme_anims_set": "L_GUIT_Morgan_BleedMe_M_anims_set",
+            "l_sing_morgan_bleedingns_anims_set": "L_SING_Morgan_BleedNS_M_anims_set",
+            "l_guit_joes_hot_150_anims": "L_GUIT_JoeS_Hot_150_anims",
+            "l_guit_joes_hot_150_anims_set": "L_GUIT_JoeS_Hot_150_anims_set",
+            "l_guit_dvdicus_bulls_150_anims": "L_GUIT_Dvdicus_Bulls_150_anims",
+            "l_guit_dvdicus_bulls_150_anims_set": "L_GUIT_Dvdicus_Bulls_150_anims_set",
+        }
 
         wt_anim_swap = {
             "l_sing_haley_joker_anims": "L_SING_Amanda_Joker_anims",
@@ -820,12 +837,23 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
             "l_sing_haley_joker_anims_set": "L_SING_Amanda_Joker_anims_set",
             "l_sing_haley_bulls_anims_set": "L_SING_Amanda_Bulls_anims_set",
             "l_sing_haley_dammit_anims_set": "L_SING_Amanda_Dammit_anims_set",
-            "l_guit_jimi_joker_anims_set": "l_guit_dan_joker_anims_set"
+            "l_guit_jimi_joker_anims_set": "l_guit_dan_joker_anims_set",
+            "l_guit_zakk_stillborn_anims": "L_GUIT_Sonny_Stillborn_anims",
+            "l_guit_zakk_stillborn_anims_set": "L_GUIT_Sonny_Stillborn_anims_set",
+            "l_guit_sting_demolition_anims": "L_GUIT_Dan_Joker_anims",
+            "l_guit_sting_demolition_anims_set": "L_GUIT_Dan_Joker_anims_set"
         }
 
+        no_swap = []
+
         for section in script_sections:
+            if section.section_id == "0x6c8d898f":
+                print("Found odd animation structs. Changing...")
+                section.section_id = "car_male_anim_struct_dlc35"
+                section.section_data[1].struct_data_struct[1].data_value = "L_GUIT_JoeS_AreYou_anims_set"
             if re.search(r"^(car_female|car_male)", section.section_id, flags=re.IGNORECASE):
-                if re.search(r"(purplehaze|windcriesmary|dlc22|dlc23|dlc24|dlc92|dlc96|dlc97)$", section.section_id, flags=re.IGNORECASE):
+                if re.search(r"(purplehaze|windcriesmary|dlc22|dlc23|dlc24|dlc92|dlc96|dlc97)$", section.section_id,
+                             flags=re.IGNORECASE):
                     for anims in section.section_data:
                         if anims.data_type == "StructItemStruct":
                             if anims.data_id.lower() == "vocalist":
@@ -835,10 +863,19 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
                                 anims.struct_data_struct[1].data_value = "L_SING_JeffS_LowKey_anims_set"
                 for anims in section.section_data:
                     anims.data_id = grab_debug_2(anims.data_id, checksum_dbg)
+                    if anims.data_id == "drum":
+                        anims.struct_data_struct[0].data_value = "L_DRUM_Loops_Standard_anims"
+                        anims.struct_data_struct[1].data_value = "l_drum_loops_standard_anims_set"
                     if anims.data_id.lower() in anim_struct:
                         for anim_types in anims.struct_data_struct:
+                            if anim_types.data_id == '0x0':
+                                continue
                             anim_types.data_id = grab_debug_2(anim_types.data_id, checksum_dbg)
-                            anim_types.data_value = grab_debug_2(anim_types.data_value, checksum_dbg)
+                            try:
+                                anim_types.data_value = grab_debug_2(anim_types.data_value, checksum_dbg)
+                            except:
+                                if anim_types.data_id == "facial_anims":
+                                    anim_types.data_value = f"facial_anims_{'fe' if 'female' in section.section_id else ''}male_rocker"
                             car_name = anim_types.data_value
                             if car_name.lower() in wt_anim_swap:
                                 car_name = wt_anim_swap[car_name.lower()]
@@ -1046,7 +1083,8 @@ def wt_to_5_file(sections_dict, qs_dict, song_name, new_name="", convert="gh5", 
                     g_markers.append(marker_struct.data_value[0].data_value)
                     str_start = '\\u[m]'
                     str_check = '\\L_ENDOFSONG'
-                    if marker_struct.data_value[1].data_type != "StructItemString" and marker_struct.data_value[1].data_type != "StructItemStringW":
+                    if marker_struct.data_value[1].data_type != "StructItemString" and marker_struct.data_value[
+                        1].data_type != "StructItemStringW":
                         try:
                             try:
                                 qs_key = QBKey(marker_struct.data_value[1].data_value)
@@ -1115,6 +1153,7 @@ def check_ska_anims(anim_skas, song_files_dict, other_skas):
                     "file_name": f"{anim_skas[ska]}.ska", "file_data": new_anim}
     return song_files_dict
 
+
 def modify_strobe(n):
     # Extract the 2nd 8-bit integer
     second_byte = (n & 0x00ff0000) >> 16
@@ -1132,16 +1171,26 @@ def modify_strobe(n):
 
 def convert_to_5(pakmid, new_name, *args, **kwargs):
     root_folder = os.path.realpath(os.path.dirname(__file__))
-    if not "_song.pak" in pakmid.lower():
+    if not "_song.pak" in pakmid.lower() and not "_s.pak" in pakmid.lower():
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file (ending in '_song.pak'). Do you want to continue? (Y/N): ")
         if not warning.lower().startswith("y"):
             return -1
 
-    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")].lower()
+    if "_song.pak" in pakmid.lower():
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")].lower()
+    else:
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_s.pak")].lower()
+
+    if song_name[1:4] == "dlc":
+        song_name = song_name[1:]
+
+    other_skas = {}
+    for x in os.scandir(f"{root_folder}\\conversion_files\\ska"):
+        other_skas[x.name[:x.name.find(".ska.xen")].lower()] = x.path
 
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
-    vox_star_entry = [] # Setting this up now since there's a chance it can be overridden later.
+    vox_star_entry = []  # Setting this up now since there's a chance it can be overridden later.
     # This will make comparisons easier later on.
     anim_pak = 0
     drum_anim, override_sections, override_midqs = 0, 0, 0
@@ -1156,7 +1205,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
             try:
                 override_mid = MidiFile(kwargs["override_mid"])
                 override_tempo = mid_qb.get_song_tempo_data(override_mid)
-                override_parsed = mid_qb.parse_wt_qb(override_mid, 170, "2x_kick")
+                override_parsed = mid_qb.parse_wt_qb(override_mid, 170, "2x_kick", "gh5_mode", "force_only")
                 override_sections, override_midqs = mid_qb.create_wt_qb_sections(override_parsed, song_name)
                 if override_midqs:
                     override_midqs = get_qs_strings(override_midqs)
@@ -1164,7 +1213,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     if track.name == "drums":
                         override_sections[f"{song_name}_drums_notes"].section_data = mid_qb.make_wt_drum_anims(track,
                                                                                                                override_tempo)
-                        override_sections[f"{song_name}_drums_notes"].item_data = override_sections[f"{song_name}_drums_notes"].section_data
+                        override_sections[f"{song_name}_drums_notes"].item_data = override_sections[
+                            f"{song_name}_drums_notes"].section_data
                         override_sections[f"{song_name}_drums_notes"].array_type = "Integer"
                         break
                 if override_parsed["vox_sp"]:
@@ -1177,7 +1227,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         continue
                     temp_sections[x] = y
                 override_sections = mid_qb.create_wt_qb(temp_sections, song_name)
-                override_sections = QB2Text.convert_qb_file(QB2Text.qb_bytes(override_sections), song_name, file_headers)
+                override_sections = QB2Text.convert_qb_file(QB2Text.qb_bytes(override_sections), song_name,
+                                                            file_headers)
                 del (temp_sections)
                 del (override_mid)
             except Exception as E:
@@ -1190,14 +1241,35 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                 print("Converting World Tour SKA files to GHM+ format")
                 wt_mode = 1
                 for x in song_files:
+                    # continue
                     if x["file_name"].lower().endswith("ska"):
+                        to_compare = 0
+                        other_ska_check = x["file_name"][:-4].lower()
                         if "gh3_hnd" in x["file_name"].lower():
                             print("Skipping Hand Chord File")
                             continue
                         elif "male_strum_jimi" in x["file_name"].lower():
                             print("Skipping Hand Strum File")
                             continue
-                        x["file_data"] = make_modern_ska(ska_bytes(x["file_data"]), game="GH5")
+                        elif other_ska_check in other_skas:
+                            with open(other_skas[other_ska_check], 'rb') as f:
+                                uncomp_ska = f.read()
+                            to_compare = uncomp_ska
+                            del(uncomp_ska)
+                        '''elif f"{other_ska_check}_s1n1" in other_skas:
+                            with open(other_skas[f"{other_ska_check}_s1n1"], 'rb') as f:
+                                uncomp_ska = f.read()
+                            to_compare = uncomp_ska
+                            del(uncomp_ska)'''
+                        #print(f"Converting {x['file_name']}")
+                        if to_compare:
+                            converted = make_modern_ska(ska_bytes(x["file_data"]), game="GH5")
+                            # print(f"Using lower-size {'converted' if len(converted) < len(to_compare) else 'borrowed'} {x['file_name']}")
+                            x["file_data"] = converted if len(converted) < len(to_compare) else to_compare
+                            #print()
+                        else:
+                            # print(f"Using converted {x['file_name']}")
+                            x["file_data"] = make_modern_ska(ska_bytes(x["file_data"]), game="GH5")
                 print("Done!")
     song_file_len = len(song_files)
     if anim_pak:
@@ -1247,12 +1319,17 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
             perf_file = compile_perf_anims(script_sections, anim_data_dict, 0)
     else:
         perf_file = compile_perf_anims(script_sections, anim_data_dict, 0)
+    check_150 = []
+    for gender in ["male", "female"]:
+        for x in perf_file[gender]:
+            if x == "L_GUIT_Dvdicus_Bulls_150_anims":
+                if "Guit_Davidicus_Bulls_150" not in check_150:
+                    check_150.append("Guit_Davidicus_Bulls_150")
+            elif x == "L_GUIT_JoeS_Hot_150_anims":
+                if "guit_joes_hot_150_01" not in check_150:
+                    check_150.append("guit_joes_hot_150_01")
     perf_file["autocutcameras"] = cameras.autocut
     perf_file["momentcameras"] = cameras.moment
-
-    other_skas = {}
-    for x in os.scandir(f"{root_folder}\\conversion_files\\ska"):
-        other_skas[x.name[:x.name.find(".ska.xen")].lower()] = x.path
 
     for qb_item in ["cameras_notes", "facial"]:
         qb_file[f"{new_name}_{qb_item}"] = PAKExtract.qb_section("SectionArray")
@@ -1274,10 +1351,11 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         "Band_EnableAutoFret", "Band_SetIKChainTarget", "Band_DisableAutoChords",
                         "Band_DisableAutoFret", "Band_EnableAutoStrums", "Band_DisableAutoStrums",
                         "Band_ForceAllToIdle", "Band_ShowMicStand", "Band_HideMicStand", "Band_ShowMic_Stand",
-                        "Band_MoveToNode", "band_setikchain", "Band_PlayRockinFacialAnim"]
+                        "Band_MoveToNode", "band_setikchain", "Band_PlayRockinFacialAnim", "Band_ShowMic_microphone",
+                        "Band_HideMic_microphone", "Band_ClearAnimTempo"]
     allowed_converts += [hex(int(CRC.QBKey(x), 16)) for x in allowed_converts]
     ignored_converts = ["Band_PlaysimpleAnim", "dummy_function", "Band_SetStrumStyle", "VH_UndergroundLogo_On",
-                        "VH_UndergroundLogo_Off"]
+                        "VH_UndergroundLogo_Off", "Crowd_StartLighters", "Crowd_StopLighters"]
     ignored_converts += [hex(int(CRC.QBKey(x), 16)) for x in ignored_converts]
 
     params_check = ["ff_anims", "mf_anims"]
@@ -1288,6 +1366,9 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
         perf_xml_file[f"{new_name}_scriptevents"].section_data.append(PAKExtract.new_play_loop(0, x))
 
     play_clip_count = 0
+    last_clip_start = 0
+    last_clip_end = 0
+    clips_processed = []
     try:
         first_moment = cameras.moment[0] if cameras.moment[0] != 0 else cameras.moment[3]
     except:
@@ -1295,6 +1376,12 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     first_bass = get_first_note(note_file["bassexpertinstrument"].entries)
     first_guit = get_first_note(note_file["guitarexpertinstrument"].entries)
     first_note = int(round(min(first_moment, cameras.autocut[6], first_bass, first_guit) / 1000 * 30))
+    if "super_gimp" in args:
+        perf_file["momentcameras"] = []
+    moment_cams = perf_file["momentcameras"][::3]
+    autocut_cams = perf_file["autocutcameras"][::3]
+    orig_clip_times = {}
+    all_anims_used = []
     if qb_file[f"{new_name}_performance"].array_node_type != "Floats":
         print("Converting Performance array")
         wt_clip_time = []
@@ -1313,8 +1400,18 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     if script_val.data_value in check_dbg("Band_ChangeFacialAnims"):
                         """if simple_anim:
                             continue"""
+                        if "0xa8f45644" in x.data_dict["params"].keys():
+                            x.data_value[2].struct_data_struct[1].data_id = "ff_anims"
+                            x.data_value[2].struct_data_struct[2].data_id = "mf_anims"
+                            print("Fixing broken facial marker")
+                        if x.data_value[2].struct_data_struct[0].data_id == "0x0":
+                            x.data_value[2].struct_data_struct[0].data_id = "name"
+                            x.data_dict["params"]["name"] = x.data_dict["params"]["0x0"]
+                            print("Fixing broken name marker")
                         for y in x.data_dict["params"].keys():
                             if y in check_dbg("ff_anims") or y in check_dbg("mf_anims"):
+                                if x.data_dict["params"]["name"].lower() == "basssist":
+                                    x.data_value[2].struct_data_struct[0].data_value = "bassist"
                                 perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
                                 break
                             elif y in check_dbg("fa_type"):
@@ -1324,6 +1421,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                                                                        "Bassist", x.data_dict["params"]["fa_type"]))
                                 else:
                                     perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
+                                break
                         if all([any([new_name == "DLC289", new_name == "DLC263"]),
                                 x.data_dict["params"]["name"] == "guitarist"]):
                             perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
@@ -1332,6 +1430,9 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                                                                                   x.data_dict["params"]["mf_anims"]]))
                     elif script_val.data_value in check_dbg("Band_PlayClip") or script_val.data_value in check_dbg(
                             "BandPlayClip"):
+                        if "super_gimp" in args:
+                            print(f"Skipping {script_val.data_value} due to size")
+                            break
                         if script_val.data_value in check_dbg("BandPlayClip"):
                             print(f"Found broken script BandPlayClip. Fixing to Band_PlayClip")
                         params = x.data_dict["params"]
@@ -1341,28 +1442,62 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                             continue
                         rounded_time = round_time(x.data_dict["time"])
 
+                        if "positionfix" in clip_to_parse.section_id.lower():
+                            if rounded_time in orig_clip_times:
+                                rounded_time = orig_clip_times[rounded_time]
+                            print(f"Adding Force All to Idle at {rounded_time}")
+                            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(PAKExtract.force_all_to_idle(rounded_time))
+                            continue
+
                         if all([wt_mode, rounded_time in wt_clip_time, wt_clip_time[-1] != rounded_time]):
                             next_time = wt_clip_time[wt_clip_time.index(rounded_time) + 1]
-                            frames_till_next = round((next_time - rounded_time) / 1000 * 30) + 1
+                            frames_till_next = round((next_time - rounded_time) / 1000 * 30)
                         else:
                             frames_till_next = 0
                         anim_skas = clip_to_parse.data_dict["anims"]
-                        song_files_dict = check_ska_anims(anim_skas, song_files_dict, other_skas)
 
+                        camera_skas = {}
+                        all_cams = []
+                        if "cameras" in clip_to_parse.data_dict:
+                            all_cams += clip_to_parse.data_dict["cameras"]
+                        if "bassist_cameras" in clip_to_parse.data_dict:
+                            all_cams += clip_to_parse.data_dict["bassist_cameras"]
+                        if "guitarist_cameras" in clip_to_parse.data_dict:
+                            all_cams += clip_to_parse.data_dict["guitarist_cameras"]
+                        if "vocalist_cameras" in clip_to_parse.data_dict:
+                            all_cams += clip_to_parse.data_dict["vocalist_cameras"]
+                        if "secondary_cameras" in clip_to_parse.data_dict:
+                            all_cams += clip_to_parse.data_dict["secondary_cameras"]
+                        if all_cams and not all_cams == [0]:
+                            for enum, cam_ska in enumerate(all_cams):
+                                camera_skas[f"camera_{enum}"] = cam_ska.data_dict["anim"]
+                        else:
+                            print(f"No cameras for {clip_to_parse.section_id}")
+                        song_files_dict = check_ska_anims(anim_skas | camera_skas, song_files_dict, other_skas)
+                        no_clip_trunc = 1
+                        if x.data_dict["time"] == 0 and wt_mode:
+                            for no_temp in anim_skas.values():
+                                if re.search(r"notempo", no_temp, flags=re.IGNORECASE):
+                                    no_clip_trunc = 0
+                                    print("Checking no tempo anim...")
+                                    break
                         """
                         Add support for "secondary, bassist, guitarist, etc. cameras
                         Secondary seems to be camera 99, i.e. slot 10
                         Bassist cam seems to be camera 6, or camera 93, i.e. slot 4
                         Guitarist seems to be camera 94, i.e. slot 5
                         """
-                        if x.data_dict["time"] != 0 or new_name.lower() in ["dlc22","dlc23","dlc24","dlc92","dlc96","dlc97", "dlc306"]:
+                        if no_clip_trunc or new_name.lower() in ["dlc22", "dlc23", "dlc24", "dlc92", "dlc96",
+                                                                            "dlc97", "dlc105", "dlc306"]:
                             new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
-                                                                            ven_cams=cameras, wt_frames=frames_till_next,
+                                                                            ven_cams=cameras,
+                                                                            wt_frames=frames_till_next,
                                                                             use_anims=use_anims)
                         else:
                             new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
                                                                             ven_cams=cameras, next_note=first_note,
-                                                                            wt_frames=frames_till_next, use_anims=use_anims)
+                                                                            wt_frames=frames_till_next,
+                                                                            use_anims=use_anims)
                         if new_clip_data == -1:
                             print(f"Invalid anim: {clip_to_parse.section_id}. Reason: {endf}.\nSkipping")
                             continue
@@ -1371,13 +1506,141 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                             clip_name = clip_name[2:]
                         play_clip_count += 1
                         if "gh5" in args:
-                            new_clip_data = [PAKExtract.struct_item("StructItemInteger", "dataformat", 2, 0)] + new_clip_data
+                            new_clip_data = [PAKExtract.struct_item("StructItemInteger", "dataformat", 2,
+                                                                    0)] + new_clip_data
                             new_clip_data.pop()
+
+                        # Check if moment cams need to be adjusted
+                        clip_len = round((endf - startf) / 30 * 1000)
+                        anim_ska_lens = []
+                        skip_clip = False
+                        curr_clip = clip_to_parse.section_id
+                        for key, value in anim_skas.items():
+                            if key == "drummer":
+                                continue
+                            if value == "None":
+                                continue
+                            if "G_Attached" in value:
+                                skip_clip = True
+                            if "_120" in value:
+                                skip_clip = True
+                            if value.startswith("0x"):
+                                ska_name = f"{value}.{value}.ska"
+                                anim_ska_lens.append(round(
+                                    struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0] * 1000))
+                            else:
+                                ska_name = f"{value}.ska"
+                                anim_ska_lens.append(round(struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0]*1000))
+                            if ska_name not in all_anims_used:
+                                all_anims_used.append(ska_name.lower())
+                        for key, value in camera_skas.items():
+                            if value.startswith("0x"):
+                                ska_name = f"{value}.{value}.ska"
+                            else:
+                                ska_name = f"{value}.ska"
+                            if ska_name not in all_anims_used:
+                                all_anims_used.append(ska_name.lower())
+                        min_length = min(anim_ska_lens)
+                        min_length_frame = round(min_length/1000 * 30)
+                        if rounded_time in orig_clip_times:
+                            print(f"Moving moment {curr_clip} from {rounded_time} back to {orig_clip_times[rounded_time]}")
+                            rounded_time = orig_clip_times[rounded_time]
+                        if not any([rounded_time in autocut_cams, rounded_time in moment_cams]):
+                            closest_cam = min(autocut_cams, key=lambda x: abs(x - rounded_time))
+                            clip_offset = closest_cam - rounded_time
+                            if abs(clip_offset) < 350:
+                                rounded_time = closest_cam
+                            elif rounded_time < last_clip_end:
+                                if curr_clip == clips_processed[-1] and last_clip_start == rounded_time:
+                                    print(f"Duplicate Band Clip {curr_clip} found. Ignoring.")
+                                    break
+                                elif curr_clip[:-4] == clips_processed[-1][:-4]:
+                                    print(f"{curr_clip} seems to continue from {clips_processed[-1]}. No adjustments made")
+                                elif not wt_mode:
+                                    pass
+                                else:
+                                    print(f"Previous moment isn't finished! Moving current from {rounded_time} to {last_clip_end}")
+                                    rounded_time = last_clip_end
+
+                        cam_check = rounded_time + clip_len
+                        cam_check = cam_len_check(cam_check)
+
+                        if not any([cam_check in autocut_cams, cam_check in moment_cams]):
+                            closest = min(autocut_cams, key=lambda x: abs(x - cam_check))
+                            clip_end_off = closest - cam_check
+                            clip_end_frames = round(clip_end_off/1000*30)
+                            if abs(clip_end_off) <= 350 and not skip_clip:
+                                if clip_end_off < 0:
+                                    endf += clip_end_frames
+                                    #print()
+                                else:
+                                    if startf >= clip_end_frames:
+                                        startf -= clip_end_frames
+                                    else:
+                                        if startf > 0:
+                                            clip_end_frames -= startf
+                                            startf = 0
+                                        if (min_length_frame - endf) > clip_end_frames:
+                                            endf += clip_end_frames
+                                        elif clip_end_frames <= 10:
+                                            # rounded_time = round_time(rounded_time+1)
+                                            print(f"Moving camera back by {clip_end_frames} {'frame' if clip_end_frames == 1 else 'frames'}.")
+                                            auto_in = autocut_cams.index(closest)
+                                            new_cam_len_1 = perf_file["autocutcameras"][((auto_in - 1) * 3) + 1]
+                                            new_cam_len_2 = perf_file["autocutcameras"][(auto_in * 3) + 1]
+
+                                            new_cam_len_1 -= round(clip_end_frames * 1/30 * 1000)
+                                            new_cam_len_2 += round(clip_end_frames * 1 / 30 * 1000)
+
+                                            new_cam_time = cam_len_check(closest - round(clip_end_frames * 1/30 * 1000))
+
+                                            new_cam_len_1 = cam_len_check(new_cam_len_1)
+                                            new_cam_len_2 = cam_len_check(new_cam_len_2)
+
+                                            perf_file["autocutcameras"][((auto_in - 1) * 3) + 1] = new_cam_len_1
+                                            perf_file["autocutcameras"][(auto_in * 3) + 1] = new_cam_len_2
+                                            perf_file["autocutcameras"][(auto_in * 3)] = new_cam_time
+                                            if closest in moment_cams:
+                                                moment_in = moment_cams.index(closest)
+                                                perf_file["momentcameras"][(moment_in * 3) + 1] = new_cam_len_2
+                                                perf_file["momentcameras"][(moment_in * 3)] = new_cam_time
+                                                if autocut_cams[auto_in - 1] in moment_cams:
+                                                    perf_file["momentcameras"][
+                                                        ((moment_in - 1) * 3) + 1] = new_cam_len_1
+                                                if not perf_file["momentcameras"][(moment_in * 3) + 2] in range(33,37):
+                                                    orig_clip_times[closest] = new_cam_time
+                                                    # input("Anim shorter than camera cut")
+                                                moment_cams = perf_file["momentcameras"][::3]
+                                            autocut_cams = perf_file["autocutcameras"][::3]
+                                        else:
+                                            input("Anim shorter than camera cut")
+                            '''if not any([cam_check in autocut_cams, cam_check in moment_cams]):
+                            closest = min(autocut_cams, key=lambda x: abs(x - cam_check))
+                            """if abs(closest - cam_check) > 500:
+                                continue"""
+                            try:
+                                close_index = autocut_cams.index(closest)
+                                next_auto = autocut_cams[close_index + 1]
+                                new_len = next_auto - cam_check
+                                if str(new_len).endswith("34"):
+                                    new_len -= 1
+                                elif str(new_len).endswith("66"):
+                                    new_len += 1
+                                perf_file["autocutcameras"][close_index * 3] = cam_check
+                                perf_file["autocutcameras"][(close_index * 3) + 1] = new_len
+                                if closest in moment_cams:
+                                    perf_file["momentcameras"][close_index * 3] = cam_check
+                                    perf_file["momentcameras"][(close_index * 3) + 1] = new_len
+                            except Exception as E:
+                                raise E'''
+                        last_clip_start = rounded_time
+                        last_clip_end = cam_check
+                        clips_processed.append(curr_clip)
                         perf_xml_file[clip_name] = PAKExtract.qb_section("SectionStruct")
                         perf_xml_file[clip_name].set_all(clip_name, new_clip_data, f"songs/{new_name}.perf.xml.qb")
                         perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
                             PAKExtract.new_play_clip(rounded_time, clip_name, startf, endf))
-                        # print()
+
                     elif script_val.data_value in check_dbg("Band_PlayIdle"):
                         if x.data_value[0].data_id == "time":
                             x.data_value[0].data_value = round_time(x.data_value[0].data_value)
@@ -1391,11 +1654,38 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     else:
                         if x.data_value[0].data_id == "time":
                             x.data_value[0].data_value = round_time(x.data_value[0].data_value)
-                        perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
+
+                        if "Band_PlayFacialAnim" in script_val.data_value:
+                            fac_params = x.data_dict["params"]
+                            if "anim" in fac_params:
+                                if "gimp" in args and re.search(r"(^face_|backing)", fac_params["anim"], flags=re.IGNORECASE):
+                                    break
+                                curr_ska = f'{fac_params["anim"].lower()}.ska' if not fac_params["anim"].lower().startswith("0x") else f'{fac_params["anim"].lower()}.{fac_params["anim"].lower()}.ska'
+                                all_anims_used.append(curr_ska)
+                            elif "mf_anims" in fac_params:
+                                all_anims_used.append(f'{fac_params["mf_anims"].lower()}.ska')
+                                if not "ff_anims" in fac_params:
+                                    x.data_value[2].struct_data_struct.append(PAKExtract.struct_item('StructItemQbKey', 'ff_anims', fac_params["mf_anims"], 0))
+                                    print("Added ff_anims")
+                            elif "ff_anims" in fac_params:
+                                all_anims_used.append(f'{fac_params["ff_anims"].lower()}.ska')
+                                if not "mf_anims" in fac_params:
+                                    x.data_value[2].struct_data_struct.append(PAKExtract.struct_item('StructItemQbKey', 'mf_anims', fac_params["ff_anims"], 0))
+                                    print("Added mf_anims")
+                            else:
+                                print(f"No Facial Anim at {x.data_dict['time']}")
+
+
+                        elif "Band_ChangeFacialAnims" in script_val.data_value:
+                            input("Facial Anim Change")
                         if all([new_name == "DLC289", "Band_PlayFacialAnim" in script_val.data_value]):
                             if x.data_dict["params"]["name"] == "guitarist":
                                 perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
-                                    PAKExtract.new_lipsync(x.data_dict["time"], "bassist", x.data_dict["params"]["anim"]))
+                                    PAKExtract.new_lipsync(x.data_dict["time"], "bassist",
+                                                           x.data_dict["params"]["anim"]))
+                        else:
+                            print(f"Adding {script_val.data_value}")
+                            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
                     break
                 elif script_val.data_id == "scr":
                     if new_name == "DLC289":
@@ -1450,15 +1740,43 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         perf_xml_file[clip_name].set_all(clip_name, new_clip_data, f"songs/{new_name}.perf.xml.qb")
                         perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
                             PAKExtract.new_play_clip(rounded_time, clip_name, startf, endf))
+                    elif script_val.data_value == "0xf7fbdb26":
+                        print("0xf7fbdb26 found. Assumed to be SetSongHandCamParams")
+                        x.data_value[1].data_value = "SetSongHandCamParams"
+                        x.data_value[2].struct_data_struct[0].data_id = "amplitudeposition"
+                        x.data_value[2].struct_data_struct[1].data_id = "amplituderotation"
+                        perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
+                    elif script_val.data_value == "LightShow_SetTime":
+                        print(f"Lightshow blend time script found at {x.data_dict['time']}. Weird, but I'll allow it.")
+                        perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
                     elif script_val.data_value not in ignored_converts:
                         print(f"{script_val.data_value} found. Not sure what to do with it")
-
+                    else:
+                        print(f"Ignoring {script_val.data_value}")
+    scriptevents = {}
+    for x in perf_xml_file[f"{new_name}_scriptevents"].section_data:
+        if x.data_value[0].data_value not in scriptevents:
+            scriptevents[x.data_value[0].data_value] = [x]
+        elif x.data_value[1].data_value == "Band_ForceAllToIdle":
+            scriptevents[x.data_value[0].data_value].insert(0, x)
+        else:
+            scriptevents[x.data_value[0].data_value].append(x)
+    perf_xml_file[f"{new_name}_scriptevents"].section_data = []
+    scriptevents = sorted(scriptevents.items())
+    for key, value in scriptevents:
+        for x in value:
+            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
     qb_file[f"{new_name}_performance"].make_empty(f"{new_name}_performance")
     ska_data = []
     for pak_file in song_files_dict.keys():
         if song_files_dict[pak_file]["file_name"].endswith(".ska"):
-            # if pak_file["file_name"].startswith("gh4_"):
-            ska_data.append(song_files_dict[pak_file])
+            anim_name = song_files_dict[pak_file]["file_name"].lower()
+            if anim_name in all_anims_used:
+                ska_data.append(song_files_dict[pak_file])
+            else:
+                print(f"Removing unused anim {song_files_dict[pak_file]['file_name']} to save space.")
+
+
 
     note_file["bandmoment"] = mid_qb.gh5_base_entry()
     note_file["bandmoment"].set_qb_string("gh5_band_moment_note")
@@ -1509,7 +1827,6 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
         else:
             qb_file[f"{new_name}_lightshow_notes"].section_data[enum] = modify_strobe(light)
 
-
     # To do:
     """mid.qb:
         _anim_notes
@@ -1543,7 +1860,33 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
          "file_data": convert_to_gh5_bin(perf_xml_file, "perf_xml", console="PC", endian="big")})
     if anim_pak:
         ska_data = ska_data[:song_file_len - len(song_data)]
+    elif re.search(r'(purplehaze|windcriesmary|dlc22|dlc23|dlc24|dlc92|dlc96|dlc97)', song_name, flags = re.IGNORECASE):
+        print("Adding left-hand anims for future proofing")
+        new_ska = []
+        for x in ska_data:
+            if re.search(r'(^GH3_Hnd)|(Strum_Jimi)', x["file_name"], flags=re.IGNORECASE):
+                continue
+            else:
+                new_ska.append(x)
+        left_path = "D:\\RB\\GHWoR\\Convert Creations\\Left-Hand Anims"
+        for x in os.listdir(f"{left_path}"):
+            with open(f"{left_path}\\{x}", 'rb') as f:
+                ska_file = f.read()
+            new_ska.append({"file_name": x[:-4], "file_data": ska_file})
+        ska_data = new_ska
+    # elif re.search(r'ReEdThroughLabor', song_name, flags= re.IGNORECASE):
+    elif check_150:
+        onefifty_path = "D:\\RB\\GHWoR\\Convert Creations\\150 anims"
+        diff_files = ["", "_c01", "_c02", "_c03"]
+        for x in check_150:
+            print(f"Adding 150 anim: {x}")
+            for y in diff_files:
+                with open(f"{onefifty_path}\\{x}{y}.ska.xen", 'rb') as f:
+                    ska_file = f.read()
+                ska_data.append({"file_name": f"{x}{y}.ska", "file_data": ska_file})
+        # print()
     return song_data + ska_data
+
 
 def gen_vox_sp(song_name, note_file):
     vox_star_entry = []
@@ -1560,9 +1903,11 @@ def gen_vox_sp(song_name, note_file):
                 star_count += 1
                 if star_count % rand_phrase[start_pos] == 0:
                     if y + 1 != len(note_file["vocalsmarkers"].entries):
-                        vox_star_entry += [p_time + 4, note_file["vocalsmarkers"].entries[y + 1] - 3 - (p_time + 4)]
+                        phrase_end = note_file["vocalphrase"].entries.index(p_time) + 1
+                        vox_star_entry += [p_time + 4, note_file["vocalphrase"].entries[phrase_end] - 3 - (p_time + 4)]
                     start_pos = (start_pos + 1) % len(rand_phrase)
     return vox_star_entry
+
 
 def get_first_note(entry):
     try:
@@ -1793,24 +2138,35 @@ def text_to_qb(text_file, output=os.getcwd()):
 
 
 def band_clip_from_wt(band_clip, params, anim_data, ven_cams, *args, **kwargs):
+    # This function converts the animations from one game (GHWT) to another (GH5 and up)
     import struct
     ven_cams.create_cam_dict()
     if "use_anims" in kwargs:
         use_anims = kwargs["use_anims"]
     else:
         use_anims = 1
+
+    # Setting up key lists
     to_pull = ["startnodes", "anims", "cameras", "arms", "secondary_cameras", "guitarist_cameras", "vocalist_cameras",
                "bassist_cameras"]
     band = ["guitarist", "bassist", "drummer", "vocalist"]
     camera_slots = {"cameras": 0, "vocalist_cameras": 0, "bassist_cameras": 3, "guitarist_cameras": 6}
     cam_spec = ["name", "anim"]
+
+    # Setting up spelling error correction and armatures dictionary
     spelling_errors = {"guitairstist": "guitarist",
                        "basssist": "bassist"}
     arms_dict = {"off": "False", "on": "True"}
+
+    # Getting data dictionary from band_clip
     data = band_clip.data_dict
+
+    # Initializing characters dictionary
     characters = {}
     for player in band:
         characters[player] = {}
+
+    # Initializing camera list
     cameras = []
     for clip_data in to_pull:
         if clip_data in data.keys():
@@ -1873,33 +2229,43 @@ def band_clip_from_wt(band_clip, params, anim_data, ven_cams, *args, **kwargs):
             if "anim" not in curr:
                 # curr["anim"] = 0
                 continue
+            if curr["anim"] == "None":
+                continue
             else:
-                if curr[
-                    "anim"].lower() == "none":  # Skip the character if there's no animation played (GHM has this sometimes)
+                if curr["anim"].lower() == "none":
+                    # Skip the character if there's no animation played (GHM has this sometimes)
                     continue
             curr_char = mid_qb.gh5_band_clip(player, curr["startnode"], curr["anim"])
             if "arms" in curr:
                 for arms in curr["arms"].keys():
                     x_arm = curr["arms"][arms]  # current armature
                     setattr(curr_char, arms, (x_arm if x_arm.lower() not in arms_dict else arms_dict[x_arm.lower()]))
-
+            ska_to_check = characters[player]['anim']
+            if ska_to_check.startswith("0x"):
+                ska_to_check = f"{ska_to_check}.{ska_to_check}"
+            try:
+                ska_length = anim_data[f"{ska_to_check}.ska"]["file_data"][40:44]
+            except Exception as E:
+                raise E
+            ska_length = struct.unpack(">f", ska_length)[0]
+            ska_length = round(ska_length * 30)
             setattr(curr_char, "startframe", startframe)
             if endframe:  # Set the endframe if it exists
                 setattr(curr_char, "endframe", endframe)
+                # print()
                 all_endframes.append(endframe)
+
             elif "next_note" in kwargs and use_anims:  # If it's the first Clip event (most likely an idle event). Play until first note/camera cut
                 endframe = startframe + kwargs["next_note"]
                 setattr(curr_char, "endframe", startframe + kwargs["next_note"] - 1)
                 all_endframes.append(endframe)
             else:  # Nuclear option. Since endframe is kind of needed, this will grab the last frame of the ska file and insert it.
                 try:
-                    ska_to_check = characters[player]['anim']
-                    if ska_to_check.startswith("0x"):
-                        ska_to_check = f"{ska_to_check}.{ska_to_check}"
                     endframe = anim_data[f"{ska_to_check}.ska"]["file_data"][40:44]
                     endframe = struct.unpack(">f", endframe)[0]
                     endframe = round(endframe * 30)
                     setattr(curr_char, "endframe", endframe)
+
                     all_endframes.append(endframe)
                     endframe = 0
                 except Exception as E:
@@ -1913,7 +2279,9 @@ def band_clip_from_wt(band_clip, params, anim_data, ven_cams, *args, **kwargs):
         camera_qb.make_empty_array()
     endframe = min(all_endframes)
     if endframe < startframe:
-        return -1, -1, "Endframe is less than startframe"
+        startframe, endframe = endframe, startframe
+        print(f"Swapping endframe and startframe due to endframe being smaller...")
+        # return -1, -1, "Endframe is less than startframe"
     for char in char_dict:
         if char.endframe > endframe:
             char.endframe = endframe
@@ -2480,7 +2848,8 @@ def read_gh5_note(note_bin, drum_mode=False):
             for entry in range(entry_count):
                 entry_time = read_int()
                 entry_text = note_file.read(element_size - 4)
-                if all([element_size == 132, entry_type == "gh5_vocal_marker_note"]) or all([element_size == 36, entry_type == "gh5_vocal_lyric"]):
+                if all([element_size == 132, entry_type == "gh5_vocal_marker_note"]) or all(
+                        [element_size == 36, entry_type == "gh5_vocal_lyric"]):
                     entry_text = entry_text.decode("utf-8").replace("\x00", "")
                 else:
                     entry_text = entry_text.decode("utf-16-be").replace("\x00", "")
@@ -2676,7 +3045,7 @@ def create_mid_from_qb(pakmid):
     else:
         print("GHWT song found")
         ghwt = True
-
+    band_clips = []
     instruments = 0
     use_cams = 0
     pull_struct = 0
@@ -2694,6 +3063,16 @@ def create_mid_from_qb(pakmid):
             cameras, anim_structs = read_gh5_perf(files["file_data"], song_name)
             use_cams = 1
             pull_struct = 1
+        elif re.search(fr"songs/{song_name}\.perf.xml.qb$", files["file_name"], flags=re.IGNORECASE):
+            perf_xml_file = QB2Text.convert_qb_file(QB2Text.qb_bytes(files["file_data"]), song_name, file_headers)
+            for x in perf_xml_file:
+                if x.section_id.endswith("scriptevents"):
+                    for y in x.section_data:
+                        if y.data_dict["scr"] == "Band_PlayClip":
+                            clip_params = y.data_dict["params"]
+                            clip_len = round((clip_params["endframe"] - clip_params["startframe"]) / 30 / clip_params["timefactor"] * 1000)
+                            band_clips.append([clip_params["clip"],y.data_dict["time"], clip_len+y.data_dict["time"]])
+            #print()
     try:
         timesig = sections_dict[f"{song_name}_timesig"].section_data
         fretbars = sections_dict[f"{song_name}_fretbars"].section_data
@@ -2749,6 +3128,7 @@ def create_mid_from_qb(pakmid):
         return new_mid, struct_string
     """elif ghwt:
         new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb, "GHWT")"""
+
 
     drum_events = {"name": "PART DRUMS"}
     gtr_events = {"name": "PART GUITAR"}
@@ -2841,6 +3221,7 @@ def create_mid_from_qb(pakmid):
         except Exception as E:
             raise E
 
+
     if use_cams:
         new_mid.add_track(f"cameras")
         moments = cameras["momentcameras"]
@@ -2862,6 +3243,31 @@ def create_mid_from_qb(pakmid):
         new_mid.add_track()
         new_mid.tracks[-1] = mido.merge_tracks(gh3_cams)
         new_mid.tracks[-1].name = "GH3 VENUE"
+
+    if band_clips:
+        band_midi = []
+        for enum, x in enumerate(band_clips):
+            time1 = x[1]/1000
+            time2 = x[2]/1000
+            map_lower = tempo_data.secondsArray[tempo_data.secondsArray <= time1].max()
+            map_lower2 = tempo_data.secondsArray[tempo_data.secondsArray <= time2].max()
+            arrIndex = tempo_data.songSeconds.index(map_lower)
+            arrIndex2 = tempo_data.songSeconds.index(map_lower2)
+            timeFromChange = time1 - tempo_data.songSeconds[arrIndex]
+            timeFromChange2 = time2 - tempo_data.songSeconds[arrIndex2]
+            ticksFromChange = s2t(timeFromChange, tpb, tempo_data.songTempo[arrIndex])
+            ticksFromChange2 = s2t(timeFromChange2, tpb, tempo_data.songTempo[arrIndex2])
+            timeVal = tempo_data.songTime[arrIndex] + round(ticksFromChange)
+            timeVal2 = tempo_data.songTime[arrIndex2] + round(ticksFromChange2) - timeVal
+
+            band_midi.append(MidiTrack())
+            clip_note = (enum % 40) + 40
+            band_midi[-1].append(Message("note_on", time=timeVal, note=clip_note, velocity=100))
+            band_midi[-1].append(Message("note_on", time=timeVal2, note=clip_note, velocity=0))
+
+        band_midi = mido.merge_tracks(band_midi)
+        band_midi.name = "Band_Clips"
+        new_mid.tracks.append(band_midi)
 
     if pull_struct and anim_structs:
         if anim_structs["type"] == "gh5":

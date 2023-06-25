@@ -6632,8 +6632,8 @@ GSB_NoTempo_Begin_WCM = {
 	}
 	anims = {
 		bassist = GSB_B_NoTempo_UJ_01
-		vocalist = GSB_G_NoTempo_UJ_01
-		guitarist = g_jimi_win_01
+		vocalist = S_Mountain_ChillBigNote01
+		guitarist = GSB_G_NoTempo_UJ_01
 	}
 	arms = {
 		Guitarist = {
