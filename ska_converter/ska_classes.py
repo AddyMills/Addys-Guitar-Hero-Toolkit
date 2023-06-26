@@ -72,6 +72,11 @@ class ska_bytes:
 
         if self.flags & BIG_TIME:
             self.big_time = 1
+            
+        if self.flags & COMP_FLAGS:
+            self.compressed = 1
+        else:
+            self.compressed = 0
 
         self.duration = self.readFloat()
         self.duration_frames_60 = round(self.duration * 60)

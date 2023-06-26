@@ -10,7 +10,7 @@ import struct
 root_folder = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{root_folder}\\pak_extract")
 sys.path.append(f"{root_folder}\\midqb_gen")
-sys.path.append(f"{root_folder}\\ska_switcher")
+sys.path.append(f"{root_folder}\\ska_converter")
 sys.path.append(f"{root_folder}\\create_audio")
 from pak_extract import PAKExtract, QB2Text, Text2QB
 from midqb_gen import MidQbGen as mid_qb

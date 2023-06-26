@@ -439,14 +439,21 @@ def make_gh3_ska(ska, **kwargs):
     else:
         quats_mult = 1
 
-    if "ska_switch" in kwargs:
+    if all(["ska_switch" in kwargs, ska.ska_source != "camera"]):
         try:
-            ska_switch = grab_ska_dict(kwargs["ska_switch"])
-            swap_bones(ska, ska_switch)
+            ska.to_ska = kwargs["ska_switch"]
+            if ska.to_ska == ska.ska_source:
+                ska_switch = 0
+            else:
+                ska_switch = grab_ska_dict(ska.to_ska)
+                swap_bones(ska, ska_switch)
         except Exception as e:
             raise e
             ska_switch = 0
     else:
+        if ska.ska_source == "camera":
+            print("Cameras are not yet supported to convert to GH3 or GHA\n")
+            return None
         ska_switch = 0
 
 

@@ -9,14 +9,21 @@ from create_audio import audio_functions
 
 debug = 0
 
-menu_options = ["make_gh3_mid - Create a PAK file for a custom song",
+# Menu Options
+menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_to_5", "convert_to_gh3", "convert_to_gha",
+                    "create_mid_from_pak", "extract_pak", "make_gh3_mid", "qb2text", "text2qb"]
+
+menu_options = [
+                "compile_wt_song - Compile a Guitar Hero: World Tour song pak file from audio and a MIDI file",
+                "convert_ska_file - Convert a SKA file from one game to another (for conversions)",
+                "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
+                "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
+                "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
+                "create_mid_from_pak - Convert any Guitar Hero song pak file to a MIDI and pull anim loop data",
                 "extract_pak - Extract all files from a PAK file",
+                "make_gh3_mid - Create a PAK file for a custom song",
                 "qb2text - Convert QB files to text files",
                 "text2qb - Convert text files back into QB files",
-                "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
-                "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
-                "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
-                "create_mid_from_pak - Convert any Guitar Hero song pak file to a MIDI and pull anim loop data"
                 ]
 
 menu_mods = [
@@ -42,11 +49,14 @@ def manual_input():
             print("\n")
             try:
                 main_menu = int(input("Selection: "))
+                if main_menu == -1:
+                    break
+                main_menu = menu_options_var[main_menu - 1]
             except:
                 cls()
                 input("Please only enter whole numbers. Press Enter to continue")
             print("")
-            if main_menu == 1:
+            if main_menu == "make_gh3_mid":
                 mid_file = input(
                     "Drag in your mid file (make sure the name of the file is the internal name of your custom): ").replace(
                     "\"", "")
@@ -57,20 +67,20 @@ def manual_input():
                 with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
                     f.write(pak_file)
                 input("Done! Press Enter to go back to the Main Menu. ")
-            elif main_menu == 2:
+            elif main_menu == "extract_pak":
                 pak_file = input("Drag in your PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(pak_file)}\\extract'
                 extract_pak(pak_file, output)
                 input("Done! Press Enter to go back to the Main Menu. ")
-            elif main_menu == 3:
+            elif main_menu == "qb2text":
                 qb_file = input("Drag in your QB file: ").replace("\"", "")
                 output = f'{os.path.dirname(qb_file)}'
                 qb_to_text(qb_file, output)
-            elif main_menu == 4:
+            elif main_menu == "text2qb":
                 text_file = input("Drag in your text file: ").replace("\"", "")
                 output = f'{os.path.dirname(text_file)}'
                 text_to_qb(text_file, output)
-            elif main_menu == 5:
+            elif main_menu == "convert_to_gha":
                 singer_dict = {
                     "1": "gha_singer",
                     "2": "steve",
@@ -92,17 +102,30 @@ def manual_input():
                     pak_name = f'\\{song_name}_song_GHA.pak.xen'
                 with open(output + pak_name, 'wb') as f:
                     f.write(song_pak)
-            elif main_menu == 6:
+            elif main_menu == "convert_to_gh3":
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 song_name, song_pak = convert_to_gh3(midqb_file, output)
                 with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                     f.write(song_pak)
-            elif main_menu == 7:
+            elif main_menu == "convert_to_5":
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
-                new_name = randint(10000,1000000000)
-                print(f"DLC number for this file will be {new_name}\n")
+                while True:
+                    try:
+                        dlc_num = input("Enter a DLC number higher than 10,000 (if converting to WoR, this should match the DLC number Onyx assigned)\nLeave blank for a random number: ")
+                        new_name = int(dlc_num)
+                        if not dlc_num:
+                            raise Exception
+                        else:
+                            if new_name < 10000:
+                                raise Exception
+                            else:
+                                break
+                    except:
+                        print("No valid dlc number found, using random number")
+                        new_name = randint(10000,1999999999)
+                        print(f"DLC number for this file will be {new_name}\n")
                 new_name = f"dlc{new_name}"
                 print("Converting World Tour song to Guitar Hero 5")
                 try:
@@ -115,7 +138,7 @@ def manual_input():
                     print("Conversion failed!")
                     print(E)
                     input("\nPress any key to exit.")
-            elif main_menu == 8:
+            elif main_menu == "create_mid_from_pak":
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 midname = os.path.basename(midqb_file)[:os.path.basename(midqb_file).find(".")]
@@ -127,11 +150,99 @@ def manual_input():
                     with open(f"{output}\\{midname}_scripts.txt", "w") as f:
                         f.write(anim_string)
                 input("\nComplete! Press any key to go to the main menu.")
+            elif main_menu == "compile_wt_song":
+                launch_gui()
+            elif main_menu == "convert_ska_file":
+                while True:
+                    ska_files = input("Drag in your SKA file or a folder containing multiple SKA files: ")
+                    if not os.path.exists(ska_files):
+                        print("File path does not exist")
+                    else:
+                        break
+                if os.path.isdir(ska_files):
+                    ska_folder = ska_files
+                else:
+                    ska_folder = os.path.dirname(ska_files)
+                output = f'{ska_folder}\\converted_ska_files'
+                target_dict = {
+                    "1": "GH3",
+                    "2": "GHA",
+                    "3": "GHWT",
+                    "4": "GH5"
+                }
+                print("Choose a target skeleton")
+                for y, x in enumerate(target_dict):
+                    print(f"\t{x}) {target_dict[x]}")
+                while True:
+                    ska_game = target_dict[input("Type in the number corresponding to your target game: ")]
+                    if ska_game in target_dict.values():
+                        if ska_game == "GH3" or ska_game == "GHA":
+                            while True:
+                                print("1 - Singer\n2 - Guitarist"+ ("\n3 - Steven Tyler" if ska_game == "GHA" else ""))
+                                ska_type = input("Choose a skeleton: ")
+                                if ska_type == "1":
+                                    ska_target = f"{ska_game}_singer".lower()
+                                    break
+                                elif ska_type == "2":
+                                    ska_target = f"gh3_guitarist"
+                                    break
+                                elif ska_type == "3" and ska_game == "GHA":
+                                    ska_target = "steve"
+                                    break
+                                else:
+                                    print("Invalid target")
+                        else:
+                            ska_target = "wt_rocker"
+                        break
+                    else:
+                        print("Invalid target")
+                if os.path.isdir(ska_files):
+                    ska_files = [x for x in os.listdir(ska_files) if any([x.lower().endswith(".ska"), x.lower().endswith(".ska.xen"), x.lower().endswith(".ska.ps3")])]
+                else:
+                    ska_files = [ska_files]
+                quat_check = 0
+                for x in ska_files:
+                    with open(f"{ska_folder}\\{x}", "rb") as f:
+                        ska = ska_bytes(f.read())
+                    print(f"Processing {os.path.basename(x)}")
+                    try:
+                        if ska_game == "GHWT" or ska_game == "GH5":
+                            if ska.version == 0x48 and not quat_check:
+                                gha_check = input(f"{'Are' if len(ska_files) > 1 else 'Is'} your SKA {'files' if len(ska_files) > 1 else 'file'} from GHA? (y/n): ")[0].lower()
+                                if gha_check == "y":
+                                    quats_mult = 1
+                                    quat_check = 1
+                                else:
+                                    quats_mult = 2
+                                    quat_check = 2
+                            elif quat_check:
+                                quats_mult = quat_check
+                            else:
+                                quats_mult = 1
+                            ska_file = make_modern_ska(ska, game = ska_game, ska_switch = ska_target, quats_mult = quats_mult)
+                        else:
+                            quats_mult = 0.5 if ska_game == "GH3" else 1
+                            ska_file = make_gh3_ska(ska, ska_switch = ska_target, quats_mult = quats_mult)
+                        if ska_file == None:
+                            continue
+                        if not os.path.isdir(output):
+                            os.mkdir(output)
+                        with open(f'{output}\\{os.path.basename(x)}', "wb") as f:
+                            f.write(ska_file)
+                    except Exception as E:
+                        print("Conversion failed!")
+                        # raise E
+                        print(E)
+                        input("\nPress any key to exit.")
+
+                input("Complete! Press any key to exit.")
+
             elif main_menu == 1337:
                 input("Ha! Got ourselves a leet hacker over here ")
             elif main_menu < 0:
                 break
         except Exception as e:
+            raise e
             cls()
             print("Action failed due to the following:")
             print(e)
@@ -162,13 +273,9 @@ def launch_gui(ghproj = ""):
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        launch_gui()
-        '''print("Guitar Hero III Tools\n")
-        begin_mode = input("No argument detected, did you want to use beginner mode? (Y/N) ")
-        if begin_mode[0].lower() == "y":
-            manual_input()
-        else:
-            print_instructions()'''
+
+        print("Guitar Hero III Tools\n")
+        manual_input()
     elif sys.argv[1].endswith(".ghproj"):
         launch_gui(ghproj = sys.argv[1])
     else:
@@ -207,6 +314,11 @@ if __name__ == "__main__":
                 else:
                     print("Error: No mid file found.")
                     # print_instructions()
+            elif sys.argv[1] == "compile_wt_song":
+                if len(sys.argv) > 2:
+                    launch_gui(sys.argv[2])
+                else:
+                    launch_gui()
             elif sys.argv[1] == "extract_pak":
                 pak_file = input_file.replace("\"", "")
                 if pak_file.lower().endswith(".pak.xen"):
