@@ -766,6 +766,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             if all([gem["time_tick"] - prev_time <= hopo, len(gem["colours"]) == 1,
                                     prev_colours != curr_colours, time_hopos]):
                                 gem["colours"].append(6)
+                                if "rb_mode" in args:
+                                    if curr_colours in prev_colours:
+                                        gem["colours"].remove(6)
                             prev_time = gem["time_tick"]
                             prev_colours = curr_colours
                         else:
@@ -821,7 +824,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     elif gem["accents"]:
                         mod_bin = int("11111", 2)
                         for mod in gem["colours"]:
-                            if mod not in gem["accents"] and mod > 5:
+                            if mod not in gem["accents"] and mod < 5:
                                 mod_bin -= 1 << mod
                         mod_bin = bin(mod_bin)[2:]
                     else:
@@ -964,6 +967,13 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     break
                                 else:
                                     print(f"Freeform marker at {f2[0]} does not coincide with a free phrase marker. Skipping...")
+            playable_freeform_dict = {}
+            for t in vocals_freeform_playable:
+                playable_freeform_dict[t[0]] = t
+            vocals_freeform_playable = []
+            playable_freeform_dict = dict(sorted(playable_freeform_dict.items()))
+            for t, freeform in playable_freeform_dict.items():
+                vocals_freeform_playable.append(freeform)
             for lyrics in lyrics_qs:
                 lyrics_qs_dict[lyrics] = CRC.QBKey_qs(lyrics)
 
