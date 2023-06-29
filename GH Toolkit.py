@@ -131,7 +131,7 @@ def manual_input():
                 try:
                     pak_data = convert_to_5(midqb_file, new_name)
                     pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
-                    with open(output + f'\\{new_name}_song.pak.xen', 'wb') as f:
+                    with open(output + f'\\b{new_name}_song.pak.xen', 'wb') as f:
                         f.write(pak_file)
                     input("\nComplete! Press any key to exit.")
                 except Exception as E:
