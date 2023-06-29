@@ -77,11 +77,16 @@ def make_preview_sox(start_time, end_time):
     cbn = sox.Combiner()
     cbn.set_output_format("mp3", 48000)
     cbn.trim(start_time, end_time)
-    cbn.fade(0.1, 0.1)
+    cbn.fade(1.0, 1.0)
+    cbn.vol(-7.0, "db")
+    cbn.set_input_format(["mp3"]*9)
 
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
     temp_out = temp_dir + "\\temp.mp3"
+
+    if os.path.exists(temp_out):
+        os.remove(temp_out)
 
     audio_list = []
     for file in os.listdir(temp_dir):
@@ -178,15 +183,19 @@ def make_preview_ffmpeg(start_time, end_time):
     temp_dir = ".\\temp"
     temp_out = temp_dir + "\\temp.mp3"
 
+    if os.path.exists(temp_out):
+        os.remove(temp_out)
+
     # Get a list of all audio files in temp directory
     audio_list = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir)]
 
     trim_duration = end_time - start_time
-    fade_duration = 0.1
+    fade_duration = 1.0
 
     # Build filtergraph for mixing and trimming audio
-    mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2[mixout]'
-    trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
+    mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2:normalize=0[mixout]'
+    # trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
+    trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:st={start_time}:d=1,afade=t=out:st={start_time+trim_duration - 1}:d=1,volume=-7.0dB[final]'
     #trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:ss=0:d={fade_duration},afade=t=out:st={trim_duration-fade_duration}:d={fade_duration}[final]'
     filtergraph = mix_filter + ';' + trim_filter
 
@@ -258,7 +267,7 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
         print("FFmpeg was asked to use, but cannot find it in PATH")
         return 0
     else:
-        print("Could not find ffmpeg or sox in PATH")
+        print("Could not find ffmpeg or SoX in PATH")
         return 0
     print("Creating Drum Audio")
     drum_files = createFSB4(padded_mp3_data_list[:4], f"{shortname}_1", encrypt, *extra_args)
@@ -720,7 +729,7 @@ def createFSB4(files, shortname, encrypt = False, *args):
     fsb_file += interleaved
 
     if encrypt:
-        print(f"Encrypting files with key {shortname}")
+        print(f"Encrypting audio file with key {shortname}")
         fsb_file = encrypt_fsb4(fsb_file, generate_fsb_key(shortname))
 
     return fsb_file
