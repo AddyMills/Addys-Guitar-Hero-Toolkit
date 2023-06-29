@@ -755,7 +755,8 @@ def get_song_file_dict(song_files):
 
 def get_section_dict(qb_sections, file_headers_hex):
     sections_dict = {}
-
+    if not qb_sections:
+        return sections_dict
     for x in qb_sections:
         if x.section_id in file_headers_hex.keys():
             x.set_new_id(file_headers_hex[x.section_id])
