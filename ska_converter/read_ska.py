@@ -110,6 +110,7 @@ def debug(func):
     new_ska = func(ska_file, 1)
     debug_test(ska_orig, new_ska)
     return new_ska
+
 def main(func, write = False, **kwargs):
     root_folder = os.path.realpath(os.path.dirname(__file__))
     if "quats_mult" in kwargs:

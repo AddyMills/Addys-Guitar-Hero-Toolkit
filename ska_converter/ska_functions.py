@@ -214,9 +214,9 @@ def dmc_hack(ska, quat_frames, trans_frames, partials):
         mic_height_x = 0
         mic_height_y = 0
         mic_height_z = 0
-        height_adjust = .90
-        front_adjust = .94
-        side_adjust = .95
+        height_adjust = 1
+        front_adjust = 1
+        side_adjust = 1
         last_frame = round(ska.duration * 60)
         quat_frames[123] = {0: [0,0,0], last_frame: [0,0,0]}
         trans_frames[123] = {0: [mic_height_x, mic_height_y, mic_height_z], last_frame: [mic_height_x, mic_height_y, mic_height_z]}
@@ -230,7 +230,7 @@ def dmc_hack(ska, quat_frames, trans_frames, partials):
         min_height = 0
         max_height = 0
         for key, value in trans_frames[125].items():
-            new_height = value[0] * height_adjust
+            new_height = value[0] - .02 * height_adjust
 
             new_front = value[1] * front_adjust
 
