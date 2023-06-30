@@ -1,0 +1,1 @@
+..\..\venv\Scripts\pyside6-uic.exe compile_package.ui -o compile_package.py

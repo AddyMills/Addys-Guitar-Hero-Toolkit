@@ -12,7 +12,7 @@
 *.fsb
 *.mp3
 .vs/
-gui/
+
 .idea/discord.xml
 */MidiFiles*
 QBParser/
@@ -39,3 +39,4 @@ Reaper Gen/
 tofix.txt
 *.pyproj
 libmp3lame*
+gui/gui ideas.txt

@@ -40,7 +40,7 @@ def manual_input():
     # QB 2 Text, Text 2 QB, Extract PAK, Extract All
     while True:
         try:
-            print(f"Beginner Mode - Main Menu ({'GH3' if wt_mode == 0 else 'WT/5/BH/WoR'} Mode)\n")
+            print(f"Beginner Mode - Main Menu\n")
             print("Please type in the number from the following options (type -1 to exit):\n")
 
             # 5: extract_all - Extract a PAK file and converts all qb files into text files (beta)
@@ -274,7 +274,7 @@ def launch_gui(ghproj = ""):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
 
-        print("Guitar Hero III Tools\n")
+        print("Addy's Guitar Hero Toolkit\n")
         manual_input()
     elif sys.argv[1].endswith(".ghproj"):
         launch_gui(ghproj = sys.argv[1])
