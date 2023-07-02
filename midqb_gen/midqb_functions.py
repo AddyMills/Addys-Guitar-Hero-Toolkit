@@ -324,6 +324,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     else:
         sp_note = 116
 
+    if "wor" in args:
+        drum_key_map = drumKeyMapRB_wor
+    else:
+        drum_key_map = drumKeyMapRB_wt
+
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
 
@@ -596,8 +601,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     pass
                                 except:
                                     raise Exception(f"Something went wrong parsing the {track.name} track.")
-                        elif x.note in drumKeyMapRB_wt and drums:
-                            new_note = drumKeyMapRB_wt[x.note]
+                        elif x.note in drum_key_map and drums:
+                            new_note = drum_key_map[x.note]
                             if x.velocity != 0 and x.type == "note_on":
                                 if new_note in active_notes:
                                     continue
@@ -613,7 +618,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         anim_notes["drum_anims"][active_notes[new_note].time] = [active_notes[new_note]]
                                     if x.note not in practice_mode_wt:
                                         temp = anim_notes["drum_anims"][active_notes[new_note].time]
-                                        temp.append(AnimNoteWT(timeSec, new_note-13, temp[-1].velocity))
+                                        if "wor" in args:
+                                            if new_note < 22:
+                                                practice_note = new_note + 86
+                                            else:
+                                                practice_note = new_note + 56
+                                        else:
+                                            practice_note = new_note-13
+                                        temp.append(AnimNoteWT(timeSec, practice_note, temp[-1].velocity))
                                         temp[-1].setLength(new_len)
                                     active_notes.pop(new_note)
                                 except KeyError as E:
@@ -861,10 +873,27 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 if drums:
                     playable_drum_fills = split_list(play_tap)
                 else:
-                    playable_tap[instrument] = split_list(play_tap)
-                    for tap in playable_tap[instrument]:
-                        tap[1] = tap[1] - tap[0]
-                        tap.append(1)
+                    # playable_tap[instrument]
+                    split_taps = split_list(play_tap)
+                    for tap in split_taps:
+                        tap_ranges = []
+                        all_taps = mod_notes(time_array, tap)[0]
+                        curr_taps = []
+                        for note_check in list(timestamps.values())[all_taps[0]:all_taps[-1]+1]:
+                            if len(note_check['colour_name']) > 1:
+                                if curr_taps:
+                                    curr_taps.append(note_check["time_sec"])
+                                    tap_ranges += curr_taps
+                                    curr_taps = []
+                            elif not curr_taps:
+                                curr_taps.append(note_check["time_sec"])
+                        if curr_taps:
+                            tap_ranges += curr_taps
+                        tap_ranges.append(tap[1])
+                        for sp_tap_ranges in split_list(tap_ranges):
+                            sp_tap_ranges[1] = sp_tap_ranges[1] - sp_tap_ranges[0]
+                            sp_tap_ranges.append(1)
+                            playable_tap[instrument].append(sp_tap_ranges.copy())
         elif playable and re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
             temp_lyrics = []
             vocals_notes_time = {}

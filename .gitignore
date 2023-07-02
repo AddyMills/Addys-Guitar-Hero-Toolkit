@@ -12,7 +12,7 @@
 *.fsb
 *.mp3
 .vs/
-
+guides/
 .idea/discord.xml
 */MidiFiles*
 QBParser/
