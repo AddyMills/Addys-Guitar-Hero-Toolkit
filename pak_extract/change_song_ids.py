@@ -14,7 +14,7 @@ from midqb_gen import CreatePAK
 import os
 import time
 
-console = "xen"
+console = "ps3"
 
 ids_pre = ["_song_scripts",
            "_scriptevents",
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         try:
             for y in os.listdir(f"{filepath}"):
                 if os.path.isfile(f"{filepath}\\{y}"):
-                    # continue
+                    #continue
                     if "_song.pak.xen" in y.lower():
                         pak_data = f"{filepath}\\{y}"
                         old_name = y.split("_")[0]
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     """
 
                 else:
-                    # continue
+                    continue
                     folderpath = f"{filepath}\\{y}"
                     foldersavepath = f"{savepath}\\{y}"
                     for z in os.listdir(f"{folderpath}"):
@@ -178,7 +178,7 @@ if __name__ == "__main__":
             continue
         if pak_data:
             print(f"Switching song id references in {old_name} to {x[0]}")
-            if "World Tourasdasd" in filesfolder:
+            if "World Tour" in filesfolder:
                 decomp_ska = True
             else:
                 decomp_ska = False

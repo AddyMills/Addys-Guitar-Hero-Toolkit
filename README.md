@@ -8,13 +8,21 @@ I've always enjoyed Guitar Hero III, but the customs scene is, for a lack of a b
 
 These tools, while in its infancy, plan to start fixing this aspect of the customs scene.
 
-There is now just one executable for all available functions. This program will be updated to include more functions as time goes, but it'll allow you to just use one executable:
+### Side Note
+I am re-writing this guide from scratch. Everything after this is old. However, please see the authoring and compilation guides I wrote on my site:
 
-![image](https://user-images.githubusercontent.com/74471839/204162885-b4d996eb-1617-42d9-853f-587dd5211802.png)
+WT Authoring Guide: https://www.addymills.com/authoring-world-tour-style-songs/
+
+Compilation Guide: https://www.addymills.com/compiling-guitar-hero-world-tour-style-songs/
+
+![image](https://github.com/AddyMills/Guitar-Hero-III-Tools/assets/74471839/bbfb925c-c5be-4fbf-8365-28ad21618d25)
+
+### Side Note Over
+
 
 The image above explains the functions. You can either use beginner mode, or advanced mode. Beginner mode is activated when starting the program without any arguments (i.e. just double clicking on the executable). It'll confirm you want to start in beginner mode, and then you can use the step-by-step instructions to perform your tasks.
 
-Advanced mode is actiavated by calling the program and giving it arguments. The first argument always needs to be the function (make_midi, pak_extract, etc.) followed by the file you want to process. You can also type the following modifers **after** the input file:
+Advanced mode is activated by calling the program and giving it arguments. The first argument always needs to be the function (make_midi, pak_extract, etc.) followed by the file you want to process. You can also type the following modifers **after** the input file:
 
 *  -o: Specify an output folder
 *  -hopo: Specify the HO/PO threshold in ticks (default is 170) -- For *make_midi* only.
@@ -143,3 +151,4 @@ There are a lot of things that can be added to this program. Here is what I plan
 ### Probably won't happen, but who knows?
 
 *  Create singer mouth movements
+

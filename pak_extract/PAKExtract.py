@@ -13,7 +13,7 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
     entries = 0
     pakHeader = ["offset", "filesize", "context_checksum", "full_name_checksum", "no_ext_name_checksum", "parent_object", "flags"]
     checksums = ["context_checksum", "full_name_checksum", "no_ext_name_checksum"]
-
+    num_20_flags = 0
     while True:
         no_checksum = 0
         z, start = readFourBytes(pak, start, endian)
@@ -31,9 +31,19 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
                     if wor_mode:
                         setattr(headers[-1], x, z + pak_header_size)
                     else:
-                        rel_offset = (32*(entries))
+                        rel_offset = (32*(entries) + (160*num_20_flags))
                         setattr(headers[-1], x, z + rel_offset)
                     # print(z, rel_offset, z + rel_offset)
+                elif x == "flags" and z != 0:
+                    if z == 0x20:
+                        new_name, start = readxBytes(pak, start, 160)
+                        new_name = new_name.replace(b'\x00', b'').decode("utf-8")
+                        new_int = int(new_name, 16)
+                        setattr(headers[-1], "full_name_checksum", new_int)
+                        setattr(headers[-1], "no_ext_name_checksum", new_int)
+                        num_20_flags += 1
+                    else:
+                        input("Weird flag found")
                 else:
                     if x in checksums:
                         try:
@@ -198,7 +208,7 @@ def extract_paks():
     
     pak_type = 0
     wor_mode = 0
-    header_size = 0
+
     for root, dirs, files in os.walk(f".\\input PAK"):
         for f in files:
             filename = f"{root}\\{f}".lower()
@@ -219,6 +229,7 @@ def extract_paks():
                 filepaths.append(filename)
 
     for y, x in enumerate(paks):
+        header_size = 0
         curr_file = os.path.basename(filepaths[y])
         print(f"Processing {curr_file}")
         if x in pabs:
@@ -237,17 +248,16 @@ def extract_paks():
         if len(pak_file) > first_file and pab_file and not wor_mode:
             pak_file = pak_file[:first_file]
         pak_file += pab_file
-
         files = main(pak_file, filepaths[y], wor_mode = wor_mode, pak_header_size = header_size)
-        for x in files:
-            output_file = f'.\\output\\PAK\\{x["file_name"]}.xen'
+        for z in files:
+            output_file = f'.\\output\\PAK\\{z["file_name"]}.xen'
             dir_name = os.path.dirname(output_file)
             try:
                 os.makedirs(dir_name)
             except:
                 pass
             with open(output_file, 'wb') as write_file:
-                write_file.write(x["file_data"])
+                write_file.write(z["file_data"])
 
     return
 

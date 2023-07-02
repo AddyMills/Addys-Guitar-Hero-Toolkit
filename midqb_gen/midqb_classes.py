@@ -330,16 +330,17 @@ class gh5_base_entry:
             self.entries += [entry_time, entry_length]
 
     def trunc_time(self, entry):
-        return entry
         time_trunc = int(str(entry).zfill(6)[-2:])
-        if time_trunc == 99:
+        if time_trunc == 0 or time_trunc == 33 or time_trunc == 67:
+            new_time = entry
+        elif time_trunc == 99:
             new_time = entry + 1
-        elif time_trunc >= 67:
-            new_time = entry - (time_trunc - 67)
-        elif time_trunc >= 33:
-            new_time = entry - (time_trunc - 33)
+        elif time_trunc < 33:
+            new_time = int(str(entry)[:-2] + str(33))
+        elif time_trunc < 67:
+            new_time = int(str(entry)[:-2] + str(67))
         else:
-            new_time = entry - time_trunc
+            new_time = int(str(entry)[:-2] + str(99)) + 1
         return new_time
 
     def __str__(self):
@@ -454,6 +455,8 @@ class gh5_cameras(gh5_base_entry):
         self.orig_time = 0
         self.sec_cam = 99
         self.convert = convert
+        self.last_len = 0
+        self.last_time = 0
 
 
     def add_entry(self, note_array, endian = "big"):
@@ -480,24 +483,33 @@ class gh5_cameras(gh5_base_entry):
                 velocity_val = int(velocity, 2)
                 midi_note_val = int(midi_note, 2)
                 if self.convert == "gh5":
-                    if midi_note_val >= 110: # This is the "debug face cam" in GH5/BH/WoR resulting in an extreme closeup
+                    if midi_note_val >= 110 or midi_note_val == 2: # This is the "debug face cam" in GH5/BH/WoR resulting in an extreme closeup
                         self.autocut.pop()
                         continue # Since there are no post-process effects in GH5/BH/WoR, these will get deleted
                     if midi_note_val in range(40, 42):
                         print(f"Unsupported note {midi_note_val} found at {self.autocut[-1]}. Swapping cut for orbit")
                         midi_note_val = 74
+
                 length_val_orig = int(length, 2) # - 33
                 new_time = self.trunc_time(self.orig_time + length_val_orig)
-                length_val = self.trunc_time(new_time - prev_time)
-                # print()
+                length_val = new_time - prev_time
+
+                if str(length_val)[-1] == "4":
+                    length_val -= 1
+                elif str(length_val)[-1] == "6":
+                    length_val += 1
+                self.last_len = length_val
+                self.last_time = self.orig_time
+                #print()
                 if midi_note_val < 7 or midi_note_val >= 90:
                     self.moment += [self.autocut[-1], length_val, midi_note_val]
-                    self.autocut.pop()
+                    self.autocut += [length_val, 31]
                 elif midi_note_val in range(33,37):
                     self.moment += [prev_time, length_val, midi_note_val]
                     self.autocut += [length_val, gh5_camera_dict[midi_note_val]]
                 else:
                     self.autocut += [length_val, midi_note_val]
+        # print()
 
     def create_cam_dict(self):
         self.auto_dict = {}

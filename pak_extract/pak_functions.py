@@ -13,7 +13,6 @@ import struct
 
 float_round = 15
 
-
 def readFourBytes(file, start, endian="big"):
     x = []
     currPlace = start
@@ -24,6 +23,15 @@ def readFourBytes(file, start, endian="big"):
     x = int.from_bytes(xBytes, endian)
     return x, currPlace
 
+def readxBytes(file, start, to_read, endian="big"):
+    x = []
+    currPlace = start
+    for y in range(to_read):  # Iterate through the 4 bytes that make up the starting number
+        x.append(file[y + start])
+        currPlace += 1
+    xBytes = bytes(x)
+    # x = int.from_bytes(xBytes, endian)
+    return xBytes, currPlace
 
 def createHeaderDict(filename):
     headers = []
@@ -712,6 +720,12 @@ def camera_band_clip(cameras):
     camera_array = struct_item("StructItemArray", "cameras", cameras_qb, 0)
     return camera_array
 
+def force_all_to_idle(time):
+    time = struct_item("StructItemInteger", "time", time, 0)
+    scr = struct_item("StructItemQbKey", "scr", "Band_ForceAllToIdle", 0)
+
+    idle_script = struct_item("StructHeader", 0, [time, scr], 0)
+    return idle_script
 
 def new_band_clip_gh5(char_class):
     char_type = {"name": "StructItemQbKey", "startnode": "StructItemString", "anim": "StructItemQbKey",

@@ -33,6 +33,7 @@ class ska_bytes:
         self.read_header()
         self.quat_sizes = self.get_bone_size(self.bonesize_quat_pos)
         self.trans_sizes = self.get_bone_size(self.bonesize_trans_pos)
+        self.comp_bits = self.flags & COMP_FLAGS
         if self.flags & PARTIAL_ANIM:
             self.partial_anim()
         if self.flags & SINGLE_FRAME:
@@ -71,6 +72,11 @@ class ska_bytes:
 
         if self.flags & BIG_TIME:
             self.big_time = 1
+            
+        if self.flags & COMP_FLAGS:
+            self.compressed = 1
+        else:
+            self.compressed = 0
 
         self.duration = self.readFloat()
         self.duration_frames_60 = round(self.duration * 60)

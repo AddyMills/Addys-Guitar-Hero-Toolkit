@@ -7,12 +7,16 @@
 */dist*
 *.spec
 *.ska
+*.wav
+!create_audio/default_audio/blank.wav
+*.fsb
+*.mp3
 .vs/
-gui/
+guides/
 .idea/discord.xml
 */MidiFiles*
 QBParser/
-create_audio/
+conversion_files_prod/
 pak_extract/testing/
 test/
 output/
@@ -35,3 +39,4 @@ Reaper Gen/
 tofix.txt
 *.pyproj
 libmp3lame*
+gui/gui ideas.txt

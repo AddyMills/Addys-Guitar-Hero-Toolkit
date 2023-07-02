@@ -214,9 +214,9 @@ def dmc_hack(ska, quat_frames, trans_frames, partials):
         mic_height_x = 0
         mic_height_y = 0
         mic_height_z = 0
-        height_adjust = .90
-        front_adjust = .94
-        side_adjust = .95
+        height_adjust = 1
+        front_adjust = 1
+        side_adjust = 1
         last_frame = round(ska.duration * 60)
         quat_frames[123] = {0: [0,0,0], last_frame: [0,0,0]}
         trans_frames[123] = {0: [mic_height_x, mic_height_y, mic_height_z], last_frame: [mic_height_x, mic_height_y, mic_height_z]}
@@ -230,7 +230,7 @@ def dmc_hack(ska, quat_frames, trans_frames, partials):
         min_height = 0
         max_height = 0
         for key, value in trans_frames[125].items():
-            new_height = value[0] * height_adjust
+            new_height = value[0] - .02 * height_adjust
 
             new_front = value[1] * front_adjust
 
@@ -439,14 +439,21 @@ def make_gh3_ska(ska, **kwargs):
     else:
         quats_mult = 1
 
-    if "ska_switch" in kwargs:
+    if all(["ska_switch" in kwargs, ska.ska_source != "camera"]):
         try:
-            ska_switch = grab_ska_dict(kwargs["ska_switch"])
-            swap_bones(ska, ska_switch)
+            ska.to_ska = kwargs["ska_switch"]
+            if ska.to_ska == ska.ska_source:
+                ska_switch = 0
+            else:
+                ska_switch = grab_ska_dict(ska.to_ska)
+                swap_bones(ska, ska_switch)
         except Exception as e:
             raise e
             ska_switch = 0
     else:
+        if ska.ska_source == "camera":
+            print("Cameras are not yet supported to convert to GH3 or GHA\n")
+            return None
         ska_switch = 0
 
 

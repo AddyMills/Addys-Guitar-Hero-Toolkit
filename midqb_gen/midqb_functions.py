@@ -312,7 +312,10 @@ def active_note_check(x, active_notes, timeSec, midi_track, track): # midi_track
 
 def parse_wt_qb(mid, hopo, *args, **kwargs):
     changes, ticks = tempMap(mid)
-
+    if "force_only" in args:
+        time_hopos = False
+    else:
+        time_hopos = True
     split_list = lambda l_in: [l_in[i:i + 2] for i in range(0, len(l_in), 2)]
 
     global sp_note
@@ -320,6 +323,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
         sp_note = kwargs["star_power"]
     else:
         sp_note = 116
+
+    if "wor" in args:
+        drum_key_map = drumKeyMapRB_wor
+    else:
+        drum_key_map = drumKeyMapRB_wt
 
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
@@ -593,8 +601,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     pass
                                 except:
                                     raise Exception(f"Something went wrong parsing the {track.name} track.")
-                        elif x.note in drumKeyMapRB_wt and drums:
-                            new_note = drumKeyMapRB_wt[x.note]
+                        elif x.note in drum_key_map and drums:
+                            new_note = drum_key_map[x.note]
                             if x.velocity != 0 and x.type == "note_on":
                                 if new_note in active_notes:
                                     continue
@@ -610,7 +618,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         anim_notes["drum_anims"][active_notes[new_note].time] = [active_notes[new_note]]
                                     if x.note not in practice_mode_wt:
                                         temp = anim_notes["drum_anims"][active_notes[new_note].time]
-                                        temp.append(AnimNoteWT(timeSec, new_note-13, temp[-1].velocity))
+                                        if "wor" in args:
+                                            if new_note < 22:
+                                                practice_note = new_note + 86
+                                            else:
+                                                practice_note = new_note + 56
+                                        else:
+                                            practice_note = new_note-13
+                                        temp.append(AnimNoteWT(timeSec, practice_note, temp[-1].velocity))
                                         temp[-1].setLength(new_len)
                                     active_notes.pop(new_note)
                                 except KeyError as E:
@@ -760,8 +775,12 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         # Set hopos
                         if not prev_time == 0:
                             curr_colours = "".join(sorted(gem["colour_name"]))
-                            if all([gem["time_tick"] - prev_time <= hopo, len(gem["colours"]) == 1, prev_colours != curr_colours]):
+                            if all([gem["time_tick"] - prev_time <= hopo, len(gem["colours"]) == 1,
+                                    prev_colours != curr_colours, time_hopos]):
                                 gem["colours"].append(6)
+                                if "rb_mode" in args:
+                                    if curr_colours in prev_colours:
+                                        gem["colours"].remove(6)
                             prev_time = gem["time_tick"]
                             prev_colours = curr_colours
                         else:
@@ -777,11 +796,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 temp_colour = timestamps[time_array[index]]["colours"]
                                 if index == 0:
                                     continue
-                                elif len(temp_colour) > 1:
+                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
+                                    continue
+                                elif len(temp_colour) > 1 and "gh5_mode" not in args:
                                     if "gh3_mode" in args and 6 in temp_colour:
                                         temp_colour.remove(6)
-                                    continue
-                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
                                     continue
                                 else:
                                     timestamps[time_array[index]]["colours"].append(6)
@@ -817,7 +836,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     elif gem["accents"]:
                         mod_bin = int("11111", 2)
                         for mod in gem["colours"]:
-                            if mod not in gem["accents"] and mod > 5:
+                            if mod not in gem["accents"] and mod < 5:
                                 mod_bin -= 1 << mod
                         mod_bin = bin(mod_bin)[2:]
                     else:
@@ -828,7 +847,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         mod_bin = double_bits + mod_bin
 
                     mod_bin = mod_bin.zfill(9)
-
+                    sep_kick = 0
                     if not drums:
                         notes_bin = make_bin_notes(gem)
                     elif gem["length_sec_kick"]:
@@ -836,14 +855,16 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         notes_bin = make_bin_notes(gem)
                         kick_note = make_bin_notes({"colours": [5]})
                         len_bin_kick = bin(gem["length_sec_kick"])[2:].zfill(16)
-                        play_notes[diff].notes.append(int(mod_bin + kick_note + len_bin_kick, 2))
-                        play_notes[diff].notes.append(enum)
+                        sep_kick = int(mod_bin + kick_note + len_bin_kick, 2)
                         mod_bin = "0000" + mod_bin[4:]
                     else:
                         notes_bin = make_bin_notes(gem)
 
                     note_val = mod_bin + notes_bin + len_bin
                     play_notes[diff].notes.append(int(note_val, 2))
+                    if sep_kick:
+                        play_notes[diff].notes.append(enum)
+                        play_notes[diff].notes.append(sep_kick)
             playable_qb[instrument] = play_notes.copy()
             playable_star_power[instrument] = play_star.copy()
             playable_fo_star_power[instrument] = play_star_fo.copy()
@@ -852,10 +873,27 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 if drums:
                     playable_drum_fills = split_list(play_tap)
                 else:
-                    playable_tap[instrument] = split_list(play_tap)
-                    for tap in playable_tap[instrument]:
-                        tap[1] = tap[1] - tap[0]
-                        tap.append(1)
+                    # playable_tap[instrument]
+                    split_taps = split_list(play_tap)
+                    for tap in split_taps:
+                        tap_ranges = []
+                        all_taps = mod_notes(time_array, tap)[0]
+                        curr_taps = []
+                        for note_check in list(timestamps.values())[all_taps[0]:all_taps[-1]+1]:
+                            if len(note_check['colour_name']) > 1:
+                                if curr_taps:
+                                    curr_taps.append(note_check["time_sec"])
+                                    tap_ranges += curr_taps
+                                    curr_taps = []
+                            elif not curr_taps:
+                                curr_taps.append(note_check["time_sec"])
+                        if curr_taps:
+                            tap_ranges += curr_taps
+                        tap_ranges.append(tap[1])
+                        for sp_tap_ranges in split_list(tap_ranges):
+                            sp_tap_ranges[1] = sp_tap_ranges[1] - sp_tap_ranges[0]
+                            sp_tap_ranges.append(1)
+                            playable_tap[instrument].append(sp_tap_ranges.copy())
         elif playable and re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
             temp_lyrics = []
             vocals_notes_time = {}
@@ -958,6 +996,13 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     break
                                 else:
                                     print(f"Freeform marker at {f2[0]} does not coincide with a free phrase marker. Skipping...")
+            playable_freeform_dict = {}
+            for t in vocals_freeform_playable:
+                playable_freeform_dict[t[0]] = t
+            vocals_freeform_playable = []
+            playable_freeform_dict = dict(sorted(playable_freeform_dict.items()))
+            for t, freeform in playable_freeform_dict.items():
+                vocals_freeform_playable.append(freeform)
             for lyrics in lyrics_qs:
                 lyrics_qs_dict[lyrics] = CRC.QBKey_qs(lyrics)
 

@@ -29,13 +29,19 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
     if "ghwt" in args:
         qb_dict = parse_wt_qb(mid, hopo, *args)
         if "replace_perf" in args:
-            with open(args[args.index("replace_perf") + 1], "rb") as f:
-                qb_sections = convert_qb_file(qb_bytes(f.read()), filename, headerDict,
-                                              "PC")
-                for x in qb_sections:
-                    if "_performance" in x.section_id and not "notes" in x.section_id:
-                        qb_dict["performance"] = x
-                        break
+            perf_file = args[args.index("replace_perf") + 1]
+            if perf_file.endswith(".txt"):
+                with open(perf_file, "r") as f:
+                    perf_qb = t2q_main(f.read(), game = "GHWT")
+            else:
+                with open(perf_file, "rb") as f:
+                    perf_qb = f.read()
+            qb_sections = convert_qb_file(qb_bytes(perf_qb), filename, headerDict,
+                                          "PC")
+            for x in qb_sections:
+                if "_performance" in x.section_id and not "notes" in x.section_id:
+                    qb_dict["performance"] = x
+                    break
         QBSections, midQS = create_wt_qb_sections(qb_dict, filename)
         midQB = create_wt_qb(QBSections, filename)
         if "performance" in qb_dict:
@@ -64,6 +70,19 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
         to_pak = [[midQB, f"songs\\{filename}.mid.qb"]]
         if midQS:
             to_pak.append([midQS, f"songs\\{filename}.mid.qs"])
+        if "add_ska" in args:
+            for files in os.listdir(args[args.index("add_ska") + 1]):
+                to_pak.append([open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb').read(), files])
+        if "song_script" in args:
+            song_script = args[args.index("song_script") + 1]
+            if song_script.endswith(".txt"):
+                with open(song_script, "r") as f:
+                    song_script = f.read()
+                song_script = t2q_main(song_script, game = "GHWT")
+            else:
+                with open(song_script, "rb") as f:
+                    song_script = f.read()
+            to_pak.append([song_script, f"songs\\{filename}_song_scripts.qb"])
         pakFile = pakMaker(to_pak)
 
     return pakFile, filename
