@@ -13,11 +13,15 @@ import os
 import sys
 import configparser
 import string
+import traceback
 
 curr_dir = os.path.dirname(__file__)
 root_dir = os.path.dirname(curr_dir)
 
-audio_folder = f"{root_dir}\\create_audio"
+if os.path.exists(f"{curr_dir}\\create_audio"):
+    audio_folder = f"{curr_dir}\\create_audio"
+else:
+    audio_folder = f"{root_dir}\\create_audio"
 sys.path.append(audio_folder)
 import audio_functions as af
 
@@ -593,7 +597,8 @@ class compile_package(QWidget, compile_pack):
             try:
                 drum, inst, other, preview = af.get_padded_audio(all_audio_path, song_name, start_time, end_time,
                                                                  *compile_args)
-            except:
+            except Exception as E:
+                traceback.print_exc()
                 print("Error compiling audio.")
                 return
             for enum, x in enumerate([drum, inst, other, preview]):
