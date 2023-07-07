@@ -39,6 +39,8 @@ ska_17 = "gh3_camera_steven_loveinelev01.ska.xen"
 
 ska_18 = "S_MoonwalkToSing.ska.xen"
 
+ska_19 = "Addy_Singer_Male_FallenLeaves_1.ska.xen"
+
 def debug_test(old, new):
     if old == new:
         result = "Success!!"
@@ -103,11 +105,11 @@ def ska_to_text(ska):
     return
 
 def debug(func):
-    with open(ska_18, 'rb') as f:
+    with open(ska_19, 'rb') as f:
         ska_orig = f.read()
         ska_file = ska_bytes(ska_orig)
     #ska_to_text(ska_file)
-    new_ska = func(ska_file, 1)
+    new_ska = func(ska_file, game = "GH5")
     debug_test(ska_orig, new_ska)
     return new_ska
 
