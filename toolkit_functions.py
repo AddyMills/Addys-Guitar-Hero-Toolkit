@@ -27,25 +27,11 @@ from mido import MidiFile, MidiTrack, second2tick as s2t, Message, MetaMessage
 
 orig_std = sys.stdout
 
+round_time = PAKExtract.round_time
 
 def set_std_out(loc):
     sys.stdout = loc
 
-
-def round_time(entry):
-    # return entry
-    time_trunc = int(str(entry).zfill(6)[-2:])
-    if time_trunc == 0 or time_trunc == 33 or time_trunc == 67:
-        new_time = entry
-    elif time_trunc == 99:
-        new_time = entry + 1
-    elif time_trunc < 33:
-        new_time = int(str(entry)[:-2] + str(33))
-    elif time_trunc < 67:
-        new_time = int(str(entry)[:-2] + str(67))
-    else:
-        new_time = int(str(entry)[:-2] + str(99)) + 1
-    return new_time
 
 def cam_len_check(cam_len):
     if str(cam_len).endswith("34"):
@@ -1206,7 +1192,12 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
             try:
                 override_mid = MidiFile(kwargs["override_mid"])
                 override_tempo = mid_qb.get_song_tempo_data(override_mid)
-                override_parsed = mid_qb.parse_wt_qb(override_mid, 170, "2x_kick", "gh5_mode", "force_only")
+                override_args = ["2x_kick", "gh5_mode"]
+                if "wor" in args:
+                    override_args.append("wor")
+                if "force_only" in args:
+                    override_args.append("force_only")
+                override_parsed = mid_qb.parse_wt_qb(override_mid, 170, *override_args)
                 override_sections, override_midqs = mid_qb.create_wt_qb_sections(override_parsed, song_name)
                 if override_midqs:
                     override_midqs = get_qs_strings(override_midqs)
@@ -1233,7 +1224,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                 del (temp_sections)
                 del (override_mid)
             except Exception as E:
-                raise E
+                # raise E
                 drum_anim, override_sections, override_midqs = 0, 0, 0
         if "simple_anim" in kwargs:
             simple_anim = 1

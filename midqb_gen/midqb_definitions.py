@@ -523,6 +523,7 @@ faceOffMapping = {
 }
 
 tap_note = 104
+solo_note = 103
 bm_star_note = 115
 sp_note = 116
 fo_star_note = 107

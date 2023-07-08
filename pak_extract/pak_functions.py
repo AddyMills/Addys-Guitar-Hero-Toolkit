@@ -13,6 +13,21 @@ import struct
 
 float_round = 15
 
+def round_time(entry):
+    # return entry
+    time_trunc = int(str(entry).zfill(6)[-2:])
+    if time_trunc == 0 or time_trunc == 33 or time_trunc == 67:
+        new_time = entry
+    elif time_trunc == 99:
+        new_time = entry + 1
+    elif time_trunc < 33:
+        new_time = int(str(entry)[:-2] + str(33))
+    elif time_trunc < 67:
+        new_time = int(str(entry)[:-2] + str(67))
+    else:
+        new_time = int(str(entry)[:-2] + str(99)) + 1
+    return new_time
+
 def readFourBytes(file, start, endian="big"):
     x = []
     currPlace = start
@@ -691,11 +706,11 @@ def new_play_clip(time, clip, start, end = 0):
 
     return play_clip
 
-def make_light_struct(script_data):
+def make_script_struct(script_data):
     final_struct = struct_data()
-    time = basic_data("time", script_data.time)
+    time = basic_data("time", round_time(script_data.time))
     time.set_type("Integer")
-    time.set_bin_data(struct.pack(">i", script_data.time))
+    time.set_bin_data(struct.pack(">i", round_time(script_data.time)))
     scr = basic_data("scr", script_data.type)
     scr.set_type("QbKey")
     scr.set_bin_data(bytes.fromhex(CRC.QBKey(script_data.type)))
@@ -703,8 +718,14 @@ def make_light_struct(script_data):
     params_list = []
     for x in script_data.data:
         params_list.append(basic_data(x["param"], x["data"]))
-        params_list[-1].set_type("Float")
-        params_list[-1].set_bin_data(struct.pack(">f", x["data"]))
+        param_type = x["type"]
+        params_list[-1].set_type(param_type)
+        if param_type == "Float":
+            params_list[-1].set_bin_data(struct.pack(">f", x["data"]))
+        elif param_type == "Integer":
+            params_list[-1].set_bin_data(struct.pack(">i", x["data"]))
+        elif param_type == "QbKey":
+            params_list[-1].set_bin_data(bytes.fromhex(CRC.QBKey(x["data"])))
     params_struct.add_multiple_basic(params_list)
     params = basic_data("params", params_struct)
     final_struct.add_multiple_basic([time, scr, params])

@@ -41,15 +41,28 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
             for x in qb_sections:
                 if "_performance" in x.section_id and not "notes" in x.section_id:
                     qb_dict["performance"] = x
+                    '''if qb_dict["performance_mid"]:
+                        sorted_section = {}
+                        for y in qb_dict["performance"].section_data:
+                            sorted_section[y.data_value[0].data_value] = y                            
+                        qb_dict["performance"].section_data += qb_dict["performance_mid"]'''
                     break
-        QBSections, midQS = create_wt_qb_sections(qb_dict, filename)
+        QBSections, midQS = create_wt_qb_sections(qb_dict, filename, *args)
         midQB = create_wt_qb(QBSections, filename)
         if "performance" in qb_dict:
             midQB = convert_qb_file(qb_bytes(midQB), filename, headerDict, "PC")
             for x in midQB:
                 if "_performance" in x.section_id and not "notes" in x.section_id:
-                    x.array_node_type = qb_dict["performance"].array_node_type
-                    x.section_data = qb_dict["performance"].section_data
+                    if x.section_data == [0, 0]:
+                        x.array_node_type = qb_dict["performance"].array_node_type
+                        x.section_data = qb_dict["performance"].section_data
+                    else:
+                        x.section_data += qb_dict["performance"].section_data
+                        sorted_section = {}
+                        for y in x.section_data:
+                            sorted_section[y.data_value[0].data_value] = y
+                        sorted_section = dict(sorted(sorted_section.items()))
+                        x.section_data = [sorted_section[x] for x in sorted_section]
                     break
             result = StringIO()
             orig_stdout = sys.stdout

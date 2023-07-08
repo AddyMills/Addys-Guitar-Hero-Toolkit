@@ -561,7 +561,7 @@ class compile_package(QWidget, compile_pack):
             ini.write(f, space_around_delimiters=False)
 
         hopo_val = self.hmx_hopo_value.value()
-        compile_args = [midi_file, hopo_val, song_name, "ghwt"]
+        compile_args = [midi_file, hopo_val, song_name, "ghwt", "wtde"]
 
         if self.encrypt_audio.isChecked():
             compile_args += ["encrypt"]
