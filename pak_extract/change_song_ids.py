@@ -182,7 +182,7 @@ if __name__ == "__main__":
                 decomp_ska = True
             else:
                 decomp_ska = False
-            pak_data = convert_to_5(pak_data.lower(), x[0], anim_pak = pak_anim, override_mid = override_mid,
+            pak_data = convert_to_5(pak_data.lower(), x[0], "wor", anim_pak = pak_anim, override_mid = override_mid,
                                     decomp_ska = decomp_ska)
             pak_file = CreatePAK.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], x[0])
             # raise Exception
