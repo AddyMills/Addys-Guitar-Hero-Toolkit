@@ -317,6 +317,7 @@ class ska_bytes:
             total_changes += len(frames.keys())
         '''if total_changes % (1<<16) != self.quat_changes: # You can apparently have more than 65536 changes
             raise Exception("Total Quaternion changes read does not match given quat changes")'''
+        # Commented out because it doesn't matter. Once re-writing them, it adds the proper vals
         return quat_frames
 
     def read_trans(self):
