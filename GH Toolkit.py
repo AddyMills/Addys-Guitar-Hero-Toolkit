@@ -278,6 +278,8 @@ if __name__ == "__main__":
         manual_input()
     elif sys.argv[1].endswith(".ghproj"):
         launch_gui(ghproj = sys.argv[1])
+    elif sys.argv[1] == "-debug":
+        manual_input()
     else:
         try:
             root_folder = os.path.realpath(os.path.dirname(__file__))
