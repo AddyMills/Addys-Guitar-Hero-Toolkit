@@ -28,6 +28,13 @@ def round_time(entry):
         new_time = int(str(entry)[:-2] + str(99)) + 1
     return new_time
 
+def round_cam_len(length_val):
+    if str(length_val)[-1] == "4":
+        length_val -= 1
+    elif str(length_val)[-1] == "6":
+        length_val += 1
+    return length_val
+
 def readFourBytes(file, start, endian="big"):
     x = []
     currPlace = start
