@@ -203,6 +203,7 @@ class compile_package(QWidget, compile_pack):
             # WTDE Settings
             "game_icon_input": self.game_icon_input.text(),
             "game_category_input": self.game_category_input.text(),
+            "band_input": self.band_input.text(),
             "skeleton_type_g_select": self.skeleton_type_g_select.currentText(),
             "skeleton_type_b_select": self.skeleton_type_b_select.currentText(),
             "skeleton_type_v_select": self.skeleton_type_v_select.currentText(),
@@ -271,7 +272,7 @@ class compile_package(QWidget, compile_pack):
             open_path = ghproj
         else:
             open_path = QFileDialog.getOpenFileName(self, "Open Project File", "", "Project Files (*.ghproj)")[0]
-        if not open_path:
+        if not open_path or not os.path.exists(ghproj):
             return
         self.project_file_path.setText(open_path)
         with open(self.project_file_path.text(), "r") as file:
@@ -516,6 +517,8 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["GameIcon"] = self.game_icon_input.text()
         if self.game_category_input.text().replace(" ", ""):
             ini["SongInfo"]["GameCategory"] = self.game_category_input.text()
+        if self.band_input.text().replace(" ", ""):
+            ini["SongInfo"]["Band"] = self.band_input.text()
         if self.use_new_clips_check.isChecked():
             ini["SongInfo"]["UseNewClips"] = "1"
         if not self.skeleton_type_b_select.currentText() == "Default":
@@ -530,16 +533,6 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["MicForBassist"] = "1"
         if self.guitar_mic_check.isChecked():
             ini["SongInfo"]["MicForGuitarist"] = "1"
-
-        all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
-                     self.bass_input, self.vocals_input, self.backing_input, self.crowd_input]
-        all_audio_path = []
-        for files in all_audio:
-            if not files.text() or not os.path.isfile(files.text()):
-                if not os.path.isfile(files.text()):
-                    print(f"File for {files.objectName()} does not exist. Using blank audio")
-                files.setText(f"{audio_folder}/default_audio/blank.wav")
-            all_audio_path.append(files.text())
 
         start_time = self.conv_to_secs("start")
         end_time = self.conv_to_secs("end")
@@ -588,12 +581,24 @@ class compile_package(QWidget, compile_pack):
 
         if self.force_ffmpeg_check.isChecked():
             compile_args += ["ffmpeg"]
-
-        song_pak = mid_gen.make_mid(*compile_args)[0]
+        try:
+            song_pak = mid_gen.make_mid(*compile_args)[0]
+        except Exception as E:
+            traceback.print_exc()
+            return
         with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
             f.write(song_pak)
 
         if not "skip_audio" in args:
+            all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
+                         self.bass_input, self.vocals_input, self.backing_input, self.crowd_input]
+            all_audio_path = []
+            for files in all_audio:
+                if not files.text() or not os.path.isfile(files.text()):
+                    if not os.path.isfile(files.text()):
+                        print(f"File for {files.objectName()} does not exist. Using blank audio")
+                    files.setText(f"{audio_folder}/default_audio/blank.wav")
+                all_audio_path.append(files.text())
             try:
                 drum, inst, other, preview = af.get_padded_audio(all_audio_path, song_name, start_time, end_time,
                                                                  *compile_args)
