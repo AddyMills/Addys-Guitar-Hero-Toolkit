@@ -134,6 +134,9 @@ def main(func, write = False, **kwargs):
         game = kwargs["game"]
     else:
         game = "GH3"
+    
+
+    
     directory = f"{root_folder}/in"
     out_dir = f"{root_folder}/out"
     with os.scandir(directory) as songs:
@@ -141,7 +144,9 @@ def main(func, write = False, **kwargs):
             with open(x, 'rb') as f:
                 ska_orig = f.read()
                 ska_file = ska_bytes(ska_orig)
-
+            if game == "GHWT":
+                ska_file = func(ska_file, game = "GH5", quats_mult = 1, ska_switch = ska_switch)
+                ska_file = ska_bytes(ska_file)
             """if ska_file.comp_bits:
                 print(x.name)
                 continue
