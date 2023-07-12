@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
+    <width>562</width>
     <height>659</height>
    </rect>
   </property>
@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -141,7 +141,7 @@
                <item>
                 <widget class="QRadioButton" name="ghwor">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string notr="true">GHWoR</string>
@@ -1176,55 +1176,6 @@
                 </property>
                </widget>
               </item>
-              <item row="13" column="1">
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QLabel" name="game_icon_label">
-                  <property name="text">
-                   <string>Game Icon</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_icon_input"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="game_category_label">
-                  <property name="text">
-                   <string>Game Category</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_category_input"/>
-                </item>
-               </layout>
-              </item>
-              <item row="15" column="1">
-               <layout class="QHBoxLayout" name="horizontalLayout_9">
-                <item>
-                 <widget class="QCheckBox" name="guitar_mic_check">
-                  <property name="text">
-                   <string>Guitar Mic</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="bass_mic_check">
-                  <property name="text">
-                   <string>Bass Mic</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="use_new_clips_check">
-                  <property name="text">
-                   <string>Use New Clips</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
               <item row="0" column="0">
                <widget class="QLabel" name="ghwt_midi_file_label">
                 <property name="text">
@@ -1256,90 +1207,10 @@
                 </property>
                </widget>
               </item>
-              <item row="14" column="1">
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="skeleton_type_g_label">
-                  <property name="text">
-                   <string>G</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="skeleton_type_g_select">
-                  <item>
-                   <property name="text">
-                    <string>Default</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Alex</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Angled</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>GH3Singer</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>GH5Drums</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Lars</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Lemmy</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="skeleton_type_b_label">
-                  <property name="text">
-                   <string>B</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="skeleton_type_b_select"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="skeleton_type_d_label">
-                  <property name="text">
-                   <string>D</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="skeleton_type_d_select"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="skeleton_type_v_label">
-                  <property name="text">
-                   <string>V</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="skeleton_type_v_select"/>
-                </item>
-               </layout>
-              </item>
               <item row="13" column="0">
                <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>Sorting</string>
+                 <string>In-game Settings</string>
                 </property>
                </widget>
               </item>
@@ -1616,6 +1487,145 @@
                  <string>...</string>
                 </property>
                </widget>
+              </item>
+              <item row="13" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QLabel" name="game_icon_label">
+                  <property name="text">
+                   <string>Game Icon</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_icon_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="game_category_label">
+                  <property name="text">
+                   <string>Game Category</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_category_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="band_label">
+                  <property name="text">
+                   <string>Band</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="band_input"/>
+                </item>
+               </layout>
+              </item>
+              <item row="14" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="skeleton_type_g_label">
+                  <property name="text">
+                   <string>G</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="skeleton_type_g_select">
+                  <item>
+                   <property name="text">
+                    <string>Default</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Alex</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Angled</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>GH3Singer</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>GH5Drums</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Lars</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Lemmy</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="skeleton_type_b_label">
+                  <property name="text">
+                   <string>B</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="skeleton_type_b_select"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="skeleton_type_d_label">
+                  <property name="text">
+                   <string>D</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="skeleton_type_d_select"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="skeleton_type_v_label">
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="skeleton_type_v_select"/>
+                </item>
+               </layout>
+              </item>
+              <item row="15" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QCheckBox" name="guitar_mic_check">
+                  <property name="text">
+                   <string>Guitar Mic</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="bass_mic_check">
+                  <property name="text">
+                   <string>Bass Mic</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="use_new_clips_check">
+                  <property name="text">
+                   <string>Use New Clips</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </item>
