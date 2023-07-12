@@ -18,7 +18,7 @@ tbp = 480
 
 
 def make_mid(midfile, hopo, filename = "", *args, **kwargs):
-    mid = MidiFile(midfile)
+    mid = MidiFile(midfile, clip = True)
     midQS = ""
     consoleType = 1
     if filename == "":

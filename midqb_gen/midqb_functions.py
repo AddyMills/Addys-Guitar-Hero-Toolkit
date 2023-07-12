@@ -478,7 +478,6 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     lyrics_qs_dict = {}
     vocal_sp = []
 
-
     drum_notes = {}
     timeSigs = []
     markers = []
@@ -548,6 +547,15 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             }
             play_tap = []
             play_solo = []
+
+            sysex_taps = []
+            sysex_opens = {
+                0: [],  # Easy
+                1: [],  # Medium
+                2: [],  # Hard
+                3: [],  # Expert
+            }
+            sysex_opens_check = 0
 
 
         else:
@@ -689,6 +697,20 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         elif x.note == 25 and drums:
                             open_hh.append(timeSec)
                         # if x.note in faceOffMapping:
+                    elif x.type == "sysex":
+                        sys_head = x.data[:3]
+                        if not sys_head == (80, 83, 0):
+                            continue
+                        if x.data[5] == 4 and x.data[4] in [3, 127]:
+                            sysex_taps.append(timeSec)
+                        elif x.data[5] == 1 and x.data[4] != 127:
+                            try:
+                                sysex_opens[x.data[4]].append(timeSec)
+                                if not sysex_opens_check:
+                                    sysex_opens_check = 1
+                            except:
+                                print(f"{track.name}: Invalid SysEx event found at {timeSec}")
+                        # print()
 
                 else: # vocals. Note range 36-84 inclusive probably
                     if x.type == "lyrics":
@@ -714,6 +736,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             last_event_tick = time
             last_event_secs = timeSec
         if playable and not re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
+            if sysex_taps and not play_tap:
+                play_tap = sysex_taps
             star_power[instrument] = split_list(star_power[instrument])
             bm_star_power[instrument] = split_list(bm_star_power[instrument])
             fo_star_power[instrument] = split_list(fo_star_power[instrument])
@@ -773,15 +797,19 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             else:
                                 s_time = colour_time[-1]["time_sec"]
                                 t_time = colour_time[-1]["time_tick"]
+                                len_sec = playtime["time_sec"] - s_time
+                                if len_sec < 10:
+                                    len_sec = 10
+                                len_tick = playtime["time_tick"] - t_time
                                 if not drums:
                                     timestamps[s_time] = {"colours": [note_bit], "colour_name": [colour],
-                                                          "length_sec": playtime["time_sec"] - s_time,
+                                                          "length_sec": len_sec,
                                                           "length_tick": playtime["time_tick"] - t_time,
                                                           "extended": []} | colour_time[-1]
                                 else:
                                     timestamps[s_time] = {"colours": [note_bit], "colour_name": [colour],
-                                                          "length_sec": playtime["time_sec"] - s_time,
-                                                          "length_tick": playtime["time_tick"] - t_time,
+                                                          "length_sec": len_sec,
+                                                          "length_tick": len_tick,
                                                           "accents": [], "length_sec_kick": 0} | colour_time[-1]
                                     if colour_time[-1]["velocity"] == 127:
                                         timestamps[s_time]["accents"].append(note_bit)
@@ -802,6 +830,19 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 if drums and diff == "Expert":
                     drum_notes = dict(sorted(timestamps.items()))
                 time_array = np.array(list(timestamps.keys()))
+                if sysex_opens_check:
+                    sys_diff = sysex_opens[difficulties.index(diff)]
+                    if sys_diff:
+                        sys_split = split_list(sys_diff)
+                        for opens in sys_split:
+                            if opens[0] == opens[1]:
+                                opens[1] += 1
+                            to_open = mod_notes(time_array, opens)
+                            for index in np.nditer(to_open):  # Loop through indexes in timestamps
+                                temp_colour = timestamps[time_array[index]]["colours"]
+                                if temp_colour == [0]:
+                                    timestamps[time_array[index]]["colours"] = [5]
+                                    timestamps[time_array[index]]["colour_name"] = ["purple"]
                 prev_time = 0
                 prev_colours = ""
                 if not drums:
@@ -846,6 +887,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if force_on:
                         force_on = split_list(force_on)
                         for forced in force_on:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
                             # Pull all timestamps that need to be forced
                             to_force = mod_notes(time_array, forced)
                             for index in np.nditer(to_force):  # Loop through indexes in timestamps
@@ -865,6 +908,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if force_off:
                         force_off = split_list(force_off)
                         for forced in force_off:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
                             to_force = mod_notes(time_array, forced)
                             for index in np.nditer(to_force):
                                 if 6 in timestamps[time_array[index]]["colours"]:
