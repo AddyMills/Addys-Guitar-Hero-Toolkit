@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -2421,7 +2421,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="game_select_group"/>
   <buttongroup name="platform_button_group"/>
+  <buttongroup name="game_select_group"/>
  </buttongroups>
 </ui>

@@ -5,7 +5,7 @@ Some logic is done with the designer (such as enabling/disabling certain widgets
 """
 
 from PySide6.QtWidgets import QWidget, QFileDialog, QRadioButton, QDoubleSpinBox, QCheckBox, QLineEdit, QLabel, \
-    QComboBox, QSpinBox, QPushButton, QHBoxLayout, QVBoxLayout, QGridLayout, QGroupBox, QMessageBox
+    QComboBox, QSpinBox, QPushButton, QHBoxLayout, QVBoxLayout, QGridLayout, QGroupBox, QMessageBox, QInputDialog
 from project_files.compile_package import Ui_Form as compile_pack
 from functools import partial
 import json
@@ -466,24 +466,40 @@ class compile_package(QWidget, compile_pack):
             item_text = source.itemText(i)
             destination.addItem(item_text)
 
-    def compile_gh3(self):
-        return
-
-    def compile_ghwt(self, *args):
+    def midi_check(self):
         if not self.ghwt_midi_file_input.text():
             print("No MIDI file selected! Cancelling compilation")
-            return
+            return 0
         elif not os.path.isfile(self.ghwt_midi_file_input.text()):
             print("MIDI file not found! Cancelling compilation")
-            return
-        midi_file = self.ghwt_midi_file_input.text()
+            return 0
+        return self.ghwt_midi_file_input.text()
+
+    def gen_checksum(self):
+        game = self.game_select_group.checkedButton().objectName()
         if self.checksum_input.text() == '':
-            self.checksum_input.setText(
-                self.title_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
+            if game == "ghwt":
+                self.checksum_input.setText(
+                    self.title_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
+            elif game == "ghwor":
+                text, ok = QInputDialog.getText(None, "DLC ID Required", "Please insert your song's dlc ID from Onyx\nNumbers only (do not include 'dlc')")
+                if ok and text:
+                    self.checksum_input.setText(f"dlc{text}")
         else:
             self.checksum_input.setText(
                 self.checksum_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
         self.checksum_input.setText(self.checksum_input.text().lower())
+
+    def compile_gh3(self):
+        return
+
+    def compile_ghwt(self, *args):
+
+        midi_file = self.midi_check()
+        if not midi_file:
+            return
+
+        self.gen_checksum()
         ini = configparser.ConfigParser()
         ini.optionxform = str
         ini["ModInfo"] = {
@@ -620,6 +636,7 @@ class compile_package(QWidget, compile_pack):
         return
 
     def compile_ghwor(self):
+        self.gen_checksum()
         return
 
     def first_boot(self):
