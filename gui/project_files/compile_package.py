@@ -1555,7 +1555,7 @@ class Ui_Form(object):
         self.beatlines_check.toggled.connect(self.beat_16th_high_input.setEnabled)
         self.p2_rhythm_check.toggled.connect(self.coop_audio_check.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(3)
+        self.compile_tabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(Form)

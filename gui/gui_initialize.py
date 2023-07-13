@@ -277,7 +277,7 @@ class compile_package(QWidget, compile_pack):
         self.project_file_path.setText(open_path)
         with open(self.project_file_path.text(), "r") as file:
             load_vars = json.load(file)
-        game_index = self.game_select_group.findChildren(QRadioButton)
+        game_index = self.game_select.findChildren(QRadioButton)
         for i in game_index:
             if i.objectName() == load_vars["game"]:
                 i.setChecked(True)
@@ -475,6 +475,18 @@ class compile_package(QWidget, compile_pack):
             return 0
         return self.ghwt_midi_file_input.text()
 
+    def wor_checksum(self):
+        text, ok = QInputDialog.getText(None, "Proper DLC ID Required",
+                                        "Please insert your song's dlc ID from Onyx\nNumbers only (do not include 'dlc')")
+        if ok and text:
+            try:
+                int(text)
+                self.checksum_input.setText(f"dlc{text}")
+            except:
+                print("Invalid DLC ID!")
+                self.wor_checksum()
+
+
     def gen_checksum(self):
         game = self.game_select_group.checkedButton().objectName()
         if self.checksum_input.text() == '':
@@ -482,9 +494,9 @@ class compile_package(QWidget, compile_pack):
                 self.checksum_input.setText(
                     self.title_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
             elif game == "ghwor":
-                text, ok = QInputDialog.getText(None, "DLC ID Required", "Please insert your song's dlc ID from Onyx\nNumbers only (do not include 'dlc')")
-                if ok and text:
-                    self.checksum_input.setText(f"dlc{text}")
+                self.wor_checksum()
+        elif game == "ghwor" and not self.checksum_input.text().startswith("dlc"):
+            self.wor_checksum()
         else:
             self.checksum_input.setText(
                 self.checksum_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
