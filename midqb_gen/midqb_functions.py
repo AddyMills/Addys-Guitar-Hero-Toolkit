@@ -67,13 +67,16 @@ def create_wt_qb_sections(qb_dict, filename, *args):
                     chart_name = f"{filename}{instrument}_FaceOffStar"
                     qb_sections[chart_name] = basic_data(chart_name, [])
                     break
-                elif section == qb_dict["solo_markers"] and "wtde" in args:
-                    chart_name = f"{filename}{instrument}_{diff}_SoloMarkers"
-                    if track in qb_dict["solo_markers"]:
-                        qb_sections[chart_name] = basic_data(chart_name, qb_dict["solo_markers"][track])
+                elif section == qb_dict["solo_markers"]:
+                    if "wtde" in args:
+                        chart_name = f"{filename}{instrument}_{diff}_SoloMarkers"
+                        if track in qb_dict["solo_markers"]:
+                            qb_sections[chart_name] = basic_data(chart_name, qb_dict["solo_markers"][track])
+                        else:
+                            qb_sections[chart_name] = basic_data(chart_name, [])
+                        continue
                     else:
-                        qb_sections[chart_name] = basic_data(chart_name, [])
-                    continue
+                        break
                 else:
                     for player in ["P1", "P2"]:
                         chart_name = f"{filename}{instrument}_FaceOff{player}"
