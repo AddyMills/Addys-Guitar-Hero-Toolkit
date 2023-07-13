@@ -236,12 +236,15 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
         encrypt = True
     max_length = 0
     extra_args = []
-    print("Converting all files to MP3 and padding to the longest")
+    if not "audio_len" in args:
+        print("Converting all files to MP3 and padding to the longest")
     if is_program_in_path("sox") and "ffmpeg" not in args:
-        print("Using SoX to convert")
         for input_file in all_audio:
             duration = get_audio_duration_sox(input_file)
             max_length = max(max_length, duration)
+        if "audio_len" in args:
+            return max_length
+        print("Using SoX to convert")
         # Pad each input file and store the output in a list
         print(f"Padding all files to match the longest file ({strftime('%M:%S', gmtime(max_length))})")
         # Pad each input file and store the output in a list
@@ -250,10 +253,12 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
             padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
         preview = make_preview_sox(start_time, end_time)
     elif is_program_in_path("ffmpeg"):
-        print("Using FFmpeg to convert")
         for input_file in all_audio:
             duration = get_audio_duration_ffmpeg(input_file)
             max_length = max(max_length, duration)
+        if "audio_len" in args:
+            return max_length
+        print("Using FFmpeg to convert")
         # Pad each input file and store the output in a list
         padded_mp3_data_list = []
         for enum, input_file in enumerate(all_audio):
