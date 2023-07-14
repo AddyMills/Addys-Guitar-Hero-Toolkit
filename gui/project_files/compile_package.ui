@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>5</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>

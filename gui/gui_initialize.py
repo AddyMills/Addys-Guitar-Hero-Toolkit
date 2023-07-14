@@ -31,7 +31,8 @@ sys.path.append(midqb_folder)
 import MidQbGen as mid_gen
 
 sys.path.append(root_dir)
-from CRC import QBKey, QBKey_qs, qbkey_hex
+from CRC import QBKey, QBKey_qs
+from toolkit_functions import convert_to_5
 
 
 class main_window(QWidget):
@@ -92,7 +93,7 @@ class compile_package(QWidget, compile_pack):
         elif game == "gh5":
             self.compile_gh5()
         elif game == "ghwor":
-            self.compile_ghwor()
+            self.compile_ghwor("skip_audio")
         return
 
     def open_file_dialog_audio(self, text_field):
@@ -121,6 +122,14 @@ class compile_package(QWidget, compile_pack):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "",
                                                    "QB or Text Files (*.txt *.qb *.qb.xen *.qb.ps3)", options=options)
+
+        if file_name:
+            text_field.setText(file_name)
+
+    def open_file_dialog_all(self, text_field):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "",
+                                                   "All Files (*.*)", options=options)
 
         if file_name:
             text_field.setText(file_name)
@@ -294,7 +303,8 @@ class compile_package(QWidget, compile_pack):
                 i.setChecked(True)
                 break
 
-        check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio", "ghwt_set_end",
+        check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio",
+                       "ghwt_set_end",
                        "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check"]
 
         for x in check_boxes:
@@ -356,6 +366,8 @@ class compile_package(QWidget, compile_pack):
 
         self.ghwor_stfs_input.setDisabled(True)
         self.ghwor_stfs_select.setDisabled(True)
+
+        self.encrypt_audio.setEnabled(True)
         if any([game == "gh3", game == "gha"]):
             self.genre_select.setDisabled(True)
         elif game == "ghwt":
@@ -369,6 +381,8 @@ class compile_package(QWidget, compile_pack):
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
             self.ghwor_stfs_input.setEnabled(True)
             self.ghwor_stfs_select.setEnabled(True)
+            self.encrypt_audio.setDisabled(True)
+            self.encrypt_audio.setChecked(True)
         if all([game != "gh3", game != "gha"]):
             self.genre_select.setDisabled(False)
             self.cover_checkbox.setDisabled(False)
@@ -408,7 +422,7 @@ class compile_package(QWidget, compile_pack):
         self.ghwt_perf_override_select.clicked.connect(partial(self.open_file_dialog_qb, self.ghwt_perf_override_input))
         self.ghwt_ska_files_select.clicked.connect(partial(self.open_file_dialog_folder, self.ghwt_ska_files_input))
         self.ghwt_song_script_select.clicked.connect(partial(self.open_file_dialog_qb, self.ghwt_song_script_input))
-        self.ghwor_stfs_select.clicked.connect(partial(self.open_file_dialog_folder, self.ghwor_stfs_input))
+        self.ghwor_stfs_select.clicked.connect(partial(self.open_file_dialog_all, self.ghwor_stfs_input))
 
         for x in [self.skeleton_type_b_select, self.skeleton_type_d_select, self.skeleton_type_v_select]:
             self.combo_copy(self.skeleton_type_g_select, x)
@@ -497,7 +511,6 @@ class compile_package(QWidget, compile_pack):
                 print("Invalid DLC ID!")
                 self.wor_checksum()
 
-
     def gen_checksum(self):
         game = self.game_select_group.checkedButton().objectName()
         if self.checksum_input.text() == '':
@@ -567,7 +580,7 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["MicForGuitarist"] = "1"
         return ini
 
-    def ghwor_songlist_info(self):
+    def ghwor_songlist_info(self, *args):
         qs_keys = {}
         artist_text = self.artist_text_select.currentText()
         if artist_text == "Other" or artist_text == "By":
@@ -609,7 +622,7 @@ class compile_package(QWidget, compile_pack):
             "leaderboard": 1,
             "duration": duration,
             "flags": 0,
-            "double_kick": 0,
+            "double_kick": 1 if "double_kick" in args else 0,
             "thin_fretbar_8note_params_low_bpm": low_8,
             "thin_fretbar_8note_params_high_bpm": high_8,
             "thin_fretbar_16note_params_low_bpm": low_16,
@@ -662,6 +675,67 @@ class compile_package(QWidget, compile_pack):
         compile_args = ["audio_len"]
         duration = int(af.get_padded_audio(all_audio_path, 0, 0, 0, *compile_args))
         return duration
+
+    def gen_wor_songlist(self, *args):
+        songlist_info, qs_keys = self.ghwor_songlist_info(*args)
+
+        qb_text_name = f"{hex(int(QBKey(self.checksum_input.text()),16)+2)}"
+        '''.download_songlist.qb'''
+        gh6_dlc_songlist = f"gh6_dlc_songlist = [{songlist_info['checksum']}]\n"
+
+        qb_text = ""
+
+        qb_text += f"qb_file = {qb_text_name}\n"
+        qb_text += gh6_dlc_songlist
+        qb_text += "gh6_dlc_songlist_props = {\n"
+        qb_text += f"{songlist_info['checksum']} = "
+        qb_text += "{\n"
+        for k, v in songlist_info.items():
+            qb_text += f"{k} = {v}\n"
+        qb_text += "} }"
+
+        qs_file = ""
+        for v in qs_keys.values():
+            qs_file += f'{QBKey_qs(v)} "{v}"\n'
+        qs_file += "\n\n"
+
+        qs_bytes = b'\xff\xfe' + qs_file.encode("utf-16-le")
+        empty_qs = b'\xff\xfe' + "\n\n\n".encode("utf-16-le")
+
+        qb_file = mid_gen.t2q_main(qb_text, game="GH5")
+        return qb_file, qs_bytes, empty_qs
+
+    def gen_wor_manifest(self):
+        if not self.ghwor_stfs_input.text() or not os.path.isfile(self.ghwor_stfs_input.text()):
+            print("STFS file not found. Cancelling compilation.")
+            return 0, 0, 0
+        with open(self.ghwor_stfs_input.text(), 'rb') as f:
+            stfs_data = f.read()[:0x10000]
+
+        c_spot = stfs_data.find(b'cmanifest')
+        cmanifest = stfs_data[c_spot:c_spot + 0x20].replace(b'\x00', b'')
+        cmanifest = cmanifest.decode("utf-8").split("_")[-1].split(".")[0]
+
+        cdl_spot = stfs_data.find(b'cdl', c_spot)
+        cdl_data = stfs_data[cdl_spot:cdl_spot + 0x20].replace(b'\x00', b'')
+        cdl_data = cdl_data.decode("utf-8").split("_")[-1].split(".")[0]
+
+        qb_file_name = hex(int(QBKey(self.checksum_input.text()), 16) + 1)
+
+        manifest_qb = ""
+        manifest_qb += f"qb_file = {qb_file_name}\n"
+        manifest_qb += """0xe57c7c6d = 2
+                        0x53a97911 = 0\n"""
+        manifest_qb += "dlc_manifest = [\n{\n"
+        manifest_qb += f"package_name_checksums = [0x{cmanifest}]\n"
+        manifest_qb += "format = gh5_dlc\n"
+        manifest_qb += f'song_pak_stem = "{cdl_data}"\n'
+        manifest_qb += f"songs = [{self.checksum_input.text()[3:]}]\n"
+        manifest_qb += "}\n]"
+
+        cmanifest_qb = mid_gen.t2q_main(manifest_qb, game="GH5")
+
+        return cmanifest_qb, qb_file_name, cmanifest
 
     def set_compile_args(self, *args):
         midi_file = self.midi_check()
@@ -725,7 +799,7 @@ class compile_package(QWidget, compile_pack):
         with open(f"{song_folder}/song.ini", "w") as f:
             ini.write(f, space_around_delimiters=False)
 
-        compile_args = self.set_compile_args(*["ghwt","wtde"])
+        compile_args = self.set_compile_args(*["ghwt", "wtde"])
 
         if not compile_args:
             return
@@ -749,45 +823,87 @@ class compile_package(QWidget, compile_pack):
                 else:
                     with open(f"{music_folder}\\{song_name}_preview.fsb.xen", 'wb') as f:
                         f.write(x)
-        print("Complete!")
+        print("Compile complete!")
         return
 
     def compile_gh5(self):
         return
 
-    def compile_ghwor(self):
+    def compile_ghwor(self, *args):
         midi_file = self.midi_check()
         if not midi_file:
             return
         self.gen_checksum()
 
-        songlist_info, qs_keys = self.ghwor_songlist_info()
+        cmanifest_qb, man_file_name, cmanifest = self.gen_wor_manifest()
+        if not cmanifest_qb:
+            return
 
-        qb_text_name = f"{self.checksum_input.text()}"
-        '''.download_songlist.qb'''
-        gh6_dlc_songlist = f"gh6_dlc_songlist = [{songlist_info['checksum']}]\n"
+        compile_args = self.set_compile_args(*["ghwt", "wor", "2x_kick", "gh5_mode"])
 
-        qb_text = ""
+        try:
+            song_pak = mid_gen.make_mid(*compile_args)[0]
+        except Exception as E:
+            traceback.print_exc()
+            return
 
-        qb_text += f"qb_file = {qb_text_name}\n"
-        qb_text += gh6_dlc_songlist
-        qb_text += "gh6_dlc_songlist_props = {\n"
-        qb_text += f"{songlist_info['checksum']} = "
-        qb_text += "{\n"
-        for k, v in songlist_info.items():
-            qb_text += f"{k} = {v}\n"
-        qb_text += "} }"
+        wor_pak_files = convert_to_5(song_pak, self.checksum_input.text(), *compile_args, song_name = self.checksum_input.text(), decomp_ska = True)
+        songlist_args = []
+        if "double_kick" in wor_pak_files:
+            songlist_args += ["double_kick"]
+            wor_pak_files.remove("double_kick")
 
-        qs_file = ""
-        for v in qs_keys.values():
-            qs_file += f"{QBKey_qs(v)} {v}\n"
-        qs_file += "\n\n"
+        songlist_qb, qs_bytes, empty_qs = self.gen_wor_songlist(*songlist_args)
 
-        qs_bytes = b'\xff\xfe' + qs_file.encode("utf-16-le")
+        manifest_pak = mid_gen.pakMaker([[cmanifest_qb, f"{man_file_name}.0xb2a7df81.qb"]])
+        cdl_pak = mid_gen.pakMaker([[b'\x00\x00\x00\x00\x00\x00\x00\x1C\x1C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+                                        "0xb1392214.0x179eac5.qb"]])
+        cdl_text_files = []
+        langs = ["de", "en", "fr", "it", "es"]
+        for enum, blanks in enumerate(["0x5a7a551", "0x8b6e4d98", "0xb4424214", "0xdab9fbee", "0xe8682141"]):
+            cdl_text_files.append([empty_qs, f"{blanks}.0x179eac5.qs.{langs[enum]}"])
+        dl_qb = hex(int(QBKey(self.checksum_input.text()),16))
+        for lang in langs:
+            cdl_text_files.append([qs_bytes, f"{dl_qb}.download_songlist.qs.{lang}"])
+        cdl_text_files.append([songlist_qb, f"{hex(int(QBKey(self.checksum_input.text()), 16)+2)}.download_songlist.qb"])
 
-        qb_file = mid_gen.t2q_main(qb_text, game = "GH5")
+        cdl_text_pak = mid_gen.pakMaker(cdl_text_files)
 
 
+        wor_pak = mid_gen.pakMaker([[x["file_data"], x["file_name"]] for x in wor_pak_files], self.checksum_input.text())
+
+        project_folder = os.path.dirname(self.project_file_path.text())
+        save_folder = f"{project_folder}\\{self.checksum_input.text()}_WoR_Files"
+        if not os.path.exists(save_folder):
+            os.makedirs(save_folder)
+
+        if not "skip_audio" in args:
+            start_time = self.conv_to_secs("start")
+            end_time = self.conv_to_secs("end")
+            if not self.ghwt_set_end.isChecked():
+                end_time += start_time
+            drum, inst, other, preview = self.ghwt_audio_gen(self.checksum_input.text(), start_time, end_time, compile_args)
+            if not drum:
+                return
+            for enum, x in enumerate([drum, inst, other, preview]):
+                if enum != 3:
+                    with open(f"{save_folder}\\a{self.checksum_input.text()}_{enum + 1}.fsb.xen", 'wb') as f:
+                        f.write(x)
+                else:
+                    with open(f"{save_folder}\\a{self.checksum_input.text()}_preview.fsb.xen", 'wb') as f:
+                        f.write(x)
+        print("Compile complete!")
+
+        dl_num = self.checksum_input.text()[3:]
+
+        with open(f"{save_folder}\\cmanifest_{cmanifest}.pak.xen", "wb") as f:
+            f.write(manifest_pak)
+        with open(f"{save_folder}\\cdl{dl_num}.pak.xen", "wb") as f:
+            f.write(cdl_pak)
+        with open(f"{save_folder}\\cdl{dl_num}_text.pak.xen", "wb") as f:
+            f.write(cdl_text_pak)
+        with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+            f.write(wor_pak)
         return
 
     def first_boot(self):
