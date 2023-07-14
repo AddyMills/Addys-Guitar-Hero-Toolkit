@@ -116,7 +116,7 @@ others = ["_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
 
 markers_wt = ["_guitar_markers", "_rhythm_markers", "_drum_markers"]
 
-others_wt = ["_facial", "_localized_strings", "_scriptevents", "_song_startup"]
+others_wt = ["_facial", "_localized_strings", "_scriptevents", "_song_startup", "_vox_sp", "_ghost_notes", "_double_kick"]
 
 drum_wt = ["DrumFill", "DrumUnmute"]
 

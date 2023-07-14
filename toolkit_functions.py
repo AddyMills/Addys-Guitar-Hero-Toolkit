@@ -94,7 +94,9 @@ def get_track_type(track_name):
 
 
 def pak2mid(pakmid, song_name):
-    if pakmid.lower().endswith(".mid"):
+    if type(pakmid) == bytes or type(pakmid) == bytearray:
+        mid_bytes = pakmid
+    elif pakmid.lower().endswith(".mid"):
         with open(os.devnull, "w") as fake:
             set_std_out(fake)
             mid_bytes, song_name = output_mid_gh3(pakmid, 170)
@@ -520,7 +522,10 @@ def note_2_bin(raw_file):
                     if type(item) == mid_qb.gh5_star_note:
                         n_info += int.to_bytes(notes, 4 if enum % 2 == 0 else 2, "big")
                     elif type(item) == mid_qb.gh5_instrument_note:
-                        n_info += int.to_bytes(notes, 4, "big")
+                        if item.qb_string == 'gh6_expert_drum_note':
+                            n_info += int.to_bytes(notes, 1 if enum % 3 == 2 else 4, "big")
+                        else:
+                            n_info += int.to_bytes(notes, 4, "big")
                     elif type(item) == mid_qb.gh5_special_note:
                         n_info += int.to_bytes(notes, 4, "big")
             else:
@@ -906,7 +911,7 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
     return perf_file
 
 
-def wt_to_5_file(sections_dict, qs_dict, song_name, new_name="", convert="gh5", **kwargs):
+def wt_to_5_file(sections_dict, qs_dict, song_name, new_name="", convert="gh5", *args, **kwargs):
     # If convert = False, it does not filter out illegal camera cuts
     # If set to a game ("gh3", "gha, "ghwt", "gh5"), it will convert or filter out illegal cameras
     if not new_name:
@@ -1127,7 +1132,41 @@ def wt_to_5_file(sections_dict, qs_dict, song_name, new_name="", convert="gh5", 
                 qb_file[new_qb] = sections_dict[x]
                 qb_file[new_qb].swap_names(song_name, new_name)
 
+    if f"{song_name}_ghost_notes" in sections_dict and "wor" in args:
+        qs_file.append("ghost")
+        edits = note_file["drumsexpertinstrument"]
+        edits.qb_string = "gh6_expert_drum_note"
+        edits.size = 9
+        edits.modulo = 3
+        times = edits.entries[::2]
+        notes = edits.entries[1::2]
+        times_dict = {}
+        for i, j in zip(times, notes):
+            times_dict[i] = split_note_vals(j)
+        for ghost in sections_dict[f"{song_name}_ghost_notes"].section_data:
+            times_dict[ghost[0]].append(ghost[1])
+            times_dict[ghost[0]][1] -= ghost[1]
+        new_notes = []
+        for k, v in times_dict.items():
+            new_notes.extend([k, combine_note_vals(v)])
+            if len(v) == 4:
+                new_notes.append(v[3])
+            else:
+                new_notes.append(0)
+        edits.entries = new_notes
+
+
     return note_file, qb_file, qs_file, cameras, marker_names
+
+def split_note_vals(value):
+    return [
+        (value >> 16) & 0xFFFF,
+        (value >> 8) & 0xFF,
+        value & 0xFF
+    ]
+
+def combine_note_vals(value):
+    return (value[0] << 16) | (value[1] << 8) | value[2]
 
 
 def check_ska_anims(anim_skas, song_files_dict, other_skas):
@@ -1158,19 +1197,22 @@ def modify_strobe(n):
 
 def convert_to_5(pakmid, new_name, *args, **kwargs):
     root_folder = os.path.realpath(os.path.dirname(__file__))
-    if not "_song.pak" in pakmid.lower() and not "_s.pak" in pakmid.lower():
-        warning = input(
-            "WARNING: File does not appear to be a validly named mid PAK file (ending in '_song.pak'). Do you want to continue? (Y/N): ")
-        if not warning.lower().startswith("y"):
-            return -1
-
-    if "_song.pak" in pakmid.lower():
-        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")].lower()
+    if "song_name" in kwargs:
+        song_name = kwargs["song_name"]
     else:
-        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_s.pak")].lower()
+        if not "_song.pak" in pakmid.lower() and not "_s.pak" in pakmid.lower():
+            warning = input(
+                "WARNING: File does not appear to be a validly named mid PAK file (ending in '_song.pak'). Do you want to continue? (Y/N): ")
+            if not warning.lower().startswith("y"):
+                return -1
 
-    if song_name[1:4] == "dlc":
-        song_name = song_name[1:]
+        if "_song.pak" in pakmid.lower():
+            song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")].lower()
+        else:
+            song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_s.pak")].lower()
+
+        if song_name[1:4] == "dlc":
+            song_name = song_name[1:]
 
     other_skas = {}
     for x in os.scandir(f"{root_folder}\\conversion_files\\ska"):
@@ -1178,11 +1220,19 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
 
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
     vox_star_entry = []  # Setting this up now since there's a chance it can be overridden later.
+    ghost_notes = []
     # This will make comparisons easier later on.
+    for section in qb_sections:
+        if re.search(rf'{song_name}_vox_sp', section.section_id, flags=re.IGNORECASE):
+            vox_star_entry = section.section_data
+
     anim_pak = 0
     drum_anim, override_sections, override_midqs = 0, 0, 0
     simple_anim = 0
-    wt_mode = 0
+    if "wt_mode" in args:
+        wt_mode = 1
+    else:
+        wt_mode = 0
     if kwargs:
         if "anim_pak" in kwargs:
             anim_pak = kwargs["anim_pak"]
@@ -1231,7 +1281,6 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
         if "decomp_ska" in kwargs:
             if kwargs["decomp_ska"]:
                 print("Converting World Tour SKA files to GHM+ format")
-                wt_mode = 1
                 for x in song_files:
                     # continue
                     if x["file_name"].lower().endswith("ska"):
@@ -1248,11 +1297,6 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                                 uncomp_ska = f.read()
                             to_compare = uncomp_ska
                             del(uncomp_ska)
-                        '''elif f"{other_ska_check}_s1n1" in other_skas:
-                            with open(other_skas[f"{other_ska_check}_s1n1"], 'rb') as f:
-                                uncomp_ska = f.read()
-                            to_compare = uncomp_ska
-                            del(uncomp_ska)'''
                         #print(f"Converting {x['file_name']}")
                         if to_compare:
                             converted = make_modern_ska(ska_bytes(x["file_data"]), game="GH5")
@@ -1300,7 +1344,11 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
 
     anim_data_dict = gen_wt_anim_dict(song_name, file_headers)  # Dictionary for all special animations
 
-    note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name, new_name)
+    note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name, new_name, "gh5", *args)
+
+    other_flags = []
+    if f"{song_name}_double_kick" in sections_dict or f"{song_name}_ghost_notes" in sections_dict:
+        other_flags.append("double_kick")
 
     if script_sections:
         for x in script_sections:
@@ -1806,8 +1854,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     shortest_dist = dist
                     short_loc = num
         band_moments.pop(short_loc)
-    if "rainingblood" in pakmid:  # I need to make an exception for Raining Blood due to the steady stream of green notes
-        band_moments = [[66532, 3167], [120541, 3300], [169491, 3100]]
+    '''if "rainingblood" in pakmid:  # I need to make an exception for Raining Blood due to the steady stream of green notes
+        band_moments = [[66532, 3167], [120541, 3300], [169491, 3100]]'''
     note_file["bandmoment"].add_item([j for i in band_moments for j in i])
 
     perf_xml_file = reorg_perfqb(perf_xml_file)
@@ -1877,7 +1925,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     ska_file = f.read()
                 ska_data.append({"file_name": f"{x}{y}.ska", "file_data": ska_file})
         # print()
-    return song_data + ska_data
+
+    return song_data + ska_data + other_flags
 
 
 def gen_vox_sp(song_name, note_file):

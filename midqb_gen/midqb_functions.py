@@ -33,6 +33,7 @@ def create_wt_qb_sections(qb_dict, filename, *args):
         parsing.append(qb_dict["solo_markers"])
 
 
+
     qb_sections[f"{filename}_timesig"] = basic_data(f"{filename}_timesig", [[x.time, x.numerator, x.denominator] for x in qb_dict["timesigs"]])
     qb_sections[f"{filename}_fretbars"] = basic_data(f"{filename}_fretbars", qb_dict["fretbars"])
 
@@ -163,6 +164,16 @@ def create_wt_qb_sections(qb_dict, filename, *args):
                 qb_sections[chart_name] = basic_data(chart_name, playable_qb["Vocals"][temp].copy())
         except:
             qb_sections[chart_name] = basic_data(chart_name, [])
+    if "wor" in args and qb_dict["vox_sp"]:
+        chart_name = f"{filename}_vox_sp"
+        qb_sections[chart_name] = basic_data(chart_name, qb_dict["vox_sp"])
+    if "wor" in args and qb_dict["ghost_notes"]:
+        chart_name = f"{filename}_ghost_notes"
+        qb_sections[chart_name] = basic_data(chart_name, qb_dict["ghost_notes"])
+
+    if qb_dict["has_2x_kick"]:
+        chart_name = f"{filename}_double_kick"
+        qb_sections[chart_name] = basic_data(chart_name, [])
 
     qs_file = ""
     if playable_qb["Vocals"]["qs_file"]:
@@ -345,6 +356,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
+
+    ghost_notes = {}
+    has_2x_kick = False
 
     play_notes_dict = {
         "PART GUITAR": "Guitar",
@@ -625,6 +639,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     temp[note_colour].append(to_add)
                                 else:
                                     active_notes[chart_diff][note_colour] = [to_add]
+                                if all([drums, x.note >= 97, x.velocity == 1]):
+                                    ghost = (1 << note_bit_vals[note_colour])
+                                    if timeSec in ghost_notes:
+                                        if not ghost & ghost_notes[timeSec]:
+                                            ghost_notes[timeSec] += ghost
+                                    else:
+                                        ghost_notes[timeSec] = ghost
+
                             else:
                                 forced_notes[chart_diff][note_colour].append(timeSec)
                         elif x.note == sp_note:
@@ -818,6 +840,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         timestamps[s_time]["accents"].append(note_bit)
                         # colour_time[-1]["length"] = playtime - colour_time[-1]["time"]
                 if all([drums, "2x_kick" in args, diff == "Expert", "2x" in notes]):
+                    has_2x_kick = True
                     d_kick_list = []
                     for counter, kick in enumerate(notes["2x"]):
                         if counter % 2 == 0:
@@ -1205,11 +1228,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
         print("Generating drum animations")
         anim_notes["drum_anims"] = auto_gen_drums(drum_notes)
 
+    if ghost_notes:
+        ghost_notes = split_list([elem for pair in ghost_notes.items() for elem in pair])
 
     return {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
             "tap": playable_tap, "fo_star_power": playable_fo_star_power,  "face_off": playable_face_off,
             "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
-            "fretbars": fretbars, "vox_sp": vocal_sp, "solo_markers": playable_solo_markers
+            "fretbars": fretbars, "vox_sp": vocal_sp, "ghost_notes": ghost_notes, "solo_markers": playable_solo_markers,
+            "has_2x_kick": has_2x_kick
             }
 
 def auto_gen_camera(fretbars):
