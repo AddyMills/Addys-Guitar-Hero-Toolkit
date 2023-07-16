@@ -30,9 +30,12 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
         qb_dict = parse_wt_qb(mid, hopo, *args)
         if "replace_perf" in args:
             perf_file = args[args.index("replace_perf") + 1]
+
             if perf_file.endswith(".txt"):
                 with open(perf_file, "r") as f:
-                    perf_qb = t2q_main(f.read(), game = "GHWT")
+                    perf_qb = f.read().replace("song_performance", f"{filename}_performance")
+                    perf_qb = f"qb_file = songs/{filename}.mid.qb\n" + perf_qb
+                    perf_qb = t2q_main(perf_qb, game = "GHWT")
             else:
                 with open(perf_file, "rb") as f:
                     perf_qb = f.read()
@@ -90,7 +93,10 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
             song_script = args[args.index("song_script") + 1]
             if song_script.endswith(".txt"):
                 with open(song_script, "r") as f:
-                    song_script = f.read()
+                    song_script = f"qb_file = songs/{filename}_song_scripts.qb\n"
+                    song_script += f'script {filename}_song_startup = "29 b6 24 06 00 00 00 09 00 00 00 09 01 16 f8 2d 15 1a 2c 01 24"\n'
+                    song_script += f.read()
+                    song_script = song_script.replace("_anim_struct", f"_anim_struct_{filename}")
                 song_script = t2q_main(song_script, game = "GHWT")
             else:
                 with open(song_script, "rb") as f:
