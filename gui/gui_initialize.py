@@ -53,6 +53,14 @@ class compile_package(QWidget, compile_pack):
         self.gh3_song_data_fields()
         self.compile_fields()
 
+        self.ghwt_checksum = ""
+        self.ghwt_genre = ""
+        self.ghwor_checksum = ""
+        self.ghwor_genre = ""
+
+        self.checksum_input.textEdited.connect(self.set_checksum_variable)
+        self.genre_select.activated.connect(self.set_game_genre)
+
         self.first_boot()
 
         if ghproj:
@@ -172,6 +180,11 @@ class compile_package(QWidget, compile_pack):
             "genre_select": self.genre_select.currentText(),
             "checksum_input": self.checksum_input.text(),
             "author_input": self.author_input.text(),
+
+            "ghwt_checksum": self.ghwt_checksum,
+            "ghwor_checksum": self.ghwor_checksum,
+            "ghwt_genre": self.ghwt_genre,
+            "ghwor_genre": self.ghwor_genre,
 
             # WT Data
             "kick_input": self.kick_input.text(),
@@ -327,6 +340,8 @@ class compile_package(QWidget, compile_pack):
                     field.setCurrentText(value)
                 elif isinstance(field, QSpinBox) or isinstance(field, QDoubleSpinBox):
                     field.setValue(value)
+                elif isinstance(field, str):
+                    setattr(self, key, value)
             except:
                 pass
 
@@ -340,6 +355,19 @@ class compile_package(QWidget, compile_pack):
             self.length_label.setText("Length:")
         self.update_prev_time_wt()
 
+    def set_checksum_variable(self):
+        game = self.game_select_group.checkedButton().objectName()
+        if game == "ghwt":
+            self.ghwt_checksum = self.checksum_input.text()
+        elif game == "ghwor":
+            self.ghwor_checksum = self.checksum_input.text()
+
+    def set_game_genre(self):
+        game = self.game_select_group.checkedButton().objectName()
+        if game == "ghwt":
+            self.ghwt_genre = self.genre_select.currentText()
+        elif game == "ghwor":
+            self.ghwor_genre = self.genre_select.currentText()
     def set_game_fields(self):
         self.setUpdatesEnabled(False)
         game = self.game_select_group.checkedButton().objectName()
@@ -373,12 +401,16 @@ class compile_package(QWidget, compile_pack):
         elif game == "ghwt":
             self.genre_select.addItems(sorted(genre_base + genre_wt))
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_wt))
+            self.checksum_input.setText(self.ghwt_checksum)
+            self.genre_select.setCurrentText(self.ghwt_genre)
         elif game == "gh5":
             self.genre_select.addItems(sorted(genre_base + genre_gh5) + ["Other"])
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
         elif game == "ghwor":
             self.genre_select.addItems(sorted(genre_gh5 + genre_wor) + ["Other"])
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
+            self.checksum_input.setText(self.ghwor_checksum)
+            self.genre_select.setCurrentText(self.ghwor_genre)
             self.ghwor_stfs_input.setEnabled(True)
             self.ghwor_stfs_select.setEnabled(True)
             self.encrypt_audio.setDisabled(True)
