@@ -73,13 +73,6 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     return padded_mp3_data
 
 def make_preview_sox(start_time, end_time):
-    # Create SoX Combiner
-    cbn = sox.Combiner()
-    cbn.set_output_format("mp3", 48000)
-    cbn.trim(start_time, end_time)
-    cbn.fade(1.0, 1.0)
-    cbn.vol(-7.0, "db")
-    cbn.set_input_format(["mp3"]*9)
 
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
@@ -92,8 +85,24 @@ def make_preview_sox(start_time, end_time):
     for file in os.listdir(temp_dir):
         audio_list.append(temp_dir + "\\" + file)
 
+    extra_args = []
+    # Create SoX Combiner
+    if len(audio_list) == 1:
+        preview = sox.Transformer()
+        preview.set_input_format("mp3")
+        audio_list = audio_list[0]
+    else:
+        preview = sox.Combiner()
+        preview.set_input_format(["mp3"] * len(audio_list))
+        extra_args.append("mix")
+    preview.set_output_format("mp3", 48000)
+    preview.trim(start_time, end_time)
+    preview.fade(1.0, 1.0)
+    preview.vol(-7.0, "db")
+
+
     try:
-        cbn.build(audio_list, temp_out, "mix")
+        preview.build(audio_list, temp_out, *extra_args)
     except Exception as E:
         raise E
 
@@ -235,7 +244,6 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
     if "encrypt" in args:
         encrypt = True
     max_length = 0
-    extra_args = []
     if not "audio_len" in args:
         print("Converting all files to MP3 and padding to the longest")
     if is_program_in_path("sox") and "ffmpeg" not in args:
@@ -250,7 +258,11 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
         # Pad each input file and store the output in a list
         padded_mp3_data_list = []
         for enum, input_file in enumerate(all_audio):
-            padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
+            if input_file.endswith("default_audio/blank.mp3"):
+                with open(input_file, 'rb') as f:
+                    padded_mp3_data_list.append(f.read())
+            else:
+                padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
         preview = make_preview_sox(start_time, end_time)
     elif is_program_in_path("ffmpeg"):
         for input_file in all_audio:
@@ -262,18 +274,22 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
         # Pad each input file and store the output in a list
         padded_mp3_data_list = []
         for enum, input_file in enumerate(all_audio):
-            padded_mp3_data_list.append(pad_wav_file_ffmpeg(input_file, max_length, enum))
+            if input_file.endswith("default_audio/blank.mp3"):
+                with open(input_file, 'rb') as f:
+                    padded_mp3_data_list.append(f.read())
+            else:
+                padded_mp3_data_list.append(pad_wav_file_ffmpeg(input_file, max_length, enum))
         preview = make_preview_ffmpeg(start_time, end_time)
-        stream_size = 0
-        for x in padded_mp3_data_list:
-            stream_size = max(len(pullMP3Frames(x)[0]), stream_size)
-        extra_args.extend(["-stream_size", stream_size])
     elif "ffmpeg" in args:
         print("FFmpeg was asked to use, but cannot find it in PATH")
         return 0
     else:
         print("Could not find ffmpeg or SoX in PATH")
         return 0
+    stream_size = 0
+    for x in padded_mp3_data_list:
+        stream_size = max(len(pullMP3Frames(x)[0]), stream_size)
+    extra_args = ["-stream_size", stream_size]
     print("Creating Drum Audio")
     drum_files = createFSB4(padded_mp3_data_list[:4], f"{shortname}_1", encrypt, *extra_args)
     print("Creating Other Instruments Audio")
