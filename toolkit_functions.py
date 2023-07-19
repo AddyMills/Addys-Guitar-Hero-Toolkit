@@ -564,7 +564,7 @@ def note_2_bin(raw_file):
     return n_info
 
 
-def perf_2_bin(perf_file, song_name):
+def perf_2_bin(perf_file, song_name, loop_anims):
     p_info = bytearray()
     for x in ["autocutcameras", "momentcameras"]:
         item = perf_file[x]
@@ -573,18 +573,35 @@ def perf_2_bin(perf_file, song_name):
         p_info += qbkey_hex("gh5_camera_note")
         for enum, camera_cut in enumerate(item):
             p_info += int.to_bytes(camera_cut, 4 if enum % 3 == 0 else 2 if enum % 3 == 1 else 1, "big")
-    for x in ["female", "male"]:
-        item = perf_file[x]
-        for y in ["", "_alt"]:
-            p_info += qbkey_hex(f"car_{x}{y}_anim_struct_{song_name}")
-            p_info += int.to_bytes(1, 4, "big")
-            p_info += qbkey_hex("gh5_actor_loops")
-            for anim_loop in item:
-                p_info += qbkey_hex(anim_loop)
+    if loop_anims:
+        for x in ["Female", "Male"]:
+            item = loop_anims[x]
+            loop_bytes = b''
+            for player in ["guitarist", "bassist", "vocalist"]:
+                player_loops = b''
+                for loop in item[player]:
+                    player_loops += qbkey_hex(loop)
+                player_loops += b'\x00' * (200 - len(player_loops))
+                loop_bytes += player_loops
+            loop_bytes += b'\x00' * 400
+            for y in ["", "_alt"]:
+                p_info += qbkey_hex(f"car_{x}{y}_anim_struct_{song_name}")
+                p_info += int.to_bytes(1, 4, "big")
+                p_info += qbkey_hex("gh6_actor_loops")
+                p_info += loop_bytes
+    else:
+        for x in ["female", "male"]:
+            item = perf_file[x]
+            for y in ["", "_alt"]:
+                p_info += qbkey_hex(f"car_{x}{y}_anim_struct_{song_name}")
+                p_info += int.to_bytes(1, 4, "big")
+                p_info += qbkey_hex("gh5_actor_loops")
+                for anim_loop in item:
+                    p_info += qbkey_hex(anim_loop)
     return p_info
 
 
-def convert_to_gh5_bin(raw_file, file_type, song_name="", **kwargs):
+def convert_to_gh5_bin(raw_file, file_type, song_name="", *args, **kwargs):
     if file_type == "note" or file_type == "perf":
         header = bytearray()
         header += b'\x40\xa0\x00\xd2' if file_type == "note" else b'\x40\xa0\x01\xa3'  # Game id
@@ -595,7 +612,7 @@ def convert_to_gh5_bin(raw_file, file_type, song_name="", **kwargs):
         if file_type == "note":
             return header + note_2_bin(raw_file)
         else:
-            return header + perf_2_bin(raw_file, song_name)
+            return header + perf_2_bin(raw_file, song_name, *args)
     elif file_type == "qs":
         qs_bin = bytearray()
         qs_bin += b'\xFF\xFE'
@@ -1179,6 +1196,22 @@ def check_ska_anims(anim_skas, song_files_dict, other_skas):
                     "file_name": f"{anim_skas[ska]}.ska", "file_data": new_anim}
     return song_files_dict
 
+def parse_anim_loops():
+    with open(f"{root_folder}\\anim_loops.txt", "r") as f:
+        anim_file = f.readlines()
+    anim_loops = {}
+    for x in anim_file:
+        try:
+            if re.search(r'_c0[1-9]$', x, flags = re.IGNORECASE):
+                anim_loops[x.strip()[:-4]].append(x.strip())
+            else:
+                anim_loops[x.strip()] = []
+        except:
+            #print(f"{x} failed to parse")
+            pass
+    return anim_loops
+
+
 
 def modify_strobe(n):
     # Extract the 2nd 8-bit integer
@@ -1213,6 +1246,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
 
         if song_name[1:4] == "dlc":
             song_name = song_name[1:]
+
+    anim_loop_master = parse_anim_loops()
 
     other_skas = {}
     for x in os.scandir(f"{root_folder}\\conversion_files\\ska"):
@@ -1347,6 +1382,11 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name, new_name, "gh5", *args)
 
     other_flags = []
+    loop_anims = {
+        "vocalist": [],
+        "bassist": [],
+        "guitarist": []
+    }
     if f"{song_name}_double_kick" in sections_dict or f"{song_name}_ghost_notes" in sections_dict:
         other_flags.append("double_kick")
 
@@ -1392,7 +1432,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         "Band_DisableAutoFret", "Band_EnableAutoStrums", "Band_DisableAutoStrums",
                         "Band_ForceAllToIdle", "Band_ShowMicStand", "Band_HideMicStand", "Band_ShowMic_Stand",
                         "Band_MoveToNode", "band_setikchain", "Band_PlayRockinFacialAnim", "Band_ShowMic_microphone",
-                        "Band_HideMic_microphone", "Band_ClearAnimTempo"]
+                        "Band_HideMic_microphone", "Band_ClearAnimTempo", "Band_PlayLoop"]
     allowed_converts += [hex(int(CRC.QBKey(x), 16)) for x in allowed_converts]
     ignored_converts = ["Band_PlaysimpleAnim", "dummy_function", "Band_SetStrumStyle", "VH_UndergroundLogo_On",
                         "VH_UndergroundLogo_Off", "Crowd_StartLighters", "Crowd_StopLighters"]
@@ -1422,6 +1462,18 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     autocut_cams = perf_file["autocutcameras"][::3]
     orig_clip_times = {}
     all_anims_used = []
+    loop_genders = {
+        "Male": {
+            "vocalist": [],
+            "bassist": [],
+            "guitarist": []
+        },
+        "Female": {
+            "vocalist": [],
+            "bassist": [],
+            "guitarist": []
+        }
+    } # This is for WoR generation only, and only if Band_PlayLoop exists in the song
     if qb_file[f"{new_name}_performance"].array_node_type != "Floats":
         print("Converting Performance array")
         wt_clip_time = []
@@ -1494,7 +1546,6 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                             frames_till_next = round((next_time - rounded_time) / 1000 * 30)
                         else:
                             frames_till_next = 0
-                        anim_skas = clip_to_parse.data_dict["anims"]
 
                         camera_skas = {}
                         all_cams = []
@@ -1513,66 +1564,85 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                                 camera_skas[f"camera_{enum}"] = cam_ska.data_dict["anim"]
                         else:
                             print(f"No cameras for {clip_to_parse.section_id}")
-                        song_files_dict = check_ska_anims(anim_skas | camera_skas, song_files_dict, other_skas)
-                        no_clip_trunc = 1
-                        if x.data_dict["time"] == 0 and wt_mode:
-                            for no_temp in anim_skas.values():
-                                if re.search(r"notempo", no_temp, flags=re.IGNORECASE):
-                                    no_clip_trunc = 0
-                                    print("Checking no tempo anim...")
-                                    break
-                        """
-                        Add support for "secondary, bassist, guitarist, etc. cameras
-                        Secondary seems to be camera 99, i.e. slot 10
-                        Bassist cam seems to be camera 6, or camera 93, i.e. slot 4
-                        Guitarist seems to be camera 94, i.e. slot 5
-                        """
-                        if no_clip_trunc or new_name.lower() in ["dlc22", "dlc23", "dlc24", "dlc92", "dlc96",
-                                                                            "dlc97", "dlc105", "dlc306"]:
-                            new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
-                                                                            ven_cams=cameras,
-                                                                            wt_frames=frames_till_next,
-                                                                            use_anims=use_anims)
+                        if "anims" in clip_to_parse.data_dict:
+                            anim_skas = clip_to_parse.data_dict["anims"]
+                            song_files_dict = check_ska_anims(anim_skas | camera_skas, song_files_dict, other_skas)
+                            no_clip_trunc = 1
+                            if x.data_dict["time"] == 0 and wt_mode:
+                                for no_temp in anim_skas.values():
+                                    if re.search(r"notempo", no_temp, flags=re.IGNORECASE):
+                                        no_clip_trunc = 0
+                                        print("Checking no tempo anim...")
+                                        break
+                            """
+                            Add support for "secondary, bassist, guitarist, etc. cameras
+                            Secondary seems to be camera 99, i.e. slot 10
+                            Bassist cam seems to be camera 6, or camera 93, i.e. slot 4
+                            Guitarist seems to be camera 94, i.e. slot 5
+                            """
+                            if no_clip_trunc or new_name.lower() in ["dlc22", "dlc23", "dlc24", "dlc92", "dlc96",
+                                                                                "dlc97", "dlc105", "dlc306"]:
+                                new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
+                                                                                ven_cams=cameras,
+                                                                                wt_frames=frames_till_next,
+                                                                                use_anims=use_anims)
+                            else:
+                                new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
+                                                                                ven_cams=cameras, next_note=first_note,
+                                                                                wt_frames=frames_till_next,
+                                                                                use_anims=use_anims)
+                            if new_clip_data == -1:
+                                print(f"Invalid anim: {clip_to_parse.section_id}. Reason: {endf}.\nSkipping")
+                                continue
+                            clip_name = clip_to_parse.section_id + f"_{str(play_clip_count).zfill(2)}"
+                            if clip_name.startswith("0x"):
+                                clip_name = clip_name[2:]
+                            play_clip_count += 1
+                            if "gh5" in args:
+                                new_clip_data = [PAKExtract.struct_item("StructItemInteger", "dataformat", 2,
+                                                                        0)] + new_clip_data
+                                new_clip_data.pop()
                         else:
-                            new_clip_data, startf, endf = band_clip_from_wt(clip_to_parse, params, song_files_dict,
-                                                                            ven_cams=cameras, next_note=first_note,
-                                                                            wt_frames=frames_till_next,
-                                                                            use_anims=use_anims)
-                        if new_clip_data == -1:
-                            print(f"Invalid anim: {clip_to_parse.section_id}. Reason: {endf}.\nSkipping")
-                            continue
-                        clip_name = clip_to_parse.section_id + f"_{str(play_clip_count).zfill(2)}"
-                        if clip_name.startswith("0x"):
-                            clip_name = clip_name[2:]
-                        play_clip_count += 1
-                        if "gh5" in args:
-                            new_clip_data = [PAKExtract.struct_item("StructItemInteger", "dataformat", 2,
-                                                                    0)] + new_clip_data
-                            new_clip_data.pop()
-
+                            new_clip_data = clip_to_parse.section_data
+                            startf = clip_to_parse.data_dict["characters"][0].data_dict["startframe"]
+                            endf = clip_to_parse.data_dict["characters"][0].data_dict["endframe"]
+                            clip_name = clip_to_parse.section_id
                         # Check if moment cams need to be adjusted
                         clip_len = round((endf - startf) / 30 * 1000)
                         anim_ska_lens = []
                         skip_clip = False
                         curr_clip = clip_to_parse.section_id
-                        for key, value in anim_skas.items():
-                            if key == "drummer":
-                                continue
-                            if value == "None":
-                                continue
-                            if "G_Attached" in value:
-                                skip_clip = True
-                            if "_120" in value:
-                                skip_clip = True
-                            if value.startswith("0x"):
-                                ska_name = f"{value}.{value}.ska"
-                                anim_ska_lens.append(round(
-                                    struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0] * 1000))
-                            else:
-                                ska_name = f"{value}.ska"
-                                anim_ska_lens.append(round(struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0]*1000))
-                            if ska_name not in all_anims_used:
-                                all_anims_used.append(ska_name.lower())
+                        if "anims" in clip_to_parse.data_dict:
+                            for key, value in anim_skas.items():
+                                if key == "drummer":
+                                    continue
+                                if value == "None":
+                                    continue
+                                if "G_Attached" in value:
+                                    skip_clip = True
+                                if "_120" in value:
+                                    skip_clip = True
+                                if value.startswith("0x"):
+                                    ska_name = f"{value}.{value}.ska"
+                                    anim_ska_lens.append(round(
+                                        struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0] * 1000))
+                                else:
+                                    ska_name = f"{value}.ska"
+                                    anim_ska_lens.append(round(struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0]*1000))
+                                if ska_name not in all_anims_used:
+                                    all_anims_used.append(ska_name.lower())
+                        else:
+                            for value in clip_to_parse.data_dict["characters"]:
+                                value_anim = value.data_dict["anim"]
+                                if value_anim.startswith("0x"):
+                                    ska_name = f"{value_anim}.{value_anim}.ska"
+                                    anim_ska_lens.append(round(
+                                        struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0] * 1000))
+                                else:
+                                    ska_name = f"{value_anim}.ska"
+                                    anim_ska_lens.append(round(struct.unpack(">f", song_files_dict[ska_name]["file_data"][40:44])[0]*1000))
+                                if ska_name not in all_anims_used:
+                                    all_anims_used.append(ska_name.lower())
                         for key, value in camera_skas.items():
                             if value.startswith("0x"):
                                 ska_name = f"{value}.{value}.ska"
@@ -1676,10 +1746,15 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         last_clip_start = rounded_time
                         last_clip_end = cam_check
                         clips_processed.append(curr_clip)
-                        perf_xml_file[clip_name] = PAKExtract.qb_section("SectionStruct")
-                        perf_xml_file[clip_name].set_all(clip_name, new_clip_data, f"songs/{new_name}.perf.xml.qb")
-                        perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
-                            PAKExtract.new_play_clip(rounded_time, clip_name, startf, endf))
+                        if "anims" in clip_to_parse.data_dict:
+                            perf_xml_file[clip_name] = PAKExtract.qb_section("SectionStruct")
+                            perf_xml_file[clip_name].set_all(clip_name, new_clip_data, f"songs/{new_name}.perf.xml.qb")
+                            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
+                                PAKExtract.new_play_clip(rounded_time, clip_name, startf, endf))
+                        else:
+                            perf_xml_file[clip_name] = clip_to_parse
+                            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
+                                PAKExtract.new_play_clip(rounded_time, clip_name, startf, endf))
 
                     elif script_val.data_value in check_dbg("Band_PlayIdle"):
                         if x.data_value[0].data_id == "time":
@@ -1714,10 +1789,23 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                                     print("Added mf_anims")
                             else:
                                 print(f"No Facial Anim at {x.data_dict['time']}")
-
-
-                        elif "Band_ChangeFacialAnims" in script_val.data_value:
-                            input("Facial Anim Change")
+                        elif "Band_PlayLoop" in script_val.data_value:
+                            loop_params = x.data_dict["params"]
+                            curr_ska = ""
+                            if "Male" in loop_params:
+                                curr_ska = loop_params["Male"].lower()
+                                if curr_ska not in loop_anims[loop_params["name"]]:
+                                    loop_anims[loop_params["name"]].append(curr_ska)
+                                if curr_ska not in loop_genders["Male"][loop_params["name"]]:
+                                    loop_genders["Male"][loop_params["name"]].append(curr_ska)
+                                    loop_genders["Male"][loop_params["name"]].extend(anim_loop_master[curr_ska])
+                            if "Female" in loop_params:
+                                curr_ska = loop_params["Female"].lower()
+                                if curr_ska not in loop_anims[loop_params["name"]]:
+                                    loop_anims[loop_params["name"]].append(curr_ska)
+                                if curr_ska not in loop_genders["Female"][loop_params["name"]]:
+                                    loop_genders["Female"][loop_params["name"]].append(curr_ska)
+                                    loop_genders["Female"][loop_params["name"]].extend(anim_loop_master[curr_ska])
                         if all([new_name == "DLC289", "Band_PlayFacialAnim" in script_val.data_value]):
                             if x.data_dict["params"]["name"] == "guitarist":
                                 perf_xml_file[f"{new_name}_scriptevents"].section_data.append(
@@ -1793,6 +1881,16 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                         print(f"{script_val.data_value} found. Not sure what to do with it")
                     else:
                         print(f"Ignoring {script_val.data_value}")
+    all_loop_anims = []
+    for key, value in loop_anims.items():
+        if value:
+            diff_files = ["", "_c01", "_c02", "_c03"]
+            for x in value:
+                for diff in diff_files:
+                    curr_loop = f"{x + diff}.ska".lower()
+                    all_anims_used.append(curr_loop)
+                    all_loop_anims.append(curr_loop)
+
     scriptevents = {}
     for x in perf_xml_file[f"{new_name}_scriptevents"].section_data:
         if x.data_value[0].data_value not in scriptevents:
@@ -1811,8 +1909,10 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     for pak_file in song_files_dict.keys():
         if song_files_dict[pak_file]["file_name"].endswith(".ska"):
             anim_name = song_files_dict[pak_file]["file_name"].lower()
-            if anim_name in all_anims_used:
+            if anim_name in all_anims_used and anim_name not in all_loop_anims:
                 ska_data.append(song_files_dict[pak_file])
+            elif anim_name in all_loop_anims:
+                print(f"Removing loop anim {song_files_dict[pak_file]['file_name']} from pak and adding to perf file.")
             else:
                 print(f"Removing unused anim {song_files_dict[pak_file]['file_name']} to save space.")
 
@@ -1894,7 +1994,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     song_data.append(
         {"file_name": f"songs/{new_name}.note", "file_data": convert_to_gh5_bin(note_file, "note", new_name)})
     song_data.append(
-        {"file_name": f"songs/{new_name}.perf", "file_data": convert_to_gh5_bin(perf_file, "perf", new_name)})
+        {"file_name": f"songs/{new_name}.perf", "file_data": convert_to_gh5_bin(perf_file, "perf", new_name, loop_genders)})
     song_data.append(
         {"file_name": f"songs/{new_name}.perf.xml.qb",
          "file_data": convert_to_gh5_bin(perf_xml_file, "perf_xml", console="PC", endian="big")})
@@ -1925,8 +2025,9 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     ska_file = f.read()
                 ska_data.append({"file_name": f"{x}{y}.ska", "file_data": ska_file})
         # print()
-
-    return song_data + ska_data + other_flags
+    if "compiler" in args:
+        ska_data += other_flags
+    return song_data + ska_data
 
 
 def gen_vox_sp(song_name, note_file):
