@@ -6,6 +6,6 @@ pyinstaller -p "D:\GitHub\Guitar-Hero-III-Tools\create_audio" ^
 -p "D:\GitHub\Guitar-Hero-III-Tools\gui" ^
 --add-data "debug.txt;." ^
 --add-data "conversion_files_prod;conversion_files" ^
---add-data "create_audio\default_audio\blank.wav;create_audio\default_audio" ^
+--add-data "create_audio\default_audio\blank.mp3;create_audio\default_audio" ^
 "GH Toolkit.py"
 pause
