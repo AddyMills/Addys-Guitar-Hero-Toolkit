@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -1155,24 +1155,40 @@
             </property>
             <item>
              <layout class="QGridLayout" name="gridLayout_3">
-              <item row="9" column="0">
-               <widget class="QLabel" name="vocal_speed_label">
-                <property name="text">
-                 <string>Vocal Scroll Speed:</string>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="ghwt_song_script_input"/>
+              </item>
+              <item row="10" column="1">
+               <widget class="QDoubleSpinBox" name="ghwt_band_vol">
+                <property name="minimum">
+                 <double>-10.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>5.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.500000000000000</double>
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="ghwt_vocal_gender_label">
+              <item row="4" column="0">
+               <widget class="QLabel" name="ghwor_stfs_label">
                 <property name="text">
-                 <string>Vocal Gender:</string>
+                 <string>WoR STFS File</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
-               <widget class="QToolButton" name="ghwt_ska_files_select">
+              <item row="7" column="0">
+               <widget class="QLabel" name="ghwt_drumkit_label">
                 <property name="text">
-                 <string>...</string>
+                 <string>Drum Kit:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="0" colspan="3">
+               <widget class="Line" name="line_10">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -1187,6 +1203,63 @@
                <widget class="QLineEdit" name="ghwt_ska_files_input">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QComboBox" name="ghwt_vocal_gender_select">
+                <item>
+                 <property name="text">
+                  <string>Male</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Female</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>None</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QToolButton" name="ghwt_song_script_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="ghwt_vocal_gender_label">
+                <property name="text">
+                 <string>Vocal Gender:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="ghwt_song_script_label">
+                <property name="text">
+                 <string>Song Script:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="ghwt_ska_files_label">
+                <property name="text">
+                 <string>SKA Files:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="ghwor_stfs_input"/>
+              </item>
+              <item row="1" column="2">
+               <widget class="QToolButton" name="ghwt_perf_override_select">
+                <property name="text">
+                 <string>...</string>
                 </property>
                </widget>
               </item>
@@ -1309,40 +1382,6 @@
                 </item>
                </layout>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="ghwt_ska_files_label">
-                <property name="text">
-                 <string>SKA Files:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="ghwt_song_script_input"/>
-              </item>
-              <item row="7" column="1">
-               <widget class="QComboBox" name="ghwt_drumkit_select"/>
-              </item>
-              <item row="1" column="2">
-               <widget class="QToolButton" name="ghwt_perf_override_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="ghwt_countoff_label">
-                <property name="text">
-                 <string>Count Off:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="ghwt_song_script_label">
-                <property name="text">
-                 <string>Song Script:</string>
-                </property>
-               </widget>
-              </item>
               <item row="5" column="1">
                <widget class="QComboBox" name="ghwt_countoff_select">
                 <item>
@@ -1377,10 +1416,17 @@
                 </item>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="ghwt_perf_override_input">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a file with a performance array to override the generated performance array.&lt;/p&gt;&lt;p&gt;Can be a text file compatible with the toolkit, or an already compiled qb file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <item row="2" column="2">
+               <widget class="QToolButton" name="ghwt_ska_files_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="ghwt_countoff_label">
+                <property name="text">
+                 <string>Count Off:</string>
                 </property>
                </widget>
               </item>
@@ -1391,35 +1437,56 @@
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
-               <widget class="QDoubleSpinBox" name="ghwt_band_vol">
-                <property name="minimum">
-                 <double>-10.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>5.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.500000000000000</double>
+              <item row="15" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="setlist_settings_layout">
+                <item>
+                 <widget class="QLabel" name="game_icon_label">
+                  <property name="text">
+                   <string>Game Icon</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_icon_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="game_category_label">
+                  <property name="text">
+                   <string>Game Category</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_category_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="band_label">
+                  <property name="text">
+                   <string>Band</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="band_input"/>
+                </item>
+               </layout>
+              </item>
+              <item row="13" column="0" colspan="3" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="other_settings_label">
+                <property name="text">
+                 <string>World Tour Definitive Edition Settings</string>
                 </property>
                </widget>
               </item>
-              <item row="14" column="0">
+              <item row="15" column="0">
                <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>In-game Settings</string>
+                 <string>Setlist Settings</string>
                 </property>
                </widget>
               </item>
-              <item row="12" column="0" colspan="3">
-               <widget class="Line" name="line_10">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="15" column="1" colspan="2">
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item row="16" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="skeleton_types_layout">
                 <item>
                  <widget class="QLabel" name="skeleton_type_g_label">
                   <property name="text">
@@ -1498,14 +1565,76 @@
                 </item>
                </layout>
               </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="ghwt_drumkit_label">
+              <item row="9" column="0">
+               <widget class="QLabel" name="vocal_speed_label">
                 <property name="text">
-                 <string>Drum Kit:</string>
+                 <string>Vocal Scroll Speed:</string>
                 </property>
                </widget>
               </item>
-              <item row="16" column="1" colspan="2">
+              <item row="4" column="2">
+               <widget class="QToolButton" name="ghwor_stfs_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="0">
+               <widget class="QLabel" name="skeleton_types_label">
+                <property name="text">
+                 <string>Skeleton Types</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QComboBox" name="ghwt_drumkit_select"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="ghwt_perf_override_label">
+                <property name="text">
+                 <string>Perf Override:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="ghwt_perf_override_input">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a file with a performance array to override the generated performance array.&lt;/p&gt;&lt;p&gt;Can be a text file compatible with the toolkit, or an already compiled qb file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="ghwt_band_vol_label">
+                <property name="text">
+                 <string>Overall Volume:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="QDoubleSpinBox" name="vocal_scroll_speed_input">
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="ghwt_midi_file_input"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="ghwt_midi_file_label">
+                <property name="text">
+                 <string>MIDI File:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="0">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>In-game Settings</string>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="1" colspan="2">
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QCheckBox" name="guitar_mic_check">
@@ -1529,135 +1658,6 @@
                  </widget>
                 </item>
                </layout>
-              </item>
-              <item row="13" column="0" colspan="3" alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>World Tour Definitive Edition Settings</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="ghwt_perf_override_label">
-                <property name="text">
-                 <string>Perf Override:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0">
-               <widget class="QLabel" name="ghwt_band_vol_label">
-                <property name="text">
-                 <string>Overall Volume:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="1">
-               <widget class="QComboBox" name="ghwt_vocal_gender_select">
-                <item>
-                 <property name="text">
-                  <string>Male</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Female</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>None</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="9" column="1">
-               <widget class="QDoubleSpinBox" name="vocal_scroll_speed_input">
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="ghwt_midi_file_label">
-                <property name="text">
-                 <string>MIDI File:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="15" column="0">
-               <widget class="QLabel" name="skeleton_types_label">
-                <property name="text">
-                 <string>Skeleton Types</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QToolButton" name="ghwt_song_script_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="16" column="0">
-               <widget class="QLabel" name="label_7">
-                <property name="text">
-                 <string>Other</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="1" colspan="2">
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QLabel" name="game_icon_label">
-                  <property name="text">
-                   <string>Game Icon</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_icon_input"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="game_category_label">
-                  <property name="text">
-                   <string>Game Category</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_category_input"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="band_label">
-                  <property name="text">
-                   <string>Band</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="band_input"/>
-                </item>
-               </layout>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="ghwt_midi_file_input"/>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="ghwor_stfs_label">
-                <property name="text">
-                 <string>WoR STFS File</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="ghwor_stfs_input"/>
-              </item>
-              <item row="4" column="2">
-               <widget class="QToolButton" name="ghwor_stfs_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>

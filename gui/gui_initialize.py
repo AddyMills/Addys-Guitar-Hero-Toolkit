@@ -396,6 +396,10 @@ class compile_package(QWidget, compile_pack):
         self.ghwor_stfs_select.setDisabled(True)
 
         self.encrypt_audio.setEnabled(True)
+        self.other_settings_label.setText("Other Settings")
+
+        self.deactivate_layout(self.setlist_settings_layout)
+        self.deactivate_layout(self.skeleton_types_layout)
         if any([game == "gh3", game == "gha"]):
             self.genre_select.setDisabled(True)
         elif game == "ghwt":
@@ -403,6 +407,9 @@ class compile_package(QWidget, compile_pack):
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_wt))
             self.checksum_input.setText(self.ghwt_checksum)
             self.genre_select.setCurrentText(self.ghwt_genre)
+            self.other_settings_label.setText("World Tour Definitive Edition Settings")
+            self.activate_layout(self.setlist_settings_layout)
+            self.activate_layout(self.skeleton_types_layout)
         elif game == "gh5":
             self.genre_select.addItems(sorted(genre_base + genre_gh5) + ["Other"])
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
@@ -433,6 +440,14 @@ class compile_package(QWidget, compile_pack):
                 self.cover_checkbox.setDisabled(False)
 
         self.setUpdatesEnabled(True)
+
+    def activate_layout(self, layout):
+        for i in range(layout.count()):
+            layout.itemAt(i).widget().setEnabled(True)
+
+    def deactivate_layout(self, layout):
+        for i in range(layout.count()):
+            layout.itemAt(i).widget().setEnabled(False)
 
     def wt_audio_fields(self):
         self.kick_select.clicked.connect(partial(self.open_file_dialog_audio, self.kick_input))
@@ -566,7 +581,6 @@ class compile_package(QWidget, compile_pack):
         else:
             artist_text = "artist_text_as_made_famous_by"
             orig_artist = 0
-
         ini = configparser.ConfigParser()
         ini.optionxform = str
         ini["ModInfo"] = {
@@ -684,7 +698,9 @@ class compile_package(QWidget, compile_pack):
             if not files.text() or not os.path.isfile(files.text()):
                 if not os.path.isfile(files.text()):
                     print(f"File for {files.objectName()} does not exist. Using blank audio")
-                files.setText(f"{audio_folder}/default_audio/blank.wav")
+                files.setText(f"{audio_folder}/default_audio/blank.mp3")
+            elif files.text().endswith("default_audio/blank.wav"):
+                files.setText(f"{audio_folder}/default_audio/blank.mp3")
             all_audio_path.append(files.text())
         try:
             drum, inst, other, preview = af.get_padded_audio(all_audio_path, song_name, start_time, end_time,
@@ -775,7 +791,7 @@ class compile_package(QWidget, compile_pack):
             return 0
 
         hopo_val = self.hmx_hopo_value.value()
-        compile_args = [midi_file, hopo_val, self.checksum_input.text(), *args]
+        compile_args = [midi_file, hopo_val, self.checksum_input.text(), "compiler", *args]
 
         if self.encrypt_audio.isChecked():
             compile_args += ["encrypt"]
