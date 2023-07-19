@@ -34,7 +34,8 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
             if perf_file.endswith(".txt"):
                 with open(perf_file, "r") as f:
                     perf_qb = f.read().replace("song_performance", f"{filename}_performance")
-                    perf_qb = f"qb_file = songs/{filename}.mid.qb\n" + perf_qb
+                    if "qb_file = " not in perf_qb:
+                        perf_qb = f"qb_file = songs/{filename}.mid.qb\n" + perf_qb
                     perf_qb = t2q_main(perf_qb, game = "GHWT")
             else:
                 with open(perf_file, "rb") as f:
@@ -90,16 +91,21 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
             for files in os.listdir(args[args.index("add_ska") + 1]):
                 to_pak.append([open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb').read(), files])
         if "song_script" in args:
-            song_script = args[args.index("song_script") + 1]
-            if song_script.endswith(".txt"):
-                with open(song_script, "r") as f:
-                    song_script = f"qb_file = songs/{filename}_song_scripts.qb\n"
-                    song_script += f'script {filename}_song_startup = "29 b6 24 06 00 00 00 09 00 00 00 09 01 16 f8 2d 15 1a 2c 01 24"\n'
-                    song_script += f.read()
-                    song_script = song_script.replace("_anim_struct", f"_anim_struct_{filename}")
+            song_script_file = args[args.index("song_script") + 1]
+            if song_script_file.endswith(".txt"):
+                song_script = ""
+                with open(song_script_file, "r") as f:
+                    song_script_raw = f.read()
+                    if not "qb_file = " in song_script_raw:
+                        song_script = f"qb_file = songs/{filename}_song_scripts.qb\n"
+                    if not "_song_startup = " in song_script_raw:
+                        song_script += f'script {filename}_song_startup = "29 b6 24 06 00 00 00 09 00 00 00 09 01 16 f8 2d 15 1a 2c 01 24"\n'
+                    song_script += song_script_raw
+                    if not f"_anim_struct_{filename}" in song_script:
+                        song_script = song_script.replace("anim_struct", f"anim_struct_{filename}")
                 song_script = t2q_main(song_script, game = "GHWT")
             else:
-                with open(song_script, "rb") as f:
+                with open(song_script_file, "rb") as f:
                     song_script = f.read()
             to_pak.append([song_script, f"songs\\{filename}_song_scripts.qb"])
         pakFile = pakMaker(to_pak)
