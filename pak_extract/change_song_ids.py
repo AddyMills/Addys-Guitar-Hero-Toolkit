@@ -14,7 +14,7 @@ from midqb_gen import CreatePAK
 import os
 import time
 
-console = "ps3"
+console = "xen"
 
 ids_pre = ["_song_scripts",
            "_scriptevents",
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     """
 
                 else:
-                    continue
+
                     folderpath = f"{filepath}\\{y}"
                     foldersavepath = f"{savepath}\\{y}"
                     for z in os.listdir(f"{folderpath}"):
@@ -154,7 +154,8 @@ if __name__ == "__main__":
                         print(f"Processing {z}")
                         with open(f"{folderpath}\\{z}", 'rb') as f:
                             audio = f.read()
-                        audio = decrypt_fsb4(audio, key)
+                        if audio[:3] != b'FSB':
+                            audio = decrypt_fsb4(audio, key)
                         if audio[:3] != b'FSB':
                             raise Exception("Error Decrypting. Please check your song name.")
                         print("Successfully Decrypted")

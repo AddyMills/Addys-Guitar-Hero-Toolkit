@@ -139,6 +139,67 @@ def pak2mid(pakmid, song_name):
 
     return qb_sections, file_headers, file_headers_hex, song_files
 
+'''def swap_checksums(filepath,):
+    for y in os.listdir(f"{filepath}"):
+        if os.path.isfile(f"{filepath}\\{y}"):
+            # continue
+            if "_song.pak.xen" in y.lower():
+                pak_data = f"{filepath}\\{y}"
+                old_name = y.split("_")[0]
+                old_ids = generate_ids(old_name)
+                # raise Exception
+            elif "_anim" in y.lower():
+                pak_anim = f"{filepath}\\{y}"
+            elif ".mid" in y.lower():
+                override_mid = f"{filepath}\\{y}"
+                print(f"MIDI File: {y} found.")
+            else:
+                print(f"Unknown file {y} found. Skipping...")
+
+            """ Only for BH/GH5 style PAKs
+            with open(f"{filepath}\\{y}", 'rb') as f:
+                decomp_pak = f.read()
+                if decomp_pak[:4] == b"CHNK":
+                    decomp_pak = decompress_pak(decomp_pak)
+            for i, z in enumerate(old_ids):
+                decomp_pak = decomp_pak.replace(z, dlc_ids[i])  
+            """
+
+        else:
+
+            folderpath = f"{filepath}\\{y}"
+            foldersavepath = f"{savepath}\\{y}"
+            for z in os.listdir(f"{folderpath}"):
+                file_console = file_renamer(os.path.basename(z[-3:]).lower())
+                if file_console != console:
+                    continue
+                no_ext = file_renamer(os.path.basename(z[:-8]).lower())
+                key = generate_fsb_key(no_ext)
+                print(f"Processing {z}")
+                with open(f"{folderpath}\\{z}", 'rb') as f:
+                    audio = f.read()
+                if audio[:3] != b'FSB':
+                    audio = decrypt_fsb4(audio, key)
+                if audio[:3] != b'FSB':
+                    raise Exception("Error Decrypting. Please check your song name.")
+                print("Successfully Decrypted")
+                new_id = f"a{x[0]}{z[z.find('_'):z.find('.')]}"
+                no_ext = file_renamer(new_id.lower())
+                key = generate_fsb_key(no_ext)
+                print(f"Re-encrypting with id {no_ext}")
+                audio = encrypt_fsb4(audio, key)
+                print("Successfully Encrypted")
+                try:
+                    os.makedirs(foldersavepath)
+                except:
+                    pass
+                file_name = f"{foldersavepath}\\a{no_ext}.fsb.{console}"
+                if console == "ps3":
+                    file_name = file_name.upper()
+                with open(file_name, 'wb') as f:
+                    f.write(audio)
+                # raise Exception
+'''
 
 def qb_2_sections(qb_sections):
     qb_array = []
