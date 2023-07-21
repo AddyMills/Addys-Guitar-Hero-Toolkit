@@ -673,7 +673,12 @@ def convert_to_gh5_bin(raw_file, file_type, song_name="", *args, **kwargs):
         if file_type == "note":
             return header + note_2_bin(raw_file)
         else:
-            return header + perf_2_bin(raw_file, song_name, *args)
+            if args:
+                if args[0]["Male"]["vocalist"]:
+                    loop_anims = args[0]
+                else:
+                    loop_anims = 0
+            return header + perf_2_bin(raw_file, song_name, loop_anims)
     elif file_type == "qs":
         qs_bin = bytearray()
         qs_bin += b'\xFF\xFE'
