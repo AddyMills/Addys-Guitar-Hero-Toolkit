@@ -1303,13 +1303,14 @@ def auto_gen_lightshow(fretbars, markers):
             light = 78  # Exposition
             light_steps = 4
         lightshow[marker.time] = [AnimNoteWT(marker.time, light, 96, 25)]
-        curr_steps = 1
-        frets_in_range = fb_array[(fb_array > marker.time) & (fb_array < next_time)]
-        for x in frets_in_range:
-            if curr_steps % light_steps == 0:
-                light_time = int(x)
-                lightshow[light_time] = [AnimNoteWT(light_time, 58, 96, 25)]
-            curr_steps += 1
+        if light_steps != 0:
+            curr_steps = 1
+            frets_in_range = fb_array[(fb_array > marker.time) & (fb_array < next_time)]
+            for x in frets_in_range:
+                if curr_steps % light_steps == 0:
+                    light_time = int(x)
+                    lightshow[light_time] = [AnimNoteWT(light_time, 58, 96, 25)]
+                curr_steps += 1
     return lightshow
 
 def process_text_event(event, markers, time, time_sec):
