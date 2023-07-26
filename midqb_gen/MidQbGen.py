@@ -64,9 +64,15 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
                         x.section_data += qb_dict["performance"].section_data
                         sorted_section = {}
                         for y in x.section_data:
-                            sorted_section[y.data_value[0].data_value] = y
+                            if y.data_value[0].data_value in sorted_section:
+                                sorted_section[y.data_value[0].data_value].append(y)
+                            else:
+                                sorted_section[y.data_value[0].data_value] = [y]
                         sorted_section = dict(sorted(sorted_section.items()))
-                        x.section_data = [sorted_section[x] for x in sorted_section]
+                        new_perf = []
+                        for z in sorted_section:
+                            new_perf.extend(sorted_section[z])
+                        x.section_data = new_perf
                     break
             result = StringIO()
             orig_stdout = sys.stdout
