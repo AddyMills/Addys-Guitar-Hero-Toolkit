@@ -1,4 +1,5 @@
 *.xen
+*.ps3
 *.qb
 *.pyc
 *.xlsx
