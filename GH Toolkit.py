@@ -375,15 +375,13 @@ if __name__ == "__main__":
                     print("Error: No song PAK file found.")
             elif sys.argv[1] == "convert_to_5" or sys.argv[1] == "convert_to_ghwor":
                 compile_args = []
-                if sys.argv[1] == "convert_to_ghwor":
-                    compiler_args = ["compiler"]
                 midqb_file = input_file.replace("\"", "")
                 if "_song.pak" in midqb_file.lower():
                     if "output" not in locals():
                         output = f'{os.path.dirname(midqb_file)}'
                     if "pak_name" not in locals():
                         pak_name = f"dlc{randint(10000,1000000000)}"
-                    pak_data = convert_to_5(midqb_file, pak_name, *compiler_args)
+                    pak_data = convert_to_5(midqb_file, pak_name)
                     pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], pak_name)
                     with open(output + f'\\b{pak_name}_song.pak.xen', 'wb') as f:
                         f.write(pak_file)
