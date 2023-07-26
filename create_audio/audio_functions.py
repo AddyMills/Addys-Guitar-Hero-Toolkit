@@ -735,7 +735,13 @@ def createFSB4(files, shortname, encrypt = False, *args):
     fsb_file += fsb_hash
 
     fsb_file += toBytes(file_entry_len, 2)
-    fsb_file += bytes(shortname, "utf-8") + (b'\x00' * (30 - len(shortname))) if len(shortname) <= 30 else bytes(shortname[:30])
+    if len(shortname) <= 30:
+        fsb_name = shortname
+    else:
+        fsb_type = shortname.split("_")[1]
+        fsb_name = f"{fsb_type}_{shortname}"[:30]
+    fsb_name = bytes(fsb_name, "utf-8") + (b'\x00' * (30 - len(fsb_name)) if len(fsb_name) <= 30 else b'')
+    fsb_file += fsb_name
 
     for x in toAdd:
         fsb_file += toBytes(x)
@@ -769,7 +775,7 @@ def main(gh3 = False):
         t0 = time.process_time()
         with open(f"{dirin}\\{filename}", 'rb') as f:
             audio = f.read()
-        if filename.lower().endswith(".fsb.xen"):
+        if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
             crypted = decrypt_file(audio, filename)
         elif filename.endswith(".fsb"):
             if gh3:
@@ -831,8 +837,8 @@ def test_combine():
  # Playable:
  # Preview: sox -m D:\RB\Songs\Pleymo\Sept\GH3\Guitar.wav D:\RB\Songs\Pleymo\Sept\GH3\Bass.wav D:\RB\Songs\Pleymo\Sept\GH3\Backing.wav -C 128 output.mp3 trim 0:35 1:05
 if __name__ == "__main__":
-    #main()
-    test_combine()
+    main()
+    #test_combine()
     #test_make()
 
 
