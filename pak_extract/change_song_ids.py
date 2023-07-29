@@ -14,7 +14,7 @@ from midqb_gen import CreatePAK
 import os
 import time
 
-console = "ps3"
+console = "xen"
 
 ids_pre = ["_song_scripts",
            "_scriptevents",
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     """
 
                 else:
-                    continue
+
                     folderpath = f"{filepath}\\{y}"
                     foldersavepath = f"{savepath}\\{y}"
                     for z in os.listdir(f"{folderpath}"):
@@ -154,7 +154,8 @@ if __name__ == "__main__":
                         print(f"Processing {z}")
                         with open(f"{folderpath}\\{z}", 'rb') as f:
                             audio = f.read()
-                        audio = decrypt_fsb4(audio, key)
+                        if audio[:3] != b'FSB':
+                            audio = decrypt_fsb4(audio, key)
                         if audio[:3] != b'FSB':
                             raise Exception("Error Decrypting. Please check your song name.")
                         print("Successfully Decrypted")
@@ -177,12 +178,14 @@ if __name__ == "__main__":
         except:
             continue
         if pak_data:
+            arguments = ["wor"]
             print(f"Switching song id references in {old_name} to {x[0]}")
             if "World Tour" in filesfolder:
                 decomp_ska = True
+                arguments.append("wt_mode")
             else:
                 decomp_ska = False
-            pak_data = convert_to_5(pak_data.lower(), x[0], anim_pak = pak_anim, override_mid = override_mid,
+            pak_data = convert_to_5(pak_data.lower(), x[0], *arguments, anim_pak = pak_anim, override_mid = override_mid,
                                     decomp_ska = decomp_ska)
             pak_file = CreatePAK.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], x[0])
             # raise Exception

@@ -122,9 +122,10 @@ class AnimNote:
         self.length = length
 
 class AnimNoteWT(AnimNote):
-    def __init__(self, time, note, velocity):
+    def __init__(self, time, note, velocity, length = 1):
         super().__init__(time, note)
         self.velocity = velocity
+        self.length = length
 
     def __str__(self):
         return f"Anim note {self.note} at {self.time} with velocity {self.velocity} lasting {self.length}"

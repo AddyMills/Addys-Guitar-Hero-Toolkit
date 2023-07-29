@@ -10,7 +10,7 @@ from create_audio import audio_functions
 debug = 0
 
 # Menu Options
-menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_to_5", "convert_to_gh3", "convert_to_gha",
+menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_to_5", "convert_to_gh3", "convert_to_gha", "convert_to_ghwor",
                     "create_mid_from_pak", "extract_pak", "make_gh3_mid", "qb2text", "text2qb"]
 
 menu_options = [
@@ -19,6 +19,7 @@ menu_options = [
                 "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
                 "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
                 "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
+                "convert_to_ghwor - Convert a WT song to Guitar Hero Warriors of Rock format",
                 "create_mid_from_pak - Convert any Guitar Hero song pak file to a MIDI and pull anim loop data",
                 "extract_pak - Extract all files from a PAK file",
                 "make_gh3_mid - Create a PAK file for a custom song",
@@ -108,7 +109,10 @@ def manual_input():
                 song_name, song_pak = convert_to_gh3(midqb_file, output)
                 with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                     f.write(song_pak)
-            elif main_menu == "convert_to_5":
+            elif main_menu == "convert_to_5" or main_menu == "convert_to_ghwor":
+                compile_args = []
+                if main_menu == "convert_to_ghwor":
+                    compiler_args = ["compiler"]
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 while True:
@@ -129,7 +133,7 @@ def manual_input():
                 new_name = f"dlc{new_name}"
                 print("Converting World Tour song to Guitar Hero 5")
                 try:
-                    pak_data = convert_to_5(midqb_file, new_name)
+                    pak_data = convert_to_5(midqb_file, new_name, *compiler_args)
                     pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
                     with open(output + f'\\b{new_name}_song.pak.xen', 'wb') as f:
                         f.write(pak_file)
@@ -278,6 +282,8 @@ if __name__ == "__main__":
         manual_input()
     elif sys.argv[1].endswith(".ghproj"):
         launch_gui(ghproj = sys.argv[1])
+    elif sys.argv[1] == "-debug":
+        manual_input()
     else:
         try:
             root_folder = os.path.realpath(os.path.dirname(__file__))
@@ -367,7 +373,8 @@ if __name__ == "__main__":
                         f.write(song_pak)
                 else:
                     print("Error: No song PAK file found.")
-            elif sys.argv[1] == "convert_to_5":
+            elif sys.argv[1] == "convert_to_5" or sys.argv[1] == "convert_to_ghwor":
+                compile_args = []
                 midqb_file = input_file.replace("\"", "")
                 if "_song.pak" in midqb_file.lower():
                     if "output" not in locals():

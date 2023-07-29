@@ -1,4 +1,5 @@
 *.xen
+*.ps3
 *.qb
 *.pyc
 *.xlsx
@@ -26,6 +27,7 @@ dist/
 test*/
 tofix*
 *.mid
+debug/
 midqb_gen/midqb_gen*/
 midqb_gen/PAK Folders*/
 midqb_gen/PAK Compile*/

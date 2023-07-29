@@ -64,23 +64,32 @@ def quats_u(quats, bone_pointers = {}):  # Function to create quats/trans in unc
     bone_lengths = {}
     curr_bone_p = {}
     new_bone_pointers = {}
+    bytes_saved = 0
     for key, value in bone_pointers.items():
         new_bone_pointers[key] = []
     for x in range(128):
         bone_lengths[x] = 0
     for quat in sorted(quats.keys()):
-        if bone_pointers:
-            curr_bone_p = bone_pointers[quat]
+        prev_quat = []
         bone_bytes = bytearray()
         quat_f = quats[quat]
-        quat_changes += len(quat_f.keys())
-        for entry, vals in enumerate(sorted(quat_f.keys())):
-            if vals in curr_bone_p:
-                for value in range(curr_bone_p.count(vals)):
+        if bone_pointers:
+            curr_bone_p = bone_pointers[quat]
+            quat_changes += len(quat_f.keys())
+        for entry, new_quats in sorted(quat_f.items()):
+            if entry in curr_bone_p:
+                for value in range(curr_bone_p.count(entry)):
                     new_bone_pointers[quat].append(len(bone_bytes) + len(quat_bytes))
-            bone_bytes += vals.to_bytes(2, "big")
-            for x in quat_f[vals]:
+            if prev_quat == new_quats and not bone_pointers and entry != sorted(list(quat_f.keys()))[-1]:
+                bytes_saved += 8
+                continue
+            bone_bytes += entry.to_bytes(2, "big")
+            for x in new_quats:
                 bone_bytes += x.to_bytes(2, "big")
+            if not bone_pointers:
+                quat_changes += 1
+            prev_quat = new_quats.copy()
+
         bone_lengths[quat] = len(bone_bytes)  # How long the quats are for this bone
         quat_bytes += bone_bytes
         # print()
@@ -133,17 +142,24 @@ def trans_u(trans):  # Function to create trans in uncompressed form
     trans_bytes = bytearray()
     trans_changes = 0  # Number of times transes change this file
     bone_lengths = {}
+    bytes_saved = 0
     for x in range(128):
         bone_lengths[x] = 0
     for tran in sorted(trans.keys()):
+        prev_tran = []
         bone_bytes = bytearray()
         tran_f = trans[tran]
-        trans_changes += len(tran_f.keys())
-        for vals in sorted(tran_f.keys()):
-            bone_bytes += struct.pack(">f", vals)
-            for x in tran_f[vals]:
+        # trans_changes += len(tran_f.keys())
+        for entry, new_trans in sorted(tran_f.items()):
+            if prev_tran == new_trans and entry != sorted(list(tran_f.keys()))[-1]:
+                bytes_saved += 8
+                continue
+            bone_bytes += struct.pack(">f", entry)
+            for x in new_trans:
                 bone_bytes += struct.pack(">f", x)
-        bone_lengths[tran] = len(bone_bytes)  # How long the quats are for this bone
+            trans_changes += 1
+            prev_tran = new_trans.copy()
+        bone_lengths[tran] = len(bone_bytes)  # How long the trans are for this bone
         trans_bytes += bone_bytes
         # print()
         if len(trans_bytes) % 16 == 0:
@@ -151,7 +167,7 @@ def trans_u(trans):  # Function to create trans in uncompressed form
         elif len(trans_bytes) % 16 == 8:
             trans_bytes += b'\xDE\xAD\xDE\xAD\xDE\xAD\xDE\xAD'
         else:
-            raise Exception("Length of quats bytes stream not divisible by 8 or 16.")
+            raise Exception("Length of trans bytes stream not divisible by 8 or 16.")
     if len(trans_bytes) % 32 != 0:
         trans_bytes += b'\x00' * (32 - len(trans_bytes) % 32)
     return trans_bytes, bone_lengths, trans_changes

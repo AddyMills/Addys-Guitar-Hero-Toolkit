@@ -12,13 +12,13 @@ from math import ceil
 
 sys.path.append("..\\pak_extract")
 from pak_extract.Text2QB import basic_data, struct_data, assign_data, assign_types, create_qb
-from pak_extract.pak_functions import make_light_struct
+from pak_extract.pak_functions import make_script_struct, round_time, round_cam_len
 
 sys.path.append("..\\")
 import CRC
 
 
-def create_wt_qb_sections(qb_dict, filename):
+def create_wt_qb_sections(qb_dict, filename, *args):
     qb_sections = {}
     playable_qb = qb_dict["playable_qb"]
     star_power = qb_dict["star_power"]
@@ -28,6 +28,11 @@ def create_wt_qb_sections(qb_dict, filename):
     face_off = qb_dict["face_off"]
     whammy_cont = ""
     boss_battle = {}
+    parsing = [playable_qb, star_power, bm_star_power, tap, whammy_cont, fo_star_note, face_off]
+    if "wtde" in args:
+        parsing.append(qb_dict["solo_markers"])
+
+
 
     qb_sections[f"{filename}_timesig"] = basic_data(f"{filename}_timesig", [[x.time, x.numerator, x.denominator] for x in qb_dict["timesigs"]])
     qb_sections[f"{filename}_fretbars"] = basic_data(f"{filename}_fretbars", qb_dict["fretbars"])
@@ -40,7 +45,7 @@ def create_wt_qb_sections(qb_dict, filename):
         else:
             instrument = track
 
-        for section in [playable_qb, star_power, bm_star_power, tap, whammy_cont, fo_star_note, face_off]:
+        for section in parsing:
             for diff in ["Easy", "Medium", "Hard", "Expert"]:
                 if section == playable_qb:
                     chart_name = f"{filename}_song{instrument}_{diff}"
@@ -63,6 +68,16 @@ def create_wt_qb_sections(qb_dict, filename):
                     chart_name = f"{filename}{instrument}_FaceOffStar"
                     qb_sections[chart_name] = basic_data(chart_name, [])
                     break
+                elif section == qb_dict["solo_markers"]:
+                    if "wtde" in args:
+                        chart_name = f"{filename}{instrument}_{diff}_SoloMarkers"
+                        if track in qb_dict["solo_markers"]:
+                            qb_sections[chart_name] = basic_data(chart_name, qb_dict["solo_markers"][track])
+                        else:
+                            qb_sections[chart_name] = basic_data(chart_name, [])
+                        continue
+                    else:
+                        break
                 else:
                     for player in ["P1", "P2"]:
                         chart_name = f"{filename}{instrument}_FaceOff{player}"
@@ -126,17 +141,17 @@ def create_wt_qb_sections(qb_dict, filename):
             elif type(value) == list:
                 anim_list = []
                 for anim_stuff in value:
-                    anim_list.append(make_light_struct(anim_stuff))
+                    anim_list.append(make_script_struct(anim_stuff))
                 qb_sections[chart_name] = basic_data(chart_name, anim_list)
         else:
             qb_sections[chart_name] = basic_data(chart_name, [])
-
-    for temp in ["performance", "song_vocals", "vocals_freeform", "vocals_phrases", "vocals_note_range", "lyrics", "vocals_markers"]:
+    #"performance",
+    for temp in ["song_vocals", "vocals_freeform", "vocals_phrases", "vocals_note_range", "lyrics", "vocals_markers"]:
         chart_name = f"{filename}_{temp}"
         try:
-            if temp == "performance":
-                qb_sections[chart_name] = basic_data(chart_name, [])
-            elif type(playable_qb["Vocals"][temp][0]) == markerNode:
+            '''if temp == "performance":
+                qb_sections[chart_name] = basic_data(chart_name, [])'''
+            if type(playable_qb["Vocals"][temp][0]) == markerNode:
                 temp_markers = []
                 temp_array = playable_qb["Vocals"][temp]
                 for node in temp_array:
@@ -149,6 +164,16 @@ def create_wt_qb_sections(qb_dict, filename):
                 qb_sections[chart_name] = basic_data(chart_name, playable_qb["Vocals"][temp].copy())
         except:
             qb_sections[chart_name] = basic_data(chart_name, [])
+    if "wor" in args and qb_dict["vox_sp"]:
+        chart_name = f"{filename}_vox_sp"
+        qb_sections[chart_name] = basic_data(chart_name, qb_dict["vox_sp"])
+    if "wor" in args and qb_dict["ghost_notes"]:
+        chart_name = f"{filename}_ghost_notes"
+        qb_sections[chart_name] = basic_data(chart_name, qb_dict["ghost_notes"])
+
+    if qb_dict["has_2x_kick"]:
+        chart_name = f"{filename}_double_kick"
+        qb_sections[chart_name] = basic_data(chart_name, [])
 
     qs_file = ""
     if playable_qb["Vocals"]["qs_file"]:
@@ -332,6 +357,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
 
+    ghost_notes = {}
+    has_2x_kick = False
+
     play_notes_dict = {
         "PART GUITAR": "Guitar",
         "PART BASS": "Bass",
@@ -383,7 +411,28 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
         "Bass": []
     }
 
+    playable_solo_markers = {
+        "Guitar": [],
+        "Bass": [],
+        "Drums": []
+    }
+
     playable_drum_fills = []
+
+    valid_anims = {
+        "LIGHTSHOW": valid_lightshow_notes_wt,
+        "CAMERAS": valid_camera_notes_wt,
+        "CROWD": valid_crowd_wt
+    }
+
+    if "wor" in args:
+        valid_anims["LIGHTSHOW"].extend(valid_lightshow_notes_wor)
+        valid_anims["CAMERAS"].extend(valid_camera_notes_wor)
+
+    if "wtde" in args:
+        valid_anims["LIGHTSHOW"].extend(valid_lightshow_notes_wor)
+        valid_anims["CAMERAS"].extend(valid_camera_notes_wtde)
+
 
     venue_track = "LIGHTSHOWCAMERASCROWD"
 
@@ -403,11 +452,13 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
         "scripts": {},
         "anim": {},
         "triggers": {},
-        "cameras": {},
+        "cameras": [],
         "lightshow": [],
         "crowd": {},
-        "drums": {}
+        "drums": {},
+        "performance": []
     }
+
 
 
     fo_star_power = {
@@ -444,8 +495,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     lyrics_qs_dict = {}
     vocal_sp = []
 
-
-    drumNotes = []
+    drum_notes = {}
     timeSigs = []
     markers = []
     last_event_secs = 0
@@ -513,6 +563,16 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 "Expert": []
             }
             play_tap = []
+            play_solo = []
+
+            sysex_taps = []
+            sysex_opens = {
+                0: [],  # Easy
+                1: [],  # Medium
+                2: [],  # Hard
+                3: [],  # Expert
+            }
+            sysex_opens_check = 0
 
 
         else:
@@ -532,7 +592,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         continue
             elif re.search(track.name, venue_track, flags=re.IGNORECASE):
                 track.name = track.name.upper()
-                valid_check = valid_wt[track.name]
+                valid_check = valid_anims[track.name]
                 if x.type == "note_on" or x.type == "note_off":
                     if x.note in valid_check:
                         if x.velocity != 0:
@@ -553,9 +613,18 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 raise Exception(f"Something went wrong parsing the {track.name} track.")
 
                 elif x.type == "text":
-                    if x.text.startswith("SetBlendTime") or x.text.startswith("LightShow_Set"):
-                        blendtime = {"param": "time", "data": float(x.text.split(" ")[1]), "type": "StructItemFloat"} # Blend time is in seconds
+                    if re.search(r'^(SetBlendTime|LightShow_Set)', x.text, flags=re.IGNORECASE):
+                    # if x.text.startswith("SetBlendTime") or x.text.startswith("LightShow_Set"):
+                        blendtime = {"param": "time", "data": float(x.text.split(" ")[1]), "type": "Float"} # Blend time is in seconds
                         anim_notes["lightshow"].append(scriptsNode(timeSec, "LightShow_SetTime", [blendtime]))
+                    elif re.search(r'(zoom_(in|out)_(quick|slow)_(small|large)|pulse[1-5]) [0-9]+', x.text, flags = re.IGNORECASE):
+                        zoom_type = x.text.split(" ")[0]
+                        zoom_length = float(x.text.split(" ")[1])
+                        if zoom_length.is_integer():
+                            zoom_length = int(zoom_length)
+                        param_type = {"param": "type", "data": zoom_type, "type": "QbKey"}
+                        param_time = {"param": "time", "data": zoom_length, "type": "Integer" if type(zoom_length) == int else "Float"}
+                        anim_notes["performance"].append(scriptsNode(timeSec, "CameraCutsEffect_FOVPulse", [param_type, param_time]))
             elif playable:
                 if re.search(r'(guitar|bass|drums)', instrument, flags=re.IGNORECASE):
                     if x.type == "note_on" or x.type == "note_off":
@@ -570,6 +639,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     temp[note_colour].append(to_add)
                                 else:
                                     active_notes[chart_diff][note_colour] = [to_add]
+                                if all([drums, x.note >= 97, x.velocity == 1]):
+                                    ghost = (1 << note_bit_vals[note_colour])
+                                    if timeSec in ghost_notes:
+                                        if not ghost & ghost_notes[timeSec]:
+                                            ghost_notes[timeSec] += ghost
+                                    else:
+                                        ghost_notes[timeSec] = ghost
+
                             else:
                                 forced_notes[chart_diff][note_colour].append(timeSec)
                         elif x.note == sp_note:
@@ -582,6 +659,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             play_face_off[faceOffMapping[x.note]].append(timeSec)
                         elif x.note == tap_note:
                             play_tap.append(timeSec)
+                        elif x.note == solo_note:
+                            play_solo.append(timeSec)
                         elif x.note in leftHandGtr_wt and not drums:
                             new_note = anim_maps[instrument][x.note]
                             if x.velocity != 0:
@@ -603,6 +682,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     raise Exception(f"Something went wrong parsing the {track.name} track.")
                         elif x.note in drum_key_map and drums:
                             new_note = drum_key_map[x.note]
+                            if all([x.note in range(50, 52), x.channel == 1, "wor" in args]):
+                                new_note -= 1
                             if x.velocity != 0 and x.type == "note_on":
                                 if new_note in active_notes:
                                     continue
@@ -621,8 +702,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         if "wor" in args:
                                             if new_note < 22:
                                                 practice_note = new_note + 86
-                                            else:
+                                            elif new_note < 105:
                                                 practice_note = new_note + 56
+                                            else:
+                                                active_notes.pop(new_note)
+                                                continue
                                         else:
                                             practice_note = new_note-13
                                         temp.append(AnimNoteWT(timeSec, practice_note, temp[-1].velocity))
@@ -638,6 +722,20 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         elif x.note == 25 and drums:
                             open_hh.append(timeSec)
                         # if x.note in faceOffMapping:
+                    elif x.type == "sysex":
+                        sys_head = x.data[:3]
+                        if not sys_head == (80, 83, 0):
+                            continue
+                        if x.data[5] == 4 and x.data[4] in [3, 127]:
+                            sysex_taps.append(timeSec)
+                        elif x.data[5] == 1 and x.data[4] != 127:
+                            try:
+                                sysex_opens[x.data[4]].append(timeSec)
+                                if not sysex_opens_check:
+                                    sysex_opens_check = 1
+                            except:
+                                print(f"{track.name}: Invalid SysEx event found at {timeSec}")
+                        # print()
 
                 else: # vocals. Note range 36-84 inclusive probably
                     if x.type == "lyrics":
@@ -663,9 +761,14 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             last_event_tick = time
             last_event_secs = timeSec
         if playable and not re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
+            if sysex_taps and not play_tap:
+                play_tap = sysex_taps
             star_power[instrument] = split_list(star_power[instrument])
             bm_star_power[instrument] = split_list(bm_star_power[instrument])
             fo_star_power[instrument] = split_list(fo_star_power[instrument])
+            time_array_diffs = {
+
+            }
             for player, fo in play_face_off.items():
                 if fo:
                     play_face_off[player] = split_list(fo)
@@ -719,20 +822,25 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             else:
                                 s_time = colour_time[-1]["time_sec"]
                                 t_time = colour_time[-1]["time_tick"]
+                                len_sec = playtime["time_sec"] - s_time
+                                if len_sec < 10:
+                                    len_sec = 10
+                                len_tick = playtime["time_tick"] - t_time
                                 if not drums:
                                     timestamps[s_time] = {"colours": [note_bit], "colour_name": [colour],
-                                                          "length_sec": playtime["time_sec"] - s_time,
+                                                          "length_sec": len_sec,
                                                           "length_tick": playtime["time_tick"] - t_time,
                                                           "extended": []} | colour_time[-1]
                                 else:
                                     timestamps[s_time] = {"colours": [note_bit], "colour_name": [colour],
-                                                          "length_sec": playtime["time_sec"] - s_time,
-                                                          "length_tick": playtime["time_tick"] - t_time,
+                                                          "length_sec": len_sec,
+                                                          "length_tick": len_tick,
                                                           "accents": [], "length_sec_kick": 0} | colour_time[-1]
                                     if colour_time[-1]["velocity"] == 127:
                                         timestamps[s_time]["accents"].append(note_bit)
                         # colour_time[-1]["length"] = playtime - colour_time[-1]["time"]
                 if all([drums, "2x_kick" in args, diff == "Expert", "2x" in notes]):
+                    has_2x_kick = True
                     d_kick_list = []
                     for counter, kick in enumerate(notes["2x"]):
                         if counter % 2 == 0:
@@ -745,7 +853,22 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         else:
                             timestamps[x["time_sec"]] = {"colours": [], "colour_name": [], "2x_kick": 1, "length_sec": x["length_sec"], "velocity": x["velocity"],  "accents": [], "length_sec_kick": 0}
                 timestamps = dict(sorted(timestamps.items()))
+                if drums and diff == "Expert":
+                    drum_notes = dict(sorted(timestamps.items()))
                 time_array = np.array(list(timestamps.keys()))
+                if sysex_opens_check:
+                    sys_diff = sysex_opens[difficulties.index(diff)]
+                    if sys_diff:
+                        sys_split = split_list(sys_diff)
+                        for opens in sys_split:
+                            if opens[0] == opens[1]:
+                                opens[1] += 1
+                            to_open = mod_notes(time_array, opens)
+                            for index in np.nditer(to_open):  # Loop through indexes in timestamps
+                                temp_colour = timestamps[time_array[index]]["colours"]
+                                if temp_colour == [0]:
+                                    timestamps[time_array[index]]["colours"] = [5]
+                                    timestamps[time_array[index]]["colour_name"] = ["purple"]
                 prev_time = 0
                 prev_colours = ""
                 if not drums:
@@ -790,6 +913,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if force_on:
                         force_on = split_list(force_on)
                         for forced in force_on:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
                             # Pull all timestamps that need to be forced
                             to_force = mod_notes(time_array, forced)
                             for index in np.nditer(to_force):  # Loop through indexes in timestamps
@@ -809,6 +934,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if force_off:
                         force_off = split_list(force_off)
                         for forced in force_off:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
                             to_force = mod_notes(time_array, forced)
                             for index in np.nditer(to_force):
                                 if 6 in timestamps[time_array[index]]["colours"]:
@@ -879,6 +1006,13 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         tap_ranges = []
                         all_taps = mod_notes(time_array, tap)[0]
                         curr_taps = []
+                        if not np.any(all_taps):
+                            print("No notes found under any tap note on Expert track.")
+                            no_tap_notes = input("Type 'Continue' to compile without taps, or press enter to cancel compilation: ")
+                            if not no_tap_notes.lower() == "continue":
+                                raise Exception("Cancelled compilation by user")
+                            else:
+                               break
                         for note_check in list(timestamps.values())[all_taps[0]:all_taps[-1]+1]:
                             if len(note_check['colour_name']) > 1:
                                 if curr_taps:
@@ -894,6 +1028,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             sp_tap_ranges[1] = sp_tap_ranges[1] - sp_tap_ranges[0]
                             sp_tap_ranges.append(1)
                             playable_tap[instrument].append(sp_tap_ranges.copy())
+            if play_solo:
+                playable_solo_markers[instrument] = split_list(play_solo)
         elif playable and re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
             temp_lyrics = []
             vocals_notes_time = {}
@@ -1080,12 +1216,102 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             except:
                 continue
 
+    if not anim_notes["CAMERAS"]:
+        print("Generating cameras")
+        anim_notes["CAMERAS"] = auto_gen_camera(fretbars[::8])
+
+    if not anim_notes["LIGHTSHOW"]:
+        print("Generating lightshow")
+        anim_notes["LIGHTSHOW"] = auto_gen_lightshow(fretbars, markers)
+
+    if not anim_notes["drum_anims"] and drum_notes:
+        print("Generating drum animations")
+        anim_notes["drum_anims"] = auto_gen_drums(drum_notes)
+
+    if ghost_notes:
+        ghost_notes = split_list([elem for pair in ghost_notes.items() for elem in pair])
+
     return {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
             "tap": playable_tap, "fo_star_power": playable_fo_star_power,  "face_off": playable_face_off,
             "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
-            "fretbars": fretbars, "vox_sp": vocal_sp
+            "fretbars": fretbars, "vox_sp": vocal_sp, "ghost_notes": ghost_notes, "solo_markers": playable_solo_markers,
+            "has_2x_kick": has_2x_kick
             }
 
+def auto_gen_camera(fretbars):
+    cam_cycle = [10, 18, 23, 15, 43, 11, 19, 24, 16, 30]
+    cameras = {}
+    for enum, fb in enumerate(fretbars):
+        note_start = round_time(fb)
+        try:
+            note_len = round_cam_len(round_time(fretbars[enum+1]) - note_start)
+        except IndexError:
+            note_len = 20000
+        cameras[note_start] = [AnimNoteWT(note_start, cam_cycle[enum % len(cam_cycle)], 96)]
+        cameras[note_start][0].setLength(note_len)
+    return cameras
+
+def auto_gen_drums(drum_notes):
+    anim_lookup = {
+        0: 74,
+        1: 77,
+        2: 78,
+        3: 75,
+        4: 80,
+        5: 73
+    }
+    drum_anim = {}
+    for note_time, note in drum_notes.items():
+        anim_array = []
+        note_len = note["length_sec"]
+        for colour in note['colours']:
+            mid_note = anim_lookup[colour]
+            anim_array.append(AnimNoteWT(note_time, mid_note, 96, note_len))
+            anim_array.append(AnimNoteWT(note_time, mid_note - 13, 96, note_len))
+        drum_anim[note_time] = anim_array
+    return drum_anim
+
+def auto_gen_lightshow(fretbars, markers):
+    fb_array = np.array(fretbars)
+    lightshow = {}
+    lightshow[0] = [AnimNoteWT(0, 39, 96, 25), AnimNoteWT(0, 84, 96, 25)]
+
+    for enum, marker in enumerate(markers):
+        try:
+            next_time = markers[enum + 1].time
+        except IndexError:
+            break
+        if re.search(r'intro( [0-9]?[a-z]?)?', marker.marker, flags=re.IGNORECASE):
+            light = 79 # Prelude
+            light_steps = 0
+        elif re.search(r'(verse( [0-9]?a))|verse$', marker.marker, flags=re.IGNORECASE):
+            light = 78 # Exposition
+            light_steps = 4
+        elif re.search(r'((pre)-?(chorus)( [0-9]?a))|(pre)-?(chorus)$', marker.marker, flags=re.IGNORECASE):
+            light = 74  # Falling Action
+            light_steps = 2
+        elif re.search(r'(chorus( [0-9]?a))|chorus$', marker.marker, flags=re.IGNORECASE):
+            light = 75  # Climax
+            light_steps = 1
+        elif re.search(r'(bridge( [0-9]?a))|bridge$', marker.marker, flags=re.IGNORECASE):
+            light = 77  # Falling Action
+            light_steps = 2
+        elif re.search(r'(main riff( [0-9]?a))|main riff$', marker.marker, flags=re.IGNORECASE):
+            light = 76  # Tension
+            light_steps = 2
+        else:
+            light = 78  # Exposition
+            light_steps = 4
+        lightshow[marker.time] = [AnimNoteWT(marker.time, light, 96, 25)]
+        if light_steps != 0:
+            curr_steps = 1
+            frets_in_range = fb_array[(fb_array > marker.time) & (fb_array < next_time)]
+            for x in frets_in_range:
+                if curr_steps % light_steps == 0:
+                    light_time = int(x)
+                    lightshow[light_time] = [AnimNoteWT(light_time, 58, 96, 25)]
+                curr_steps += 1
+    return lightshow
 
 def process_text_event(event, markers, time, time_sec):
     if event.text.startswith("[section"):

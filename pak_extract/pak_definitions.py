@@ -107,7 +107,7 @@ console_endian = {
 
 playableParts = ["", "rhythm", "guitarcoop", "rhythmcoop", "drum", "aux"]  # Blank one is for guitar in the headers
 difficulties = ["Easy", "Medium", "Hard", "Expert"]
-charts = ["song", "Star", "StarBattleMode", "Tapping", "WhammyController"]
+charts = ["song", "Star", "StarBattleMode", "Tapping", "WhammyController", "SoloMarkers"]
 face_off = ["FaceOffP1", "FaceOffP2", "FaceOffStar"]
 others = ["_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
           "_scripts_notes", "_anim_notes", "_triggers_notes", "_cameras_notes", "_lightshow_notes", "_crowd_notes",
@@ -116,7 +116,7 @@ others = ["_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
 
 markers_wt = ["_guitar_markers", "_rhythm_markers", "_drum_markers"]
 
-others_wt = ["_facial", "_localized_strings", "_scriptevents", "_song_startup"]
+others_wt = ["_facial", "_localized_strings", "_scriptevents", "_song_startup", "_vox_sp", "_ghost_notes", "_double_kick"]
 
 drum_wt = ["DrumFill", "DrumUnmute"]
 
