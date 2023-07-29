@@ -642,6 +642,8 @@ def perf_2_bin(perf_file, song_name, loop_anims):
                 player_loops = b''
                 for loop in item[player]:
                     player_loops += qbkey_hex(loop)
+                if len(player_loops) > 200:
+                    raise Exception(f"Player {player} has more than 50 anim and camera loops")
                 player_loops += b'\x00' * (200 - len(player_loops))
                 loop_bytes += player_loops
             loop_bytes += b'\x00' * 400
@@ -673,11 +675,11 @@ def convert_to_gh5_bin(raw_file, file_type, song_name="", *args, **kwargs):
         if file_type == "note":
             return header + note_2_bin(raw_file)
         else:
+            loop_anims = 0
             if args:
                 if args[0]["Male"]["vocalist"]:
                     loop_anims = args[0]
-                else:
-                    loop_anims = 0
+
             return header + perf_2_bin(raw_file, song_name, loop_anims)
     elif file_type == "qs":
         qs_bin = bytearray()
@@ -926,7 +928,9 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
                 print("Found odd animation structs. Changing...")
                 section.section_id = "car_male_anim_struct_dlc35"
                 section.section_data[1].struct_data_struct[1].data_value = "L_GUIT_JoeS_AreYou_anims_set"
-            if re.search(r"^(car_female|car_male)", section.section_id, flags=re.IGNORECASE):
+            if re.search(r"^(car_female|car_male)_anim", section.section_id, flags=re.IGNORECASE):
+                if not use_anims:
+                    continue
                 if re.search(r"(purplehaze|windcriesmary|dlc22|dlc23|dlc24|dlc92|dlc96|dlc97)$", section.section_id,
                              flags=re.IGNORECASE):
                     for anims in section.section_data:
@@ -937,6 +941,10 @@ def compile_perf_anims(script_sections, anim_data_dict, use_anims=1, *args, **kw
                                 anims.struct_data_struct[0].data_value = "L_SING_JeffS_LowKey_anims"
                                 anims.struct_data_struct[1].data_value = "L_SING_JeffS_LowKey_anims_set"
                 for anims in section.section_data:
+                    if anims.data_dict["pak"] == "anim_loops":
+                        female_struct, male_struct = default_anim_structs()
+                        use_anims = 0
+                        break
                     anims.data_id = grab_debug_2(anims.data_id, checksum_dbg)
                     if anims.data_id == "drum":
                         anims.struct_data_struct[0].data_value = "L_DRUM_Loops_Standard_anims"
@@ -1507,10 +1515,6 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     params_check = ["ff_anims", "mf_anims"]
     params_check += [hex(int(CRC.QBKey(x), 16)) for x in params_check]
 
-    # First add some looping anims
-    for x in ["guitarist", "bassist", "vocalist", "drummer"]:
-        perf_xml_file[f"{new_name}_scriptevents"].section_data.append(PAKExtract.new_play_loop(0, x))
-
     play_clip_count = 0
     last_clip_start = 0
     last_clip_end = 0
@@ -1957,6 +1961,11 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     all_anims_used.append(curr_loop)
                     all_loop_anims.append(curr_loop)
 
+    if not all_loop_anims:
+        # Add some looping anims
+        for x in ["guitarist", "bassist", "vocalist", "drummer"]:
+            perf_xml_file[f"{new_name}_scriptevents"].section_data.append(PAKExtract.new_play_loop(0, x))
+
     scriptevents = {}
     for x in perf_xml_file[f"{new_name}_scriptevents"].section_data:
         if x.data_value[0].data_value not in scriptevents:
@@ -1966,8 +1975,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
         else:
             scriptevents[x.data_value[0].data_value].append(x)
     perf_xml_file[f"{new_name}_scriptevents"].section_data = []
-    scriptevents = sorted(scriptevents.items())
-    for key, value in scriptevents:
+    scriptevents = dict(sorted(scriptevents.items()))
+    for key, value in scriptevents.items():
         for x in value:
             perf_xml_file[f"{new_name}_scriptevents"].section_data.append(x)
     qb_file[f"{new_name}_performance"].make_empty(f"{new_name}_performance")

@@ -4,6 +4,7 @@ from mido import MidiFile, MidiTrack
 from io import StringIO
 import os
 import sys
+import re
 
 
 sys.path.append("..\\pak_extract")
@@ -62,12 +63,19 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
                         x.section_data = qb_dict["performance"].section_data
                     else:
                         x.section_data += qb_dict["performance"].section_data
+                        cam_list = list(qb_dict["anim"]["CAMERAS"].keys())
                         sorted_section = {}
                         for y in x.section_data:
-                            if y.data_value[0].data_value in sorted_section:
-                                sorted_section[y.data_value[0].data_value].append(y)
+                            event_time = y.data_value[0].data_value
+                            if re.search(r'Band_PlayLoop', y.data_value[1].data_value, flags = re.IGNORECASE):
+                                closest_value = min(cam_list, key=lambda x: abs(y.data_value[0].data_value - x))
+                                if event_time != closest_value and abs(event_time - closest_value) < 1000:
+                                    event_time = closest_value
+                                    y.data_value[0].data_value = event_time
+                            if event_time in sorted_section:
+                                sorted_section[event_time].append(y)
                             else:
-                                sorted_section[y.data_value[0].data_value] = [y]
+                                sorted_section[event_time] = [y]
                         sorted_section = dict(sorted(sorted_section.items()))
                         new_perf = []
                         for z in sorted_section:
