@@ -647,6 +647,15 @@ class compile_package(QWidget, compile_pack):
             low_16 = "1"
             high_16 = "120"
 
+        parts_with_mic = []
+        if self.guitar_mic_check.isChecked():
+            parts_with_mic.append("Guitarist")
+        if self.bass_mic_check.isChecked():
+            parts_with_mic.append("Bassist")
+
+        if parts_with_mic:
+            parts_with_mic = f"[{', '.join(parts_with_mic)}]"
+
         drumkit = self.ghwt_drumkit_select.currentText().replace(" ", "").lower()
         duration = self.get_audio_duration()
         title = f"\L{self.title_input.text()}"
@@ -669,6 +678,7 @@ class compile_package(QWidget, compile_pack):
             "duration": duration,
             "flags": 0,
             "double_kick": 1 if "double_kick" in args else 0,
+            "parts_with_mic": parts_with_mic,
             "thin_fretbar_8note_params_low_bpm": low_8,
             "thin_fretbar_8note_params_high_bpm": high_8,
             "thin_fretbar_16note_params_low_bpm": low_16,
@@ -688,6 +698,9 @@ class compile_package(QWidget, compile_pack):
             "countoff": f'"{self.ghwt_countoff_select.currentText().lower()}"',
             "overall_song_volume": self.ghwt_band_vol.value()
         }
+
+        if not parts_with_mic:
+            songlist_info.pop("parts_with_mic")
         return songlist_info, qs_keys
 
     def ghwt_audio_gen(self, song_name, start_time, end_time, compile_args):
