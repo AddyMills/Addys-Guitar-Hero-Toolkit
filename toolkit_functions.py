@@ -1377,7 +1377,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     if "vocals_note_range" in x:
                         continue
                     temp_sections[x] = y
-                override_sections = mid_qb.create_wt_qb(temp_sections, song_name)
+                override_sections = mid_qb.create_game_qb(temp_sections, song_name)
                 override_sections = QB2Text.convert_qb_file(QB2Text.qb_bytes(override_sections), song_name,
                                                             file_headers)
                 del (temp_sections)

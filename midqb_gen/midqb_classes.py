@@ -100,20 +100,22 @@ class WT_Note(Note):
         setattr(self, colour, 1)
 
 class NoteChart:
-    def __init__(self, part, diff):
+    def __init__(self, part, diff, gh3 = False):
         self.part = part
         self.diff = diff
         self.notes = []
+        self.gh3 = gh3
 
     def __str__(self):
-        return f"Part {self.part if self.part != '' else 'Guitar'}, {self.diff}, {int(len(self.notes)/2)} in chart"
+        divisor = 3 if self.gh3 else 2
+        return f"Part {self.part if self.part != '' else 'Guitar'}, {self.diff}, {int(len(self.notes)/divisor)} in chart"
 
 
 class AnimNote:
-    def __init__(self, time, note):
+    def __init__(self, time, note, length = 1):
         self.time = time
         self.note = note
-        self.length = 1
+        self.length = length
 
     def __str__(self):
         return f"Anim note {self.note} at {self.time} lasting {self.length}"

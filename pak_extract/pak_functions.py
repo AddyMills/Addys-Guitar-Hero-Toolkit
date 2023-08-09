@@ -713,11 +713,17 @@ def new_play_clip(time, clip, start, end = 0):
 
     return play_clip
 
-def make_script_struct(script_data):
+def make_script_struct(script_data, to_round = True):
     final_struct = struct_data()
-    time = basic_data("time", round_time(script_data.time))
+    if to_round:
+        time = basic_data("time", round_time(script_data.time))
+    else:
+        time = basic_data("time", script_data.time)
     time.set_type("Integer")
-    time.set_bin_data(struct.pack(">i", round_time(script_data.time)))
+    if to_round:
+        time.set_bin_data(struct.pack(">i", round_time(script_data.time)))
+    else:
+        time.set_bin_data(struct.pack(">i", script_data.time))
     scr = basic_data("scr", script_data.type)
     scr.set_type("QbKey")
     scr.set_bin_data(bytes.fromhex(CRC.QBKey(script_data.type)))
@@ -772,16 +778,16 @@ def new_band_clip_gh5(char_class):
 
     return char_array
 
-def new_stance_gh3(time, name, stance):
-    params_list = []
-    params_list.append(struct_item("StructItemQbKey", "name", name, 0))
-    params_list.append(struct_item("StructItemQbKey", "stance", stance, 0))
-
-    time = struct_item("StructItemInteger", "time", time, 0)
-    scr = struct_item("StructItemQbKey", "scr", "Band_ChangeStance", 0)
-    params = struct_item("StructItemStruct", "params", params_list, 0)
-
-    new_stance = struct_item("StructHeader", 0, [time, scr, params], 0)
+def new_stance_gh3(name, stance, anim_type, *args):
+    param_name = {"param": "name", "data": name, "type": "QbKey"}
+    param_stance = {"param": anim_type, "data": stance, "type": "QbKey"}
+    new_stance = [param_name, param_stance]
+    if "cycle" in args:
+        new_stance.append({"param": "no_id", "data": "cycle", "type": "QbKey"})
+    if "no_wait" in args:
+        new_stance.append({"param": "no_id", "data": "no_wait", "type": "QbKey"})
+    if "repeat" in args:
+        new_stance.append({"param": "repeat_count", "data": int(args[args.index("repeat")+1]), "type": "Integer"})
     return new_stance
 
 
