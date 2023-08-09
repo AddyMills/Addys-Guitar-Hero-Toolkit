@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>2</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -1161,6 +1161,13 @@
                <widget class="QSpinBox" name="length_mills_gh3">
                 <property name="maximum">
                  <number>999</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="gh3_set_end">
+                <property name="text">
+                 <string>Set End Time</string>
                 </property>
                </widget>
               </item>
@@ -2676,7 +2683,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="game_select_group"/>
   <buttongroup name="platform_button_group"/>
+  <buttongroup name="game_select_group"/>
  </buttongroups>
 </ui>

@@ -237,12 +237,8 @@ def make_preview_ffmpeg(start_time, end_time):
 def is_program_in_path(program_name):
     return shutil.which(program_name) is not None
 
-def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args):
+def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
     # Get the maximum length
-    time_0 = time.time()
-    encrypt = False
-    if "encrypt" in args:
-        encrypt = True
     max_length = 0
     if not "audio_len" in args:
         print("Converting all files to MP3 and padding to the longest")
@@ -289,6 +285,14 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
     stream_size = 0
     for x in padded_mp3_data_list:
         stream_size = max(len(pullMP3Frames(x)[0]), stream_size)
+    return padded_mp3_data_list, preview, stream_size
+
+def compile_wt_audio(all_audio, shortname, start_time, end_time, *args):
+    time_0 = time.time()
+    encrypt = False
+    if "encrypt" in args:
+        encrypt = True
+    padded_mp3_data_list, preview, stream_size = get_padded_audio(all_audio, start_time, end_time, *args)
     extra_args = ["-stream_size", stream_size]
     print("Creating Drum Audio")
     drum_files = createFSB4(padded_mp3_data_list[:4], f"{shortname}_1", encrypt, *extra_args)
@@ -303,6 +307,12 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
     print(f"Audio generation took {time_1-time_0} seconds")
     return drum_files, inst_files, song_files, preview
 
+def compile_gh3_audio(all_audio, shortname, start_time, end_time, *args):
+    time_0 = time.time()
+    padded_mp3_data_list, preview, stream_size = get_padded_audio(all_audio, start_time, end_time, *args)
+    extra_args = ["-stream_size", stream_size]
+    print("Creating Audio")
+    audio_files = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args)
 def flipBits(audio):
     return bytes(br[x] for x in audio)
 
@@ -610,17 +620,20 @@ def FSBentry(data, filename):
 
     return fsb_entry
 
-def createFSB3(file, shortname):
+def createFSB3(files, shortname):
     headers = []
     audio = bytearray()
     dat_entries = []
-    for x in file:
-        audio_name = f"{shortname}_{os.path.basename(x)}"
-        with open(x, 'rb') as f:
-            audio_data = f.read()
-        headers.append(FSBentry(audio_data, audio_name)[0])
-        dat_entries.append(os.path.splitext(audio_name)[0])
-        audio += audio_data
+    if type(files) == list:
+        for x in files:
+            audio_name = f"{shortname}_{os.path.basename(x)}"
+            with open(x, 'rb') as f:
+                audio_data = f.read()
+            headers.append(FSBentry(audio_data, audio_name)[0])
+            dat_entries.append(os.path.splitext(audio_name)[0])
+            audio += audio_data
+    elif type(files) == dict:
+        pass
     print(dat_entries)
     fsb_file = bytearray()
     fsb_file += b'FSB3' # FSB3 header

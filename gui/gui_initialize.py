@@ -722,6 +722,20 @@ class compile_package(QWidget, compile_pack):
             songlist_info.pop("parts_with_mic")
         return songlist_info, qs_keys
 
+    def gh3_audio_gen(self, song_name, start_time, end_time, compile_args):
+        all_audio = {
+            "guitar": self.guitar_input_gh3.text(),
+            "rhythm": self.rhythm_input_gh3.text(),
+            "song": self.backing_input_gh3.text()
+        }
+        if self.coop_audio_check.isChecked():
+            all_audio["coop_guitar"] = self.coop_guitar_input_gh3.text()
+            all_audio["coop_rhythm"] = self.coop_rhythm_input_gh3.text()
+            all_audio["coop_song"] = self.coop_backing_input_gh3.text()
+        if self.game_select_group.checkedButton().objectName() == "gha":
+            all_audio["crowd"] = self.crowd_input_gh3.text()
+        return
+
     def ghwt_audio_gen(self, song_name, start_time, end_time, compile_args):
         all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
                      self.bass_input, self.vocals_input, self.backing_input, self.crowd_input]
@@ -735,7 +749,7 @@ class compile_package(QWidget, compile_pack):
                 files.setText(f"{audio_folder}/default_audio/blank.mp3")
             all_audio_path.append(files.text())
         try:
-            drum, inst, other, preview = af.get_padded_audio(all_audio_path, song_name, start_time, end_time,
+            drum, inst, other, preview = af.compile_wt_audio(all_audio_path, song_name, start_time, end_time,
                                                              *compile_args)
         except Exception as E:
             traceback.print_exc()

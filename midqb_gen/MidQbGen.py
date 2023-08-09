@@ -96,8 +96,8 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
                     ska_file = f.read()
                     if "gh3" in args:
                         ska_file = ska_bytes(ska_file)
-                        """ska_file = make_modern_ska(ska_file)
-                        ska_file = ska_bytes(ska_file)"""
+                        ska_file = make_modern_ska(ska_file)
+                        ska_file = ska_bytes(ska_file)
                         if "gha" in args:
                             to_ska = "gha_singer"
                         else:
