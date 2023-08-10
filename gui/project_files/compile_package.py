@@ -820,6 +820,11 @@ class Ui_Form(object):
 
         self.gh3_preview_layout.addWidget(self.length_mills_gh3)
 
+        self.gh3_set_end = QCheckBox(self.gh3_audio_widget)
+        self.gh3_set_end.setObjectName(u"gh3_set_end")
+
+        self.gh3_preview_layout.addWidget(self.gh3_set_end)
+
 
         self.verticalLayout_10.addLayout(self.gh3_preview_layout)
 
@@ -1648,7 +1653,7 @@ class Ui_Form(object):
         self.checkBox.toggled.connect(self.length_mills.setDisabled)
         self.checkBox.toggled.connect(self.ghwt_set_end.setDisabled)
 
-        self.compile_tabs.setCurrentIndex(4)
+        self.compile_tabs.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1724,6 +1729,7 @@ class Ui_Form(object):
         self.coop_audio_check.setText(QCoreApplication.translate("Form", u"Separate Co-op Audio", None))
         self.preview_label_2.setText(QCoreApplication.translate("Form", u"Song Preview:", None))
         self.length_label_2.setText(QCoreApplication.translate("Form", u"Length:", None))
+        self.gh3_set_end.setText(QCoreApplication.translate("Form", u"Set End Time", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.audio_tab_gh3), QCoreApplication.translate("Form", u"Audio (GH3)", None))
         self.ghwor_stfs_label.setText(QCoreApplication.translate("Form", u"WoR STFS File", None))
         self.ghwt_drumkit_label.setText(QCoreApplication.translate("Form", u"Drum Kit:", None))

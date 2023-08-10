@@ -734,7 +734,17 @@ class compile_package(QWidget, compile_pack):
             all_audio["coop_song"] = self.coop_backing_input_gh3.text()
         if self.game_select_group.checkedButton().objectName() == "gha":
             all_audio["crowd"] = self.crowd_input_gh3.text()
-        return
+
+        for key, value in all_audio.items():
+            if not os.path.isfile(value):
+                print(f"File for {key} does not exist. Using blank audio")
+                all_audio[key] = f"{audio_folder}/default_audio/blank.mp3"
+            elif value.endswith("default_audio/blank.wav"):
+                value = f"{audio_folder}/default_audio/blank.mp3"
+                all_audio[key] = value
+        af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
+
+        return 0, 0
 
     def ghwt_audio_gen(self, song_name, start_time, end_time, compile_args):
         all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
@@ -879,11 +889,14 @@ class compile_package(QWidget, compile_pack):
         if not self.ghwt_set_end.isChecked():
             end_time += start_time
 
+        song_name = self.checksum_input.text()
         compile_args = self.set_compile_args(*["gh3"])
         project_folder = os.path.dirname(self.project_file_path.text())
 
         if not compile_args:
             return
+
+        audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
 
         try:
             song_pak = mid_gen.make_mid(*compile_args)[0]

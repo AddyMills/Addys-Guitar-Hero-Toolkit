@@ -309,10 +309,16 @@ def compile_wt_audio(all_audio, shortname, start_time, end_time, *args):
 
 def compile_gh3_audio(all_audio, shortname, start_time, end_time, *args):
     time_0 = time.time()
-    padded_mp3_data_list, preview, stream_size = get_padded_audio(all_audio, start_time, end_time, *args)
+    audio_names = []
+    audio_paths = []
+    for key,value in all_audio.items():
+        audio_names.append(key)
+        audio_paths.append(value)
+    padded_mp3_data_list, preview, stream_size = get_padded_audio(audio_paths, start_time, end_time, *args)
     extra_args = ["-stream_size", stream_size]
     print("Creating Audio")
-    audio_files = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args)
+    audio_files = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args, audio_names = audio_names)
+    return
 def flipBits(audio):
     return bytes(br[x] for x in audio)
 
@@ -620,20 +626,27 @@ def FSBentry(data, filename):
 
     return fsb_entry
 
-def createFSB3(files, shortname):
+def createFSB3(files, shortname, *args, **kwargs):
     headers = []
     audio = bytearray()
     dat_entries = []
     if type(files) == list:
-        for x in files:
-            audio_name = f"{shortname}_{os.path.basename(x)}"
-            with open(x, 'rb') as f:
-                audio_data = f.read()
-            headers.append(FSBentry(audio_data, audio_name)[0])
-            dat_entries.append(os.path.splitext(audio_name)[0])
+        for y, x in enumerate(files):
+            if type(x) == str:
+                audio_name = f"{shortname}_{os.path.basename(x)}"
+                with open(x, 'rb') as f:
+                    audio_data = f.read()
+            else:
+                stream_frames, temp_frame = pullMP3Frames(x)
+                audio_name = f"{shortname}_{kwargs['audio_names'][y]}"
+                if "-stream_size" in args and not audio_name.endswith("preview"):
+                    stream_length = int(args[args.index("-stream_size") + 1])
+                    if len(stream_frames) != stream_length:
+                        stream_frames.extend([blank_48k_mp3] * (stream_length - len(stream_frames)))
+                audio_data = b''.join(stream_frames)
             audio += audio_data
-    elif type(files) == dict:
-        pass
+            headers.append(FSBentry(audio_data, audio_name))
+            dat_entries.append(os.path.splitext(audio_name)[0])
     print(dat_entries)
     fsb_file = bytearray()
     fsb_file += b'FSB3' # FSB3 header
