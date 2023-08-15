@@ -98,7 +98,7 @@ class compile_package(QWidget, compile_pack):
             return
         game = self.game_select_group.checkedButton().objectName()
         if game == "gh3":
-            self.compile_gh3()
+            self.compile_gh3("skip_audio")
         elif game == "ghwt":
             self.compile_ghwt("skip_audio")
         elif game == "gh5":
@@ -742,9 +742,9 @@ class compile_package(QWidget, compile_pack):
             elif value.endswith("default_audio/blank.wav"):
                 value = f"{audio_folder}/default_audio/blank.mp3"
                 all_audio[key] = value
-        af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
+        fsb_file, fsb_dat = af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
 
-        return 0, 0
+        return fsb_file, fsb_dat
 
     def ghwt_audio_gen(self, song_name, start_time, end_time, compile_args):
         all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
@@ -883,7 +883,7 @@ class compile_package(QWidget, compile_pack):
             compile_args += ["ffmpeg"]
         return compile_args
 
-    def compile_gh3(self):
+    def compile_gh3(self, *args):
         start_time = self.conv_to_secs("start")
         end_time = self.conv_to_secs("end")
         if not self.ghwt_set_end.isChecked():
@@ -892,11 +892,14 @@ class compile_package(QWidget, compile_pack):
         song_name = self.checksum_input.text()
         compile_args = self.set_compile_args(*["gh3"])
         project_folder = os.path.dirname(self.project_file_path.text())
-
+        save_folder = f"{project_folder}\\gh3_compile"
+        try:
+            os.mkdir(save_folder)
+        except:
+            pass
         if not compile_args:
             return
 
-        audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
 
         try:
             song_pak = mid_gen.make_mid(*compile_args)[0]
@@ -904,7 +907,11 @@ class compile_package(QWidget, compile_pack):
             raise E
             traceback.print_exc()
             return
-        with open(f"{project_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+        if not "skip_audio" in args:
+            audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
+            audio_path = f"{save_folder}\\{song_name}"
+            af.writeFSB3(audio, dat, audio_path)
+        with open(f"{save_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
             f.write(song_pak)
         print("Compile complete!")
         return

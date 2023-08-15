@@ -315,10 +315,15 @@ def compile_gh3_audio(all_audio, shortname, start_time, end_time, *args):
         audio_names.append(key)
         audio_paths.append(value)
     padded_mp3_data_list, preview, stream_size = get_padded_audio(audio_paths, start_time, end_time, *args)
-    extra_args = ["-stream_size", stream_size]
+    padded_mp3_data_list.append(preview)
+    audio_names.append("preview")
+    extra_args = ["-stream_size", stream_size, "compiler"]
     print("Creating Audio")
-    audio_files = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args, audio_names = audio_names)
-    return
+    fsb_file, fsb_dat = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args, audio_names = audio_names)
+    time_1 = time.time()
+
+    print(f"Audio generation took {time_1 - time_0} seconds")
+    return fsb_file, fsb_dat
 def flipBits(audio):
     return bytes(br[x] for x in audio)
 
@@ -587,10 +592,10 @@ def pullMP3Frames(audio):
         position += to_pull
     return frames, first_frame
 
-def FSBentry(data, filename):
+def FSBentry(data, filename, *args):
     filesize = len(data)
     frameSize = 1152
-    frames = len(pullMP3Frames(data))
+    frames = len(pullMP3Frames(data)[0])
     file_entry_len = 80
     fsb_file = bytes(filename if len(filename) <= 30 else filename[:30], "latin-1")
     while len(fsb_file) < 30:
@@ -599,7 +604,10 @@ def FSBentry(data, filename):
     loop_start = 0
     loop_end = samples_length - 1
     mode = 576
-    sample_rate = 44100
+    if "compiler" in args:
+        sample_rate = 48000
+    else:
+        sample_rate = 44100
     volume, priority = 255, 255
     pan = 128
     channels = 2
@@ -645,7 +653,7 @@ def createFSB3(files, shortname, *args, **kwargs):
                         stream_frames.extend([blank_48k_mp3] * (stream_length - len(stream_frames)))
                 audio_data = b''.join(stream_frames)
             audio += audio_data
-            headers.append(FSBentry(audio_data, audio_name))
+            headers.append(FSBentry(audio_data, audio_name, *args))
             dat_entries.append(os.path.splitext(audio_name)[0])
     print(dat_entries)
     fsb_file = bytearray()
@@ -669,12 +677,15 @@ def createFSB3(files, shortname, *args, **kwargs):
         fsb_dat += toBytes(y, 4, "big")
         fsb_dat += toBytes(0, 12)
 
-    raise Exception
-    with open(f"{shortname}.fsb.xen", 'wb') as f:
+        # print(binascii.hexlify(fsb_dat, ' ', 1))
+    return fsb_file, fsb_dat
+
+def writeFSB3(fsb_file, fsb_dat, filepath):
+    print("Encrypting FSB file.")
+    with open(f"{filepath}.fsb.xen", 'wb') as f:
         f.write(encrypt_fsb3(fsb_file))
-    with open(f"{shortname}.dat.xen", 'wb') as f:
+    with open(f"{filepath}.dat.xen", 'wb') as f:
         f.write(fsb_dat)
-    # print(binascii.hexlify(fsb_dat, ' ', 1))
     return
 
 def splitFSBFrames(audio):
