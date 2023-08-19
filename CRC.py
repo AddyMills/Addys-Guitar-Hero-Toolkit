@@ -105,5 +105,7 @@ def qbkey_hex(text, endian = "big"):
 
 
 if __name__ == "__main__":
-    test = "Solo 1"
-    print(QBKey_qs(test))
+    x = 0
+    while x != -1:
+        x = input("Enter string: ")
+        print(QBKey(x))
