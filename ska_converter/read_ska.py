@@ -141,6 +141,7 @@ def main(func, write = False, **kwargs):
     out_dir = f"{root_folder}/out"
     with os.scandir(directory) as songs:
         for x in songs:
+            print(f"Processing {x}")
             with open(x, 'rb') as f:
                 ska_orig = f.read()
                 ska_file = ska_bytes(ska_orig)
