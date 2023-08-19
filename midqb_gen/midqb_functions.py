@@ -1693,6 +1693,10 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                             gem["is_hopo"] = True
                         else:
                             gem["is_hopo"] = False
+                        if all([gem["is_hopo"], "rb_mode" in args, curr_colours in prev_colours]):
+                            gem["colours"].append(5)
+                        elif all([gem["is_hopo"], "force_only" in args]):
+                            gem["colours"].append(5)
                     else:
                         gem["is_hopo"] = False
 
@@ -1716,11 +1720,13 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                             elif len(temp_colour) > 1:
                                 continue
                             elif timestamps[time_array[index]]["is_hopo"]:
+                                if 5 in timestamps[time_array[index]]["colours"] and not "gh3_mode" in args:
+                                    timestamps[time_array[index]]["colours"].remove(5)
                                 continue
                             else:
                                 timestamps[time_array[index]]["colours"].append(5)
 
-                force_off = forced_notes[diff]["off"]
+                force_off = forced_notes[diff]["off"] if not "gh3_mode" in args else 0
                 if force_off:
                     force_off = split_list(force_off)
                     for forced in force_off:
