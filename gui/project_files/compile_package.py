@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'compile_package.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.2
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -1509,12 +1509,12 @@ class Ui_Form(object):
 
         self.verticalLayout_15.addLayout(self.gridLayout_6)
 
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.platform_select = QHBoxLayout()
+        self.platform_select.setObjectName(u"platform_select")
         self.platform_label = QLabel(self.compile_settings)
         self.platform_label.setObjectName(u"platform_label")
 
-        self.horizontalLayout_5.addWidget(self.platform_label)
+        self.platform_select.addWidget(self.platform_label)
 
         self.platform_pc = QRadioButton(self.compile_settings)
         self.platform_button_group = QButtonGroup(Form)
@@ -1523,17 +1523,17 @@ class Ui_Form(object):
         self.platform_pc.setObjectName(u"platform_pc")
         self.platform_pc.setChecked(True)
 
-        self.horizontalLayout_5.addWidget(self.platform_pc)
+        self.platform_select.addWidget(self.platform_pc)
 
         self.platform_360 = QRadioButton(self.compile_settings)
         self.platform_button_group.addButton(self.platform_360)
         self.platform_360.setObjectName(u"platform_360")
         self.platform_360.setEnabled(False)
 
-        self.horizontalLayout_5.addWidget(self.platform_360)
+        self.platform_select.addWidget(self.platform_360)
 
 
-        self.verticalLayout_15.addLayout(self.horizontalLayout_5)
+        self.verticalLayout_15.addLayout(self.platform_select)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -1653,7 +1653,7 @@ class Ui_Form(object):
         self.checkBox.toggled.connect(self.length_mills.setDisabled)
         self.checkBox.toggled.connect(self.ghwt_set_end.setDisabled)
 
-        self.compile_tabs.setCurrentIndex(2)
+        self.compile_tabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(Form)
