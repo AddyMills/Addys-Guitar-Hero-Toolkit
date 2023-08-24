@@ -617,7 +617,7 @@ class compile_package(QWidget, compile_pack):
         ini.optionxform = str
         ini["ModInfo"] = {
             "Name": self.checksum_input.text(),
-            "Description": "Created with Addy's Toolkit",
+            "Description": "Created with the Addy GH Toolkit",
             "Author": self.author_input.text(),
             "Version": "1"
         }
@@ -656,6 +656,11 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["MicForBassist"] = "1"
         if self.guitar_mic_check.isChecked():
             ini["SongInfo"]["MicForGuitarist"] = "1"
+        if self.beatlines_check.isChecked():
+            ini["SongInfo"]["Low8Bars"] = str(self.beat_8th_low_input.value())
+            ini["SongInfo"]["High8Bars"] = str(self.beat_8th_high_input.value())
+            ini["SongInfo"]["Low16Bars"] = str(self.beat_16th_low_input.value())
+            ini["SongInfo"]["High16Bars"] = str(self.beat_16th_high_input.value())
         return ini
 
     def ghwor_songlist_info(self, *args):
@@ -1025,9 +1030,10 @@ class compile_package(QWidget, compile_pack):
             return
 
         try:
-            song_pak = mid_gen.make_mid(*compile_args)[0]
+            song_pak, xplus_pak = mid_gen.make_mid(*compile_args)
         except Exception as E:
             traceback.print_exc()
+            # raise E
             return
         with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
             f.write(song_pak)
