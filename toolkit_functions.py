@@ -3268,12 +3268,16 @@ def create_mid_from_qb(pakmid):
     pull_struct = 0
     struct_string = ""
     anim_structs = []
+    anim_loops = []
+    qs_dict = 0
     for files in song_files:
         if re.search(fr"songs/{song_name}\.mid\.qs$", files["file_name"], flags=re.IGNORECASE):
             qs_dict = get_qs_strings(files["file_data"])
             note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name,
                                                                               convert="")
             instruments = read_gh5_note(convert_to_gh5_bin(note_file, "note", song_name))
+        elif re.search(fr"songs/{song_name}\.mid\.qs.en$", files["file_name"], flags=re.IGNORECASE):
+            qs_dict = get_qs_strings(files["file_data"])
         elif re.search(fr"songs/{song_name}\.note$", files["file_name"], flags=re.IGNORECASE):
             instruments = read_gh5_note(files["file_data"])
         elif re.search(fr"songs/{song_name}\.perf$", files["file_name"], flags=re.IGNORECASE):
@@ -3289,6 +3293,8 @@ def create_mid_from_qb(pakmid):
                             clip_params = y.data_dict["params"]
                             clip_len = round((clip_params["endframe"] - clip_params["startframe"]) / 30 / clip_params["timefactor"] * 1000)
                             band_clips.append([clip_params["clip"],y.data_dict["time"], clip_len+y.data_dict["time"]])
+                        elif y.data_dict["scr"] == "Band_PlayLoop":
+                            anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
             #print()
     try:
         timesig = sections_dict[f"{song_name}_timesig"].section_data
@@ -3351,6 +3357,7 @@ def create_mid_from_qb(pakmid):
     gtr_events = {"name": "PART GUITAR"}
     bass_events = {"name": "PART BASS"}
     vox_events = {"name": "PART VOCALS"}
+    event_markers = {"name": "EVENTS"}
     to_pop = []
 
     if instruments:
@@ -3367,6 +3374,17 @@ def create_mid_from_qb(pakmid):
             elif "vocal" in x and not "marker" in x:
                 vox_events[x] = instruments[x]
                 to_pop.append(x)
+            elif "guitarmarker" in x:
+                event_markers[x] = instruments[x]
+                for marker in event_markers[x]:
+                    qs_entry = int(marker["text"],16)
+                    if qs_entry in qs_dict:
+                        marker_text = qs_dict[qs_entry]
+                        if "ENDOFSONG" in marker_text:
+                            marker_text = "[end]"
+                        elif marker_text.startswith("\\u[m]"):
+                            marker_text = f"[section {marker_text[5:]}]"
+                        marker["text"] = marker_text
         for x in to_pop:
             instruments.pop(x)
         for inst in [drum_events, gtr_events, bass_events, vox_events]:
@@ -3384,8 +3402,13 @@ def create_mid_from_qb(pakmid):
                     all_tracks.append(mido.merge_tracks(gh5_to_midi(inst[track], tempo_data, tpb)))
                 elif "vocal" in track:
                     all_tracks.append(mido.merge_tracks(gh5_to_midi(inst[track], tempo_data, tpb, vox=True)))
-            new_mid.tracks[-1] = mido.merge_tracks(all_tracks)
 
+            new_mid.tracks[-1] = mido.merge_tracks(all_tracks)
+    new_mid.add_track(event_markers["name"])
+    if "guitarmarkers" in event_markers:
+        events = gh5_to_midi(event_markers["guitarmarkers"], tempo_data, tpb)
+        new_mid.tracks[-1] = mido.merge_tracks([new_mid.tracks[-1]] + events)
+        print()
     non_play = ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "drums"]
     for x in non_play:
         try:
@@ -3482,6 +3505,9 @@ def create_mid_from_qb(pakmid):
             band_midi[-1].append(Message("note_on", time=timeVal, note=clip_note, velocity=100))
             band_midi[-1].append(Message("note_on", time=timeVal2, note=clip_note, velocity=0))
 
+        if anim_loops:
+            anim_events = gh5_to_midi(anim_loops, tempo_data, tpb)
+            band_midi.extend(anim_events1)
         band_midi = mido.merge_tracks(band_midi)
         band_midi.name = "Band_Clips"
         new_mid.tracks.append(band_midi)
