@@ -409,6 +409,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
+    xplus_chart = False
+    make_xplus = False
 
     ghost_notes = {}
     has_2x_kick = False
@@ -562,6 +564,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 drums = False
             elif re.search(r'(drums)', instrument, flags=re.IGNORECASE):
                 inst_map = note_mapping_gh3 | forceMapping | note_mapping_wt_drum
+                if "2x_check" in args:
+                    inst_map.pop(96)
+                    inst_map[95] = 'Expert_purple'
+                    xplus_chart = True
+
                 drums = True
             else:
                 inst_map = note_mapping_gh3 | forceMapping | note_mapping_wt_drum
@@ -734,6 +741,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
                         elif x.note == 25 and drums:
                             open_hh.append(time_sec)
+                        if all([x.note == 95, drums, "wtde" in args, not make_xplus]):
+                            make_xplus = True
                         # if x.note in faceOffMapping:
                     elif x.type == "sysex":
                         sys_head = x.data[:3]
@@ -1104,6 +1113,20 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 prev_note = anim_notes["CAMERAS"][prev_time][0]
                 prev_note.setLength(v[0].time - prev_note.time)
             prev_time = v[0].time
+            if len(v) > 1:
+                to_keep = -1
+                to_keep_2 = -1
+                for enum, cut in enumerate(v):
+                    if cut.note in moment_cams:
+                        to_keep = (enum)
+                    elif cut.note in range(33,37):
+                        to_keep_2 = (enum)
+                if to_keep >= 0:
+                    anim_notes["CAMERAS"][k] = [v[to_keep]]
+                elif to_keep_2 >= 0:
+                    anim_notes["CAMERAS"][k] = [v[to_keep_2]]
+                else:
+                    anim_notes["CAMERAS"][k] = [v[0]]
     temp_sp = []
     for enum, sp in enumerate(vocal_sp):
         if enum % 2 == 0:
@@ -1148,13 +1171,22 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
     if ghost_notes:
         ghost_notes = split_list([elem for pair in ghost_notes.items() for elem in pair])
+    to_return = {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
+                 "tap": playable_tap, "fo_star_power": playable_fo_star_power, "face_off": playable_face_off,
+                 "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
+                 "fretbars": fretbars, "vox_sp": vocal_sp, "ghost_notes": ghost_notes,
+                 "solo_markers": playable_solo_markers,
+                 "has_2x_kick": has_2x_kick
+                 }
+    xplus_track = 0
+    '''if "wtde" in args and make_xplus and not "2x_check" in args:
+        x_args = list(args) + ["2x_check"]
+        xplus_track = parse_wt_qb(mid, hopo, *x_args)
 
-    return {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
-            "tap": playable_tap, "fo_star_power": playable_fo_star_power, "face_off": playable_face_off,
-            "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
-            "fretbars": fretbars, "vox_sp": vocal_sp, "ghost_notes": ghost_notes, "solo_markers": playable_solo_markers,
-            "has_2x_kick": has_2x_kick
-            }
+    if xplus_track:
+        to_return["wtde_xplus"] = xplus_track'''
+
+    return to_return
 
 
 def make_open(temp_anim, temp_notes, from_note):
