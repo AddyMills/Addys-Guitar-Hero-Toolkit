@@ -862,13 +862,17 @@ def test_make():
             f.write(fsb_file)
     return
 
-def test_combine():
+def test_combine(song_name = "output"):
     dirin = f".\\input"
     dirout = f".\\output"
-    song_name = "aqualung"
+    song_name = song_name
     files = []
     for filename in os.listdir(dirin):
-        files.append(f"{os.path.join(dirin,filename)}")
+        if filename.endswith(".mp3"):
+            files.append(f"{os.path.join(dirin,filename)}")
+    if not len(files) == 9:
+        print(f"Not enough files found. Found {len(files)}, expected 9.")
+        return
     drum, inst, other, preview = compile_wt_audio(files, song_name, 0, 0, "no_convert")
     for enum, x in enumerate([drum, inst, other, preview]):
         if enum != 3:
@@ -884,7 +888,8 @@ def test_combine():
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == "combine":
-            test_combine()
+            song_name = input("Enter the checksum for this song: ")
+            test_combine(song_name)
         elif sys.argv[1] == "make":
             test_make()
     else:
