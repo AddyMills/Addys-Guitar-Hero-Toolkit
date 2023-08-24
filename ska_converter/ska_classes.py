@@ -373,7 +373,23 @@ class ska_bytes:
         self.position = self.customkey_pos
         custom_keys = []
         for x in range(self.custom_keys):
-            custom_keys.append([self.readFloat(), self.readBytes(), self.readBytes(), self.readFloat()])
+            curr_key = []
+            key_time = self.readFloat()
+            key_type = self.readBytes()
+            key_value = self.readBytes()
+            curr_key.append(key_time)
+            curr_key.append(key_type)
+            curr_key.append(key_value)
+            if key_type == 1:
+                key_mod = self.readFloat()
+                curr_key.append(key_mod)
+            elif key_type == 9:
+                pass
+            else:
+                raise Exception("Custom keys found in unsupported ska file. Contact me.")
+            custom_keys.append(curr_key)
+
+
         return custom_keys
 
     def read_pointer_block(self):
