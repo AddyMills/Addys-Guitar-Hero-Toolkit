@@ -34,9 +34,6 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
     xplus = 0
     if "ghwt" in args:
         qb_dict = parse_wt_qb(mid, hopo, *args)
-        if "wtde_xplus" in qb_dict:
-            xplus = qb_dict["wtde_xplus"]
-            qb_dict.pop("wtde_xplus")
         midQB, midQS = make_wt_files(headerDict, qb_dict,filename, *args)
     else:
         # midParsed = parseGH3QB(mid, hopo)
@@ -64,7 +61,7 @@ def make_mid(midfile, hopo, filename = "", *args, **kwargs):
 
 def make_wt_files(headerDict, qb_dict, filename, *args):
     if "replace_perf" in args:
-        override_perf(filename, headerDict, qb_dict, *args)
+        override_perf(filename, headerDict, qb_dict, "GHWT", *args)
     QBSections, midQS = create_wt_qb_sections(qb_dict, filename, *args)
     midQB = create_game_qb(QBSections, filename)
     return midQB, midQS
@@ -114,20 +111,6 @@ def create_pak_file(midQB, filename, midQS = "", *args):
     to_pak = [[midQB, f"songs\\{filename}.mid.qb"]]
     if midQS:
         to_pak.append([midQS, f"songs\\{filename}.mid.qs"])
-    if "add_ska" in args:
-        for files in os.listdir(args[args.index("add_ska") + 1]):
-            with open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb') as f:
-                ska_file = f.read()
-                if "gh3" in args:
-                    ska_file = ska_bytes(ska_file)
-                    ska_file = make_modern_ska(ska_file)
-                    ska_file = ska_bytes(ska_file)
-                    if "gha" in args:
-                        to_ska = "gha_singer"
-                    else:
-                        to_ska = "gh3_singer"
-                    ska_file = make_gh3_ska(ska_file, quats_mult=0.5, ska_switch=to_ska)
-                to_pak.append([ska_file, files])
     if "song_script" in args:
         song_script_file = args[args.index("song_script") + 1]
         if song_script_file.endswith(".txt"):
@@ -146,6 +129,24 @@ def create_pak_file(midQB, filename, midQS = "", *args):
             with open(song_script_file, "rb") as f:
                 song_script = f.read()
         to_pak.append([song_script, f"songs\\{filename}_song_scripts.qb"])
+    if "add_ska" in args:
+        for files in os.listdir(args[args.index("add_ska") + 1]):
+            with open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb') as f:
+                ska_file = f.read()
+                if "gh3" in args:
+                    ska_file = ska_bytes(ska_file)
+                    ska_file = make_modern_ska(ska_file)
+                    ska_file = ska_bytes(ska_file)
+                    if "gha" in args:
+                        to_ska = "gha_singer"
+                    else:
+                        to_ska = "gh3_singer"
+                    ska_file = make_gh3_ska(ska_file, quats_mult=0.5, ska_switch=to_ska)
+                to_pak.append([ska_file, files])
+    if "add_loops" in args:
+        for file in args[args.index("add_loops") + 1]:
+            with open(f"conversion_files\\anim_loops_wt\\{file}.ska.xen", 'rb') as f:
+                to_pak.append([f.read(), f"{file}.ska"])
     pakFile = pakMaker(to_pak)
     return pakFile
 

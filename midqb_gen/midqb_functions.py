@@ -631,8 +631,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 elif x.type == "text":
                     if re.search(r'^(SetBlendTime|LightShow_Set)', x.text, flags=re.IGNORECASE):
                         # if x.text.startswith("SetBlendTime") or x.text.startswith("LightShow_Set"):
-                        blendtime = {"param": "time", "data": float(x.text.split(" ")[1]),
-                                     "type": "Float"}  # Blend time is in seconds
+                        blendtime = lightshow_script(x)
                         anim_notes["lightshow"].append(scriptsNode(time_sec, "LightShow_SetTime", [blendtime]))
                     elif re.search(r'(zoom_(in|out)_(quick|slow)_(small|large)|pulse[1-5]) [0-9]+', x.text,
                                    flags=re.IGNORECASE):
@@ -640,9 +639,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         zoom_length = float(x.text.split(" ")[1])
                         if zoom_length.is_integer():
                             zoom_length = int(zoom_length)
-                        param_type = {"param": "type", "data": zoom_type, "type": "QbKey"}
-                        param_time = {"param": "time", "data": zoom_length,
-                                      "type": "Integer" if type(zoom_length) == int else "Float"}
+                        param_type, param_time = camera_script(zoom_type, zoom_length)
                         anim_notes["performance"].append(
                             scriptsNode(time_sec, "CameraCutsEffect_FOVPulse", [param_type, param_time]))
             elif playable:
@@ -1118,9 +1115,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 to_keep_2 = -1
                 for enum, cut in enumerate(v):
                     if cut.note in moment_cams:
-                        to_keep = (enum)
+                        to_keep = enum
                     elif cut.note in range(33,37):
-                        to_keep_2 = (enum)
+                        to_keep_2 = enum
                 if to_keep >= 0:
                     anim_notes["CAMERAS"][k] = [v[to_keep]]
                 elif to_keep_2 >= 0:
@@ -2051,6 +2048,20 @@ def create_anim_note(x, active_notes, track_name, anim_notes, time_sec, anim_ent
             raise Exception(f"Something went wrong parsing the {track_name} track.")
     return
 
+def camera_script(zoom_type, zoom_length):
+    param_type = {"param": "type", "data": zoom_type, "type": "QbKey"}
+    param_time = {"param": "time", "data": zoom_length,
+                  "type": "Integer" if type(zoom_length) == int else "Float"}
+    return param_type, param_time
+
+def lightshow_script(x):
+    if type(x) == float:
+        t = x
+    else:
+        t = x.text.split(" ")[1]
+    blendtime = {"param": "time", "data": float(t),
+                 "type": "Float"}  # Blend time is in seconds
+    return blendtime
 
 def drum_anim_note(x, active_notes, new_note, anim_notes, time_sec, args):
     new_len = time_sec - active_notes[new_note].time
