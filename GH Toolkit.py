@@ -438,6 +438,16 @@ if __name__ == "__main__":
                     anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
                     with open(f"{output}\\{midname}_scripts.txt", "w") as f:
                         f.write(anim_string)
+            elif sys.argv[1] == "convert_5_to_wt":
+                if "output" not in locals():
+                    output = f'{os.path.dirname(input_file)}'
+                midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
+                compile_args = []
+                if len(sys.argv) > 3:
+                    compile_args.extend(sys.argv[3:])
+                wt_pak = convert_5_to_wt(input_file, *compile_args)
+                with open(f"{output}\\a{midname}.pak.xen".lower(), "wb") as f:
+                    f.write(wt_pak)
             elif sys.argv[1] == "make_wt_mid":
                 qb_file = mid_qb.make_wt_qb(sys.argv[2])
             elif sys.argv[1] == "extract_fsb":
