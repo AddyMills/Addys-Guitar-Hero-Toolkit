@@ -169,6 +169,9 @@ def create_wt_qb_sections(qb_dict, filename, *args):
     if "wor" in args and qb_dict["ghost_notes"]:
         chart_name = f"{filename}_ghost_notes"
         qb_sections[chart_name] = basic_data(chart_name, qb_dict["ghost_notes"])
+    if "wtde" in args and qb_dict["xplus"]:
+        chart_name = f"{filename}_song_drums_expertplus"
+        qb_sections[chart_name] = basic_data(chart_name, qb_dict["xplus"].notes)
 
     if qb_dict["has_2x_kick"]:
         chart_name = f"{filename}_double_kick"
@@ -1173,7 +1176,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                  "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
                  "fretbars": fretbars, "vox_sp": vocal_sp, "ghost_notes": ghost_notes,
                  "solo_markers": playable_solo_markers,
-                 "has_2x_kick": has_2x_kick
+                 "has_2x_kick": has_2x_kick, "xplus": 0
                  }
     xplus_track = 0
     '''if "wtde" in args and make_xplus and not "2x_check" in args:
@@ -2055,7 +2058,7 @@ def camera_script(zoom_type, zoom_length):
     return param_type, param_time
 
 def lightshow_script(x):
-    if type(x) == float:
+    if type(x) == float or type(x) == int:
         t = x
     else:
         t = x.text.split(" ")[1]
