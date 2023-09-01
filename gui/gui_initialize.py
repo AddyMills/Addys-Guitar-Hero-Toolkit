@@ -201,6 +201,9 @@ class compile_package(QWidget, compile_pack):
             "backing_input": self.backing_input.text(),
             "crowd_input": self.crowd_input.text(),
 
+            "ghwt_preview_audio_input": self.ghwt_preview_audio_input.text(),
+            "ghwt_rendered_preview_check": self.ghwt_rendered_preview_check.isChecked(),
+
             "encrypt_audio": self.encrypt_audio.isChecked(),
 
             "preview_minutes": self.preview_minutes.value(),
@@ -256,6 +259,9 @@ class compile_package(QWidget, compile_pack):
             "coop_backing_input_gh3": self.coop_backing_input_gh3.text(),
 
             "crowd_input_gh3": self.crowd_input_gh3.text(),
+            
+            "gh3_preview_audio_input": self.gh3_preview_audio_input.text(),
+            "gh3_rendered_preview_check": self.gh3_rendered_preview_check.isChecked(),
 
             "preview_minutes_gh3": self.preview_minutes_gh3.value(),
             "preview_seconds_gh3": self.preview_seconds_gh3.value(),
@@ -323,7 +329,8 @@ class compile_package(QWidget, compile_pack):
 
         check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio",
                        "ghwt_set_end",
-                       "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check"]
+                       "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check",
+                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check"]
 
         for x in check_boxes:
             try:
@@ -481,6 +488,9 @@ class compile_package(QWidget, compile_pack):
         self.backing_select.clicked.connect(partial(self.open_file_dialog_audio, self.backing_input))
         self.crowd_select.clicked.connect(partial(self.open_file_dialog_audio, self.crowd_input))
 
+        self.ghwt_preview_audio_select.clicked.connect(
+            partial(self.open_file_dialog_audio, self.ghwt_preview_audio_input))
+
         self.ghwt_set_end.toggled.connect(self.set_end_time)
 
     def wt_song_data_fields(self):
@@ -502,6 +512,8 @@ class compile_package(QWidget, compile_pack):
         self.coop_guitar_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_guitar_input_gh3))
         self.coop_rhythm_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_rhythm_input_gh3))
         self.coop_backing_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_backing_input_gh3))
+
+        self.gh3_preview_audio_select.clicked.connect(partial(self.open_file_dialog_audio, self.gh3_preview_audio_input))
 
         self.p2_rhythm_check.toggled.connect(self.p2_rhythm_toggle)
 
@@ -939,11 +951,13 @@ class compile_package(QWidget, compile_pack):
             perf = self.gh3_perf_override_input.text()
             ska_files = self.gh3_ska_files_input.text()
             song_script = self.gh3_song_script_input.text()
+            rendered_audio = self.gh3_rendered_preview_check.isChecked()
         else:
             midi_file = self.midi_check(self.ghwt_midi_file_input.text())
             perf = self.ghwt_perf_override_input.text()
             ska_files = self.ghwt_ska_files_input.text()
             song_script = self.ghwt_song_script_input.text()
+            rendered_audio = self.ghwt_rendered_preview_check.isChecked()
         if not midi_file:
             return 0
 
@@ -958,6 +972,14 @@ class compile_package(QWidget, compile_pack):
 
         if ska_files and os.path.isdir(ska_files):
             compile_args += ["add_ska", ska_files]
+
+        if rendered_audio:
+            if "gh3" in args and os.path.exists(self.gh3_preview_audio_input.text()):
+                compile_args += ["rendered_preview", self.gh3_preview_audio_input.text()]
+            elif "ghwt" in args and os.path.exists(self.ghwt_preview_audio_input.text()):
+                compile_args += ["rendered_preview", self.ghwt_preview_audio_input.text()]
+            else:
+                print("Rendered preview audio selected, but file is not found. Creating basic preview.")
 
         hopo_mode = self.hopo_mode_select.currentText()
         if hopo_mode == "Guitar Hero 3":

@@ -72,7 +72,7 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
 
     return padded_mp3_data
 
-def make_preview_sox(start_time, end_time):
+def make_preview_sox(start_time, end_time, *args):
 
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
@@ -82,23 +82,34 @@ def make_preview_sox(start_time, end_time):
         os.remove(temp_out)
 
     audio_list = []
-    for file in os.listdir(temp_dir):
-        audio_list.append(temp_dir + "\\" + file)
+    if "rendered_preview" in args:
+        print("Converting custom preview audio")
+        audio_list.append(args[args.index("rendered_preview") + 1])
+
+    else:
+        for file in os.listdir(temp_dir):
+            audio_list.append(temp_dir + "\\" + file)
 
     extra_args = []
+
     # Create SoX Combiner
-    if len(audio_list) == 1:
-        preview = sox.Transformer()
-        preview.set_input_format("mp3")
-        audio_list = audio_list[0]
+    if "rendered_preview" not in args:
+        if len(audio_list) == 1:
+            preview = sox.Transformer()
+            preview.set_input_format("mp3")
+            audio_list = audio_list[0]
+        else:
+            preview = sox.Combiner()
+            preview.set_input_format(["mp3"] * len(audio_list))
+            extra_args.append("mix")
+
+        preview.trim(start_time, end_time)
+        preview.fade(1.0, 1.0)
+        preview.vol(-7.0, "db")
     else:
-        preview = sox.Combiner()
-        preview.set_input_format(["mp3"] * len(audio_list))
-        extra_args.append("mix")
+        preview = sox.Transformer()
+        audio_list = audio_list[0]
     preview.set_output_format("mp3", 48000)
-    preview.trim(start_time, end_time)
-    preview.fade(1.0, 1.0)
-    preview.vol(-7.0, "db")
 
 
     try:
@@ -187,7 +198,7 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
 
     return padded_mp3_data
 
-def make_preview_ffmpeg(start_time, end_time):
+def make_preview_ffmpeg(start_time, end_time, *args):
     # Set temp directory and output file
     temp_dir = ".\\temp"
     temp_out = temp_dir + "\\temp.mp3"
@@ -196,17 +207,11 @@ def make_preview_ffmpeg(start_time, end_time):
         os.remove(temp_out)
 
     # Get a list of all audio files in temp directory
-    audio_list = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir)]
-
-    trim_duration = end_time - start_time
-    fade_duration = 1.0
-
-    # Build filtergraph for mixing and trimming audio
-    mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2:normalize=0[mixout]'
-    # trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
-    trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:st={start_time}:d=1,afade=t=out:st={start_time+trim_duration - 1}:d=1,volume=-7.0dB[final]'
-    #trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:ss=0:d={fade_duration},afade=t=out:st={trim_duration-fade_duration}:d={fade_duration}[final]'
-    filtergraph = mix_filter + ';' + trim_filter
+    if "rendered_preview" in args:
+        print("Using custom preview audio")
+        audio_list = [args[args.index("rendered_preview") + 1]]
+    else:
+        audio_list = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir)]
 
     command = ['ffmpeg']
 
@@ -214,11 +219,27 @@ def make_preview_ffmpeg(start_time, end_time):
     for audio_file in audio_list:
         command.extend(['-i', audio_file])
 
-    # Add the rest of the command
-    command.extend([
-        '-filter_complex', filtergraph, '-map', '[final]',
-        '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
-    ])
+    if "rendered_preview" not in args:
+        trim_duration = end_time - start_time
+        fade_duration = 1.0
+
+        # Build filtergraph for mixing and trimming audio
+        mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2:normalize=0[mixout]'
+        # trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
+        trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:st={start_time}:d=1,afade=t=out:st={start_time+trim_duration - 1}:d=1,volume=-7.0dB[final]'
+        #trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:ss=0:d={fade_duration},afade=t=out:st={trim_duration-fade_duration}:d={fade_duration}[final]'
+        filtergraph = mix_filter + ';' + trim_filter
+
+        # Add the rest of the command
+        command.extend([
+            '-filter_complex', filtergraph, '-map', '[final]',
+            '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+        ])
+    else:
+        # Add the rest of the command without filters
+        command.extend([
+            '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+        ])
 
     try:
         # Run FFmpeg command
@@ -267,7 +288,7 @@ def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
                         padded_mp3_data_list.append(f.read())
                 else:
                     padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
-            preview = make_preview_sox(start_time, end_time)
+            preview = make_preview_sox(start_time, end_time, *args)
         elif is_program_in_path("ffmpeg"):
             for input_file in all_audio:
                 duration = get_audio_duration_ffmpeg(input_file)
@@ -283,7 +304,7 @@ def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
                         padded_mp3_data_list.append(f.read())
                 else:
                     padded_mp3_data_list.append(pad_wav_file_ffmpeg(input_file, max_length, enum))
-            preview = make_preview_ffmpeg(start_time, end_time)
+            preview = make_preview_ffmpeg(start_time, end_time, *args)
         elif "ffmpeg" in args:
             print("FFmpeg was asked to use, but cannot find it in PATH")
             return 0

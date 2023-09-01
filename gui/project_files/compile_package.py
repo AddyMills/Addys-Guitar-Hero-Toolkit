@@ -25,7 +25,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(562, 659)
+        Form.resize(562, 681)
         self.verticalLayout_11 = QVBoxLayout(Form)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
         self.verticalLayout_4 = QVBoxLayout()
@@ -578,10 +578,10 @@ class Ui_Form(object):
 
         self.horizontalLayout_13.addWidget(self.encrypt_audio, 0, Qt.AlignLeft)
 
-        self.checkBox = QCheckBox(self.wt_audio_widget)
-        self.checkBox.setObjectName(u"checkBox")
+        self.ghwt_rendered_preview_check = QCheckBox(self.wt_audio_widget)
+        self.ghwt_rendered_preview_check.setObjectName(u"ghwt_rendered_preview_check")
 
-        self.horizontalLayout_13.addWidget(self.checkBox)
+        self.horizontalLayout_13.addWidget(self.ghwt_rendered_preview_check)
 
 
         self.verticalLayout_9.addLayout(self.horizontalLayout_13)
@@ -605,18 +605,23 @@ class Ui_Form(object):
         self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gh3_stems_layout = QGridLayout()
         self.gh3_stems_layout.setObjectName(u"gh3_stems_layout")
-        self.line_9 = QFrame(self.gh3_audio_widget)
-        self.line_9.setObjectName(u"line_9")
-        self.line_9.setFrameShape(QFrame.HLine)
-        self.line_9.setFrameShadow(QFrame.Sunken)
-
-        self.gh3_stems_layout.addWidget(self.line_9, 11, 0, 1, 3)
-
         self.guitar_label_gh3 = QLabel(self.gh3_audio_widget)
         self.guitar_label_gh3.setObjectName(u"guitar_label_gh3")
         self.guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gh3_stems_layout.addWidget(self.guitar_label_gh3, 1, 0, 1, 1)
+
+        self.backing_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.backing_label_gh3.setObjectName(u"backing_label_gh3")
+        self.backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.backing_label_gh3, 3, 0, 1, 1)
+
+        self.crowd_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.crowd_label_gh3.setObjectName(u"crowd_label_gh3")
+        self.crowd_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.crowd_label_gh3, 12, 0, 1, 1)
 
         self.track_label_2 = QLabel(self.gh3_audio_widget)
         self.track_label_2.setObjectName(u"track_label_2")
@@ -625,134 +630,6 @@ class Ui_Form(object):
         self.track_label_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gh3_stems_layout.addWidget(self.track_label_2, 0, 0, 1, 1)
-
-        self.guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.guitar_select_gh3.setObjectName(u"guitar_select_gh3")
-        self.guitar_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.guitar_select_gh3, 1, 2, 1, 1)
-
-        self.coop_guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_guitar_input_gh3.setObjectName(u"coop_guitar_input_gh3")
-        self.coop_guitar_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_input_gh3, 7, 1, 1, 1)
-
-        self.rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.rhythm_label_gh3.setObjectName(u"rhythm_label_gh3")
-        self.rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_label_gh3, 2, 0, 1, 1)
-
-        self.crowd_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.crowd_input_gh3.setObjectName(u"crowd_input_gh3")
-        self.crowd_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.crowd_input_gh3, 12, 1, 1, 1)
-
-        self.backing_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.backing_select_gh3.setObjectName(u"backing_select_gh3")
-        self.backing_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.backing_select_gh3, 3, 2, 1, 1)
-
-        self.coop_backing_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_backing_select_gh3.setObjectName(u"coop_backing_select_gh3")
-        self.coop_backing_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_select_gh3, 10, 2, 1, 1)
-
-        self.gh3_file_path_label = QLabel(self.gh3_audio_widget)
-        self.gh3_file_path_label.setObjectName(u"gh3_file_path_label")
-        sizePolicy2.setHeightForWidth(self.gh3_file_path_label.sizePolicy().hasHeightForWidth())
-        self.gh3_file_path_label.setSizePolicy(sizePolicy2)
-        self.gh3_file_path_label.setAlignment(Qt.AlignCenter)
-
-        self.gh3_stems_layout.addWidget(self.gh3_file_path_label, 0, 1, 1, 1)
-
-        self.guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.guitar_input_gh3.setObjectName(u"guitar_input_gh3")
-        self.guitar_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.guitar_input_gh3, 1, 1, 1, 1)
-
-        self.backing_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.backing_label_gh3.setObjectName(u"backing_label_gh3")
-        self.backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.backing_label_gh3, 3, 0, 1, 1)
-
-        self.crowd_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.crowd_select_gh3.setObjectName(u"crowd_select_gh3")
-        self.crowd_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.crowd_select_gh3, 12, 2, 1, 1)
-
-        self.rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.rhythm_select_gh3.setObjectName(u"rhythm_select_gh3")
-        self.rhythm_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_select_gh3, 2, 2, 1, 1)
-
-        self.coop_backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_backing_input_gh3.setObjectName(u"coop_backing_input_gh3")
-        self.coop_backing_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_input_gh3, 10, 1, 1, 1)
-
-        self.backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.backing_input_gh3.setObjectName(u"backing_input_gh3")
-        self.backing_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.backing_input_gh3, 3, 1, 1, 1)
-
-        self.coop_guitar_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_guitar_label_gh3.setObjectName(u"coop_guitar_label_gh3")
-        self.coop_guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_label_gh3, 7, 0, 1, 1)
-
-        self.rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.rhythm_input_gh3.setObjectName(u"rhythm_input_gh3")
-        self.rhythm_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_input_gh3, 2, 1, 1, 1)
-
-        self.coop_rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_rhythm_label_gh3.setObjectName(u"coop_rhythm_label_gh3")
-        self.coop_rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_label_gh3, 9, 0, 1, 1)
-
-        self.coop_rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_rhythm_input_gh3.setObjectName(u"coop_rhythm_input_gh3")
-        self.coop_rhythm_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_input_gh3, 9, 1, 1, 1)
-
-        self.crowd_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.crowd_label_gh3.setObjectName(u"crowd_label_gh3")
-        self.crowd_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.crowd_label_gh3, 12, 0, 1, 1)
-
-        self.coop_rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_rhythm_select_gh3.setObjectName(u"coop_rhythm_select_gh3")
-        self.coop_rhythm_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_select_gh3, 9, 2, 1, 1)
-
-        self.coop_guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_guitar_select_gh3.setObjectName(u"coop_guitar_select_gh3")
-        self.coop_guitar_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_select_gh3, 7, 2, 1, 1)
-
-        self.coop_backing_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_backing_label_gh3.setObjectName(u"coop_backing_label_gh3")
-        self.coop_backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_label_gh3, 10, 0, 1, 1)
 
         self.gh3_audio_options = QHBoxLayout()
         self.gh3_audio_options.setObjectName(u"gh3_audio_options")
@@ -770,8 +647,153 @@ class Ui_Form(object):
 
         self.gh3_stems_layout.addLayout(self.gh3_audio_options, 5, 1, 1, 1)
 
+        self.coop_backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_backing_input_gh3.setObjectName(u"coop_backing_input_gh3")
+        self.coop_backing_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_input_gh3, 10, 1, 1, 1)
+
+        self.coop_rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_rhythm_input_gh3.setObjectName(u"coop_rhythm_input_gh3")
+        self.coop_rhythm_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_input_gh3, 9, 1, 1, 1)
+
+        self.coop_guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_guitar_select_gh3.setObjectName(u"coop_guitar_select_gh3")
+        self.coop_guitar_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_select_gh3, 7, 2, 1, 1)
+
+        self.coop_rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_rhythm_label_gh3.setObjectName(u"coop_rhythm_label_gh3")
+        self.coop_rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_label_gh3, 9, 0, 1, 1)
+
+        self.backing_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.backing_select_gh3.setObjectName(u"backing_select_gh3")
+        self.backing_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.backing_select_gh3, 3, 2, 1, 1)
+
+        self.gh3_file_path_label = QLabel(self.gh3_audio_widget)
+        self.gh3_file_path_label.setObjectName(u"gh3_file_path_label")
+        sizePolicy2.setHeightForWidth(self.gh3_file_path_label.sizePolicy().hasHeightForWidth())
+        self.gh3_file_path_label.setSizePolicy(sizePolicy2)
+        self.gh3_file_path_label.setAlignment(Qt.AlignCenter)
+
+        self.gh3_stems_layout.addWidget(self.gh3_file_path_label, 0, 1, 1, 1)
+
+        self.crowd_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.crowd_select_gh3.setObjectName(u"crowd_select_gh3")
+        self.crowd_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.crowd_select_gh3, 12, 2, 1, 1)
+
+        self.rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.rhythm_label_gh3.setObjectName(u"rhythm_label_gh3")
+        self.rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_label_gh3, 2, 0, 1, 1)
+
+        self.guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.guitar_select_gh3.setObjectName(u"guitar_select_gh3")
+        self.guitar_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.guitar_select_gh3, 1, 2, 1, 1)
+
+        self.coop_backing_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_backing_label_gh3.setObjectName(u"coop_backing_label_gh3")
+        self.coop_backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_label_gh3, 10, 0, 1, 1)
+
+        self.coop_guitar_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_guitar_label_gh3.setObjectName(u"coop_guitar_label_gh3")
+        self.coop_guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_label_gh3, 7, 0, 1, 1)
+
+        self.rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.rhythm_input_gh3.setObjectName(u"rhythm_input_gh3")
+        self.rhythm_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_input_gh3, 2, 1, 1, 1)
+
+        self.coop_guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_guitar_input_gh3.setObjectName(u"coop_guitar_input_gh3")
+        self.coop_guitar_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_input_gh3, 7, 1, 1, 1)
+
+        self.rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.rhythm_select_gh3.setObjectName(u"rhythm_select_gh3")
+        self.rhythm_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_select_gh3, 2, 2, 1, 1)
+
+        self.coop_backing_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_backing_select_gh3.setObjectName(u"coop_backing_select_gh3")
+        self.coop_backing_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_select_gh3, 10, 2, 1, 1)
+
+        self.line_9 = QFrame(self.gh3_audio_widget)
+        self.line_9.setObjectName(u"line_9")
+        self.line_9.setFrameShape(QFrame.HLine)
+        self.line_9.setFrameShadow(QFrame.Sunken)
+
+        self.gh3_stems_layout.addWidget(self.line_9, 11, 0, 1, 3)
+
+        self.backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.backing_input_gh3.setObjectName(u"backing_input_gh3")
+        self.backing_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.backing_input_gh3, 3, 1, 1, 1)
+
+        self.crowd_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.crowd_input_gh3.setObjectName(u"crowd_input_gh3")
+        self.crowd_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.crowd_input_gh3, 12, 1, 1, 1)
+
+        self.coop_rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_rhythm_select_gh3.setObjectName(u"coop_rhythm_select_gh3")
+        self.coop_rhythm_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_select_gh3, 9, 2, 1, 1)
+
+        self.guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.guitar_input_gh3.setObjectName(u"guitar_input_gh3")
+        self.guitar_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.guitar_input_gh3, 1, 1, 1, 1)
+
+        self.gh3_preview_audio_label = QLabel(self.gh3_audio_widget)
+        self.gh3_preview_audio_label.setObjectName(u"gh3_preview_audio_label")
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_label, 13, 0, 1, 1)
+
+        self.gh3_preview_audio_input = QLineEdit(self.gh3_audio_widget)
+        self.gh3_preview_audio_input.setObjectName(u"gh3_preview_audio_input")
+        self.gh3_preview_audio_input.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_input, 13, 1, 1, 1)
+
+        self.gh3_preview_audio_select = QToolButton(self.gh3_audio_widget)
+        self.gh3_preview_audio_select.setObjectName(u"gh3_preview_audio_select")
+        self.gh3_preview_audio_select.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_select, 13, 2, 1, 1)
+
 
         self.verticalLayout_10.addLayout(self.gh3_stems_layout)
+
+        self.gh3_rendered_preview_check = QCheckBox(self.gh3_audio_widget)
+        self.gh3_rendered_preview_check.setObjectName(u"gh3_rendered_preview_check")
+
+        self.verticalLayout_10.addWidget(self.gh3_rendered_preview_check)
 
         self.gh3_preview_layout = QHBoxLayout()
         self.gh3_preview_layout.setObjectName(u"gh3_preview_layout")
@@ -1655,17 +1677,19 @@ class Ui_Form(object):
         self.beatlines_check.toggled.connect(self.beat_16th_low_input.setEnabled)
         self.beatlines_check.toggled.connect(self.beat_16th_high_input.setEnabled)
         self.p2_rhythm_check.toggled.connect(self.coop_audio_check.setEnabled)
-        self.checkBox.toggled.connect(self.ghwt_preview_audio_input.setEnabled)
-        self.checkBox.toggled.connect(self.ghwt_preview_audio_select.setEnabled)
-        self.checkBox.toggled.connect(self.preview_minutes.setDisabled)
-        self.checkBox.toggled.connect(self.preview_seconds.setDisabled)
-        self.checkBox.toggled.connect(self.preview_mills.setDisabled)
-        self.checkBox.toggled.connect(self.length_minutes.setDisabled)
-        self.checkBox.toggled.connect(self.length_seconds.setDisabled)
-        self.checkBox.toggled.connect(self.length_mills.setDisabled)
-        self.checkBox.toggled.connect(self.ghwt_set_end.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_preview_audio_input.setEnabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_preview_audio_select.setEnabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_minutes.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_seconds.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_mills.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_minutes.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_seconds.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_mills.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_set_end.setDisabled)
+        self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
+        self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(3)
+        self.compile_tabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1719,26 +1743,29 @@ class Ui_Form(object):
         self.length_label.setText(QCoreApplication.translate("Form", u"Length:", None))
         self.ghwt_set_end.setText(QCoreApplication.translate("Form", u"Set End Time", None))
         self.encrypt_audio.setText(QCoreApplication.translate("Form", u"Encrypt Audio", None))
-        self.checkBox.setText(QCoreApplication.translate("Form", u"Use Rendered Preview Audio", None))
+        self.ghwt_rendered_preview_check.setText(QCoreApplication.translate("Form", u"Use Rendered Preview Audio", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.audio_tab_wt), QCoreApplication.translate("Form", u"Audio (WT)", None))
         self.guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
-        self.track_label_2.setText(QCoreApplication.translate("Form", u"Track", None))
-        self.guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Bass", None))
-        self.backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.gh3_file_path_label.setText(QCoreApplication.translate("Form", u"Audio File Path", None))
         self.backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
-        self.crowd_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
-        self.coop_rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Rhythm", None))
         self.crowd_label_gh3.setText(QCoreApplication.translate("Form", u"Crowd", None))
-        self.coop_rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
+        self.track_label_2.setText(QCoreApplication.translate("Form", u"Track", None))
         self.p2_rhythm_check.setText(QCoreApplication.translate("Form", u"P2 is Rhythm", None))
         self.coop_audio_check.setText(QCoreApplication.translate("Form", u"Separate Co-op Audio", None))
+        self.coop_guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Rhythm", None))
+        self.backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_file_path_label.setText(QCoreApplication.translate("Form", u"Audio File Path", None))
+        self.crowd_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Bass", None))
+        self.guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
+        self.coop_guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
+        self.rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_preview_audio_label.setText(QCoreApplication.translate("Form", u"Preview", None))
+        self.gh3_preview_audio_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_rendered_preview_check.setText(QCoreApplication.translate("Form", u"Use Rendered Preview", None))
         self.preview_label_2.setText(QCoreApplication.translate("Form", u"Song Preview:", None))
         self.length_label_2.setText(QCoreApplication.translate("Form", u"Length:", None))
         self.gh3_set_end.setText(QCoreApplication.translate("Form", u"Set End Time", None))
