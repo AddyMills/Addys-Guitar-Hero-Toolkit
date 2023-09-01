@@ -3029,18 +3029,17 @@ def read_gh5_note(note_bin, drum_mode=False, *args):
                     if "drum" in entry_id:
                         if drum_ghost:
                             drum_note += drum_ghost
+                        norm_bin = bin(drum_note)[2:].zfill(7)
+                        xplus_bin = norm_bin
                         if drum_note & 1 << 6 and drum_note & 1 << 5: # 2x note
                             norm_bin = bin(drum_note)[3:].zfill(7)
                             xplus_bin = norm_bin
                         elif drum_note & 1 << 6:
-                            input("Contact me!")
-                            norm_bin = bin(drum_note)[2:].zfill(7)[:5].zfill(7)
-                            xplus_bin = f"1{bin(drum_note)[2:][4:].zfill(7)}"
-                        else:
-                            norm_bin = bin(drum_note)[2:].zfill(7)
-                            xplus_bin = norm_bin
+                            norm_bin = bin(drum_note)[3:].zfill(7)
+                            xplus_bin = f"1{bin(drum_note)[4:]}".zfill(7)
 
-                        note_file_dict[entry_id]["normal"].extend([entry_time, int(acc_bin+norm_bin+len_bin,2)])
+                        if int(norm_bin, 2):
+                            note_file_dict[entry_id]["normal"].extend([entry_time, int(acc_bin+norm_bin+len_bin,2)])
 
                         if diff == "expert":
                             note_file_dict[entry_id]["xplus"].extend(
@@ -3274,13 +3273,24 @@ def gh5_to_midi(notes, tempo_data, tpb, vox=False, anim=False, drums=False):
 
         return temp_tracks
 
-def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_override = "", *args):
+def perf_override_check(perf_override, to_add):
+    if perf_override:
+        perf_override += f",\n {to_add}"
+    else:
+        perf_override = to_add
+    return perf_override
+
+def convert_5_to_wt(pakmid, perf_override = "", *args):
+    ska_override = []
     song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
         song_name = song_name[1:]
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
     sections_dict = get_section_dict(qb_sections, file_headers_hex)
     game_check = ''.join(x for x in sections_dict.keys())
+    if perf_override:
+        with open(perf_override) as f:
+            perf_override = "\n".join(f.read().split("\n")[1:-1])
     if not re.search(rf"{song_name}_song_easy", game_check, flags=re.IGNORECASE):
         pass
     else:
@@ -3356,6 +3366,7 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
     }
     band_clips = []
     instruments = 0
+    perf_clips = 0
     use_cams = 0
     pull_struct = 0
     struct_string = ""
@@ -3366,7 +3377,16 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
     lyrics_qs_dict = {}
     gtr_markers = []
     xplus = 0
+    new_perf = ""
     for files in song_files:
+        if re.search(fr"songs/{song_name}\.mid.qb$", files["file_name"], flags=re.IGNORECASE):
+            qb_mid_file = QB2Text.convert_qb_file(QB2Text.qb_bytes(files["file_data"]), song_name, file_headers)
+            qb_mid_text = QB2Text.print_to_var(qb_mid_file)
+            qb_mid_nohead = "\n".join(qb_mid_text.split("\n")[1:])
+            lip_events_loc = qb_mid_nohead.find(f"{song_name}_facial")
+            lip_events_end = qb_mid_nohead.find("]", lip_events_loc)
+            lip_events = "\n".join(qb_mid_nohead[lip_events_loc:lip_events_end].strip().split("\n")[1:])
+            perf_override = perf_override_check(perf_override, lip_events)
         if re.search(fr"songs/{song_name}\.mid\.qs.en$", files["file_name"], flags=re.IGNORECASE):
             qs_dict = get_qs_strings(files["file_data"])
         elif re.search(fr"songs/{song_name}\.note$", files["file_name"], flags=re.IGNORECASE):
@@ -3388,6 +3408,20 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
                                 [clip_params["clip"], y.data_dict["time"], clip_len + y.data_dict["time"]])
                         elif y.data_dict["scr"] == "Band_PlayLoop":
                             anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
+            perf_xml_text = QB2Text.print_to_var(perf_xml_file)
+            perf_xml_nohead = "\n".join(perf_xml_text.split("\n")[1:]).strip()
+            perf_events_loc = perf_xml_nohead.find(f"{song_name}_scriptevents")
+            perf_clips = perf_xml_nohead[:perf_events_loc]
+            perf_events = "\n".join(perf_xml_nohead[perf_events_loc:].split("\n")[1:-1])
+            if perf_events.endswith("]"):
+                perf_events = perf_events[:-1]
+            perf_override = perf_override_check(perf_override, perf_events)
+        elif re.search(r".ska$", files["file_name"], flags=re.IGNORECASE):
+            wt_ska = make_modern_ska(ska_bytes(files["file_data"]),"GHWT", quats_mult=1, ska_switch = "wt_rocker")
+            #wt_ska = files["file_data"]
+            ska_override.append([wt_ska, files["file_name"]])
+    if perf_override:
+        perf_override = f"song_performance = [\n{perf_override}\n]"
     fretbars = instruments["fretbar"]
     instruments.pop("fretbar")
     timesigs = [mid_qb.timeSigEvent(x[0],x[1],x[2]) for x in instruments["timesig"]]
@@ -3413,15 +3447,16 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
             elif type_reg == "instrument":
                 new_chart = mid_qb.NoteChart(play, key_name)
                 new_chart.notes = v["normal"]
-                if v["normal"] != v["xplus"] and play == "drums" and key_type == "Expert":
+                if v["normal"] != v["xplus"] and play == "Drums" and key_name == "Expert":
                     xplus = mid_qb.NoteChart(play, key_name)
                     xplus.notes = v["xplus"]
+
                 playable_qb[play][key_name] = new_chart
             elif type_reg == "starpower":
                 playable_star_power[play][key_name] = [[x["time"], x["length"]] for x in v]
             else:
-                if v:
-                    playable_tap[play][key_name] = [[x["time"], x["length"], 1] for x in v]
+                if v and key_name == "Expert":
+                    playable_tap[play] = [[x["time"], x["length"], 1] for x in v]
             to_pop.append(k)
             continue
         reg = re.search(r'(drumfill)', key_name)
@@ -3534,6 +3569,7 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
                 continue
             anim_time = x.section_data[::2]
             anim_event = x.section_data[1::2]
+            drum_count = ""
             for t, e in zip(anim_time, anim_event):
                 e_bin = bin(e)[2:].zfill(32)
                 e_len = int(e_bin[16:], 2)
@@ -3543,6 +3579,22 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
                     if e_note < 85:
                         e_note = mid_qb.drumKeyMapRB_wt[mid_qb.wor_to_rb_drums[e_note]]
                         e_prac = mid_qb.AnimNoteWT(t, e_note-13, e_vel, e_len)
+                        if t in anim_notes[to_add]:
+                            anim_notes[to_add][t].append(e_prac)
+                        else:
+                            anim_notes[to_add][t] = [e_prac]
+                    elif e_note in range(108,114):
+                        e_prac = mid_qb.AnimNoteWT(t, 70, e_vel, e_len)
+                        if e_note in range(108,111):
+                            e_note = 83
+                        else:
+                            e_note = 78
+                        if not drum_count:
+                            if e_note == 83:
+                                drum_count = f"Sticks"
+                            else:
+                                drum_count = f"Hihat"
+                            print(drum_count)
                         if t in anim_notes[to_add]:
                             anim_notes[to_add][t].append(e_prac)
                         else:
@@ -3572,16 +3624,16 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
                  "gtr_markers": gtr_markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timesigs,
                  "fretbars": fretbars, "vox_sp": 0, "ghost_notes": 0,
                  "solo_markers": playable_solo_markers,
-                 "has_2x_kick": 0
+                 "has_2x_kick": 0, "xplus": xplus
                  }
     compile_args = []
     if perf_override:
         compile_args.extend(["replace_perf", perf_override])
-    if scripts_override:
-        compile_args.extend(["song_script", scripts_override])
-    if ska_override:
-        compile_args.extend(["add_ska", ska_override])
     if anim_structs['type'] == "gh6":
+        with open(f"{root_folder}\\conversion_files\\basic_loops.txt", "r") as f:
+            scripts_override = f.read()
+        if perf_clips:
+            scripts_override += f"\n{perf_clips}"
         gh6_anims = []
         for gen in ["male", "female"]:
             for k, v in anim_structs[f"car_{gen}_anim_struct_{song_name}"].items():
@@ -3589,7 +3641,15 @@ def convert_5_to_wt(pakmid, perf_override = "", scripts_override = "", ska_overr
                     if loops not in gh6_anims:
                         gh6_anims.append(loops)
         compile_args.extend(["add_loops", gh6_anims])
-    compile_args.append("ghwt")
+    else:
+        input("Contact me for gh5 loops!")
+        raise Exception
+    if scripts_override:
+        compile_args.extend(["song_script", scripts_override])
+    if ska_override:
+        compile_args.extend(["add_ska", ska_override])
+
+    compile_args.extend(["ghwt", "wtde"])
     midQB, midQS = mid_qb.make_wt_files(file_headers, qb_dict, song_name, *compile_args)
     if "performance" in qb_dict:
         midQB = mid_qb.add_perf_to_qb(midQB, song_name, file_headers, qb_dict, *compile_args)

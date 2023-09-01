@@ -9,7 +9,7 @@ import re
 
 sys.path.append("..\\pak_extract")
 sys.path.append("..\\ska_converter")
-
+root_folder = os.path.realpath(os.path.dirname(__file__))
 from pak_extract.pak_functions import createHeaderDict
 from pak_extract.QB2Text import convert_qb_file, qb_bytes, print_qb_text_file
 from pak_extract.Text2QB import main as t2q_main
@@ -107,61 +107,85 @@ def add_perf_to_qb(midQB, filename, headerDict, qb_dict, *args):
     midQB = t2q_main(qb_text, game=game)
     return midQB
 
+def song_script_check(song_script_raw, filename):
+    song_script = ""
+    if not "qb_file = " in song_script_raw:
+        song_script = f"qb_file = songs/{filename}_song_scripts.qb\n"
+    if not "_song_startup = " in song_script_raw:
+        song_script += f'script {filename}_song_startup = "29 b6 24 06 00 00 00 09 00 00 00 09 01 16 f8 2d 15 1a 2c 01 24"\n'
+    song_script += song_script_raw
+    if not f"_anim_struct_{filename}" in song_script:
+        song_script = song_script.replace("anim_struct", f"anim_struct_{filename}")
+    song_script = t2q_main(song_script, game="GHWT")
+    return song_script
+
 def create_pak_file(midQB, filename, midQS = "", *args):
     to_pak = [[midQB, f"songs\\{filename}.mid.qb"]]
     if midQS:
         to_pak.append([midQS, f"songs\\{filename}.mid.qs"])
     if "song_script" in args:
         song_script_file = args[args.index("song_script") + 1]
-        if song_script_file.endswith(".txt"):
-            song_script = ""
-            with open(song_script_file, "r") as f:
-                song_script_raw = f.read()
-                if not "qb_file = " in song_script_raw:
-                    song_script = f"qb_file = songs/{filename}_song_scripts.qb\n"
-                if not "_song_startup = " in song_script_raw:
-                    song_script += f'script {filename}_song_startup = "29 b6 24 06 00 00 00 09 00 00 00 09 01 16 f8 2d 15 1a 2c 01 24"\n'
-                song_script += song_script_raw
-                if not f"_anim_struct_{filename}" in song_script:
-                    song_script = song_script.replace("anim_struct", f"anim_struct_{filename}")
-            song_script = t2q_main(song_script, game="GHWT")
+        if os.path.exists(song_script_file):
+            if song_script_file.endswith(".txt"):
+                with open(song_script_file, "r") as f:
+                    song_script = song_script_check(f.read(), filename)
+            else:
+                with open(song_script_file, "rb") as f:
+                    song_script = f.read()
         else:
-            with open(song_script_file, "rb") as f:
-                song_script = f.read()
+            try:
+                song_script = song_script_check(song_script_file, filename)
+            except Exception as e:
+                raise e
         to_pak.append([song_script, f"songs\\{filename}_song_scripts.qb"])
     if "add_ska" in args:
-        for files in os.listdir(args[args.index("add_ska") + 1]):
-            with open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb') as f:
-                ska_file = f.read()
-                if "gh3" in args:
-                    ska_file = ska_bytes(ska_file)
-                    ska_file = make_modern_ska(ska_file)
-                    ska_file = ska_bytes(ska_file)
-                    if "gha" in args:
-                        to_ska = "gha_singer"
-                    else:
-                        to_ska = "gh3_singer"
-                    ska_file = make_gh3_ska(ska_file, quats_mult=0.5, ska_switch=to_ska)
-                to_pak.append([ska_file, files])
+        ska_files = args[args.index("add_ska") + 1]
+        if type(ska_files) == list:
+            to_pak.extend(ska_files)
+        elif os.path.exists(ska_files):
+            for files in os.listdir(ska_files):
+                with open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb') as f:
+                    ska_file = f.read()
+                    if "gh3" in args:
+                        ska_file = ska_bytes(ska_file)
+                        ska_file = make_modern_ska(ska_file)
+                        ska_file = ska_bytes(ska_file)
+                        if "gha" in args:
+                            to_ska = "gha_singer"
+                        else:
+                            to_ska = "gh3_singer"
+                        ska_file = make_gh3_ska(ska_file, quats_mult=0.5, ska_switch=to_ska)
+                    to_pak.append([ska_file, files])
+
+        else:
+            raise Exception("Could not find SKA files.")
     if "add_loops" in args:
         for file in args[args.index("add_loops") + 1]:
-            with open(f"conversion_files\\anim_loops_wt\\{file}.ska.xen", 'rb') as f:
+            with open(f"{root_folder}\\..\\conversion_files\\anim_loops_wt\\{file}.ska.xen", 'rb') as f:
                 to_pak.append([f.read(), f"{file}.ska"])
     pakFile = pakMaker(to_pak)
     return pakFile
 
 def override_perf(filename, headerDict, qb_dict, game, *args):
     perf_file = args[args.index("replace_perf") + 1]
-
-    if perf_file.endswith(".txt"):
-        with open(perf_file, "r") as f:
-            perf_qb = f.read().replace("song_performance", f"{filename}_performance")
+    if os.path.isfile(perf_file):
+        if perf_file.endswith(".txt"):
+            with open(perf_file, "r") as f:
+                perf_qb = f.read().replace("song_performance", f"{filename}_performance")
+                if "qb_file = " not in perf_qb:
+                    perf_qb = f"qb_file = songs/{filename}.mid.qb\n" + perf_qb
+                perf_qb = t2q_main(perf_qb, game=game)
+        else:
+            with open(perf_file, "rb") as f:
+                perf_qb = f.read()
+    else:
+        try:
+            perf_qb = perf_file.replace("song_performance", f"{filename}_performance")
             if "qb_file = " not in perf_qb:
                 perf_qb = f"qb_file = songs/{filename}.mid.qb\n" + perf_qb
             perf_qb = t2q_main(perf_qb, game=game)
-    else:
-        with open(perf_file, "rb") as f:
-            perf_qb = f.read()
+        except Exception as e:
+            raise e
     qb_sections = convert_qb_file(qb_bytes(perf_qb), filename, headerDict,
                                   "PC")
     for x in qb_sections:
