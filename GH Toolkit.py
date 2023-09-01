@@ -442,6 +442,8 @@ if __name__ == "__main__":
                 if "output" not in locals():
                     output = f'{os.path.dirname(input_file)}'
                 midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
+                if re.search(r'^[a-c]dlc', midname, flags=re.IGNORECASE):
+                    midname = midname[1:]
                 compile_args = []
                 if len(sys.argv) > 3:
                     compile_args.extend(sys.argv[3:])

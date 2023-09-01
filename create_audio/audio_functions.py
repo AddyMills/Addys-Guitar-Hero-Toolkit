@@ -870,8 +870,8 @@ def test_combine(song_name = "output"):
     for filename in os.listdir(dirin):
         if filename.endswith(".mp3"):
             files.append(f"{os.path.join(dirin,filename)}")
-    if not len(files) == 9:
-        print(f"Not enough files found. Found {len(files)}, expected 9.")
+    if not len(files) == 10:
+        print(f"Not enough files found. Found {len(files)}, expected 10.")
         return
     drum, inst, other, preview = compile_wt_audio(files, song_name, 0, 0, "no_convert")
     for enum, x in enumerate([drum, inst, other, preview]):

@@ -28,7 +28,7 @@ def main():
                 new_folder = "playable"
             elif filename.endswith("_3.FSB"):
                 new_folder = "non-playable"
-            elif filename.lower().endswith("_preview.FSB"):
+            elif filename.lower().endswith("_preview.fsb"):
                 new_folder = "preview"
             else:
                 continue
