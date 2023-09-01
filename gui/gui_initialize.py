@@ -221,6 +221,7 @@ class compile_package(QWidget, compile_pack):
             "ghwt_drumkit_select": self.ghwt_drumkit_select.currentText(),
             "ghwt_vocal_gender_select": self.ghwt_vocal_gender_select.currentText(),
             "vocal_scroll_speed_input": self.vocal_scroll_speed_input.value(),
+            "ghwt_vocal_cents": self.ghwt_vocal_cents.value(),
             "ghwt_band_vol": self.ghwt_band_vol.value(),
 
             "band_tier_value": self.band_tier_value.value(),
@@ -661,6 +662,8 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["High8Bars"] = str(self.beat_8th_high_input.value())
             ini["SongInfo"]["Low16Bars"] = str(self.beat_16th_low_input.value())
             ini["SongInfo"]["High16Bars"] = str(self.beat_16th_high_input.value())
+        if self.ghwt_vocal_cents.value() != 0:
+            ini["SongInfo"]["Cents"] = str(self.ghwt_vocal_cents.value())
         return ini
 
     def ghwor_songlist_info(self, *args):
@@ -672,6 +675,8 @@ class compile_package(QWidget, compile_pack):
         else:
             artist_text = "$artist_text_as_made_famous_by"
             orig_artist = 0
+
+        cents = self.ghwt_vocal_cents.value()
 
         if self.beatlines_check.isChecked():
             low_8 = self.beat_8th_low_input.text()
@@ -733,11 +738,14 @@ class compile_package(QWidget, compile_pack):
             "cymbal": f'"{drumkit}"',
             "drum_kit": f'"{drumkit}"',
             "countoff": f'"{self.ghwt_countoff_select.currentText().lower()}"',
-            "overall_song_volume": self.ghwt_band_vol.value()
+            "overall_song_volume": self.ghwt_band_vol.value(),
+            "vocals_pitch_score_shift": "{ " + f"cents = {cents} " + "}"
         }
 
         if not parts_with_mic:
             songlist_info.pop("parts_with_mic")
+        if not cents:
+            songlist_info.pop("vocals_pitch_score_shift")
         return songlist_info, qs_keys
 
     def gh3_songlist_info(self):
