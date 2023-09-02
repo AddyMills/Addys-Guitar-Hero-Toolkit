@@ -682,7 +682,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             play_solo.append(time_sec)
                         elif x.note in leftHandGtr_wt and not drums:
                             new_note = anim_maps[instrument][x.note]
-                            if x.velocity != 0:
+                            if x.velocity != 0 and x.type == "note_on":
                                 if new_note in active_notes:
                                     continue
                                 active_notes[new_note] = AnimNoteWT(time_sec, new_note, x.velocity)
