@@ -226,6 +226,7 @@ class compile_package(QWidget, compile_pack):
             "vocal_scroll_speed_input": self.vocal_scroll_speed_input.value(),
             "ghwt_vocal_cents": self.ghwt_vocal_cents.value(),
             "ghwt_band_vol": self.ghwt_band_vol.value(),
+            "ghwt_whammy_cutoff": self.ghwt_whammy_cutoff.value(),
 
             "band_tier_value": self.band_tier_value.value(),
             "drums_tier_value": self.drums_tier_value.value(),
@@ -676,6 +677,8 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["High16Bars"] = str(self.beat_16th_high_input.value())
         if self.ghwt_vocal_cents.value() != 0:
             ini["SongInfo"]["Cents"] = str(self.ghwt_vocal_cents.value())
+        if self.ghwt_whammy_cutoff.value() != 0.5:
+            ini["SongInfo"]["WhammyCutoff"] = str(self.ghwt_whammy_cutoff.value())
         return ini
 
     def ghwor_songlist_info(self, *args):
