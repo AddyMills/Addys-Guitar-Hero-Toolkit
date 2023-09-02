@@ -2583,7 +2583,7 @@ def rename_track(avatar):
     return track
 
 
-def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
+def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
     if game == "GH3":
         gtr_anims = range(117, 128)
         bass_anims = range(100, 111)
@@ -2657,6 +2657,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
         "anim": [],
         "triggers": [],
         "cameras": [],
+        "cameras_wt": [],
         "lightshow": [],
         "crowd": [],
         "drums": [],
@@ -2794,8 +2795,10 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
                         note_val -= 1 if note_val != 40 else 0
                         note_charts[track].append({"time": t_sec, "length": length, "note": note_val})
                         continue
-                    # if misc_type == "drum":
-
+                    if misc_type == "cameras":
+                        if "gha" not in args:
+                            misc_charts["cameras_wt"].append({"time": t_sec, "length": length, "note": gh3_to_wt[note_val]})
+                        #print()
                     misc_note.append({"time": t_sec, "length": length, "note": note_val})
                 misc_charts[misc_type] += misc_note.copy()
             elif re.search(r"(lightshow)", misc_type, flags=re.IGNORECASE):
@@ -3663,11 +3666,16 @@ def create_mid_from_qb(pakmid):
     sections_dict = get_section_dict(qb_sections, file_headers_hex)
     game_check = ''.join(x for x in sections_dict.keys())
     gh3 = False
+    gha = False
     ghwt = False
     if not re.search(rf"{song_name}_song_easy", game_check, flags=re.IGNORECASE):
         print("GH5+ song found")
     elif not re.search(rf"{song_name}_drum_easy", game_check, flags=re.IGNORECASE):
-        print("GH3 song found")
+        if re.search(r"_song_aux", game_check, flags=re.IGNORECASE):
+            gha = True
+            print("GHA song found")
+        else:
+            print("GH3 song found")
         gh3 = True
     else:
         print("GHWT song found")
@@ -3757,7 +3765,10 @@ def create_mid_from_qb(pakmid):
     tempo_data.set_seconds_array(np.array(tempo_data.songSeconds))
 
     if gh3:
-        new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb)
+        extra_args = []
+        if gha:
+            extra_args.append("gha")
+        new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb, "GH3", *extra_args)
         return new_mid, struct_string
     """elif ghwt:
         new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb, "GHWT")"""
