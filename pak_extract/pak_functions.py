@@ -513,7 +513,7 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
         for y, x in enumerate(array_data):
             array_string += f"{output_item_data(x, array_type)}"
             if y != len(array_data) - 1:
-                array_string += ", "
+                array_string += " "
         # print(f"{indent_val}{id_string}", f"= [{array_string}]")
         return array_string + "]"
     elif array_type.endswith("Array"):
@@ -528,12 +528,12 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
                     print(f"{indent_val}\t\t" + "{")
                     for items in struct.data_value:
                         print_struct_item(items, indent + 3)
-                    print(f"{indent_val}\t\t" + "}" + f"{',' if s_count != len(array_data[y]) - 1 else ''}")
-                print(f"{indent_val}\t]" + f"{',' if y != len(array_data) - 1 else ''}")
+                    print(f"{indent_val}\t\t" + "}" + f"{'' if s_count != len(array_data[y]) - 1 else ''}")
+                print(f"{indent_val}\t]" + f"{'' if y != len(array_data) - 1 else ''}")
                 # raise Exception
             else:
                 print(
-                    f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
+                    f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{'' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     elif array_type.endswith("Struct"):
         """if sub_array:
@@ -547,21 +547,21 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
             else:
                 for z in x.data_value:
                     print_struct_item(z, indent + 2)
-            print(f"{indent_val}\t" + "}" + f"{',' if y != len(array_data) - 1 else ''}")
+            print(f"{indent_val}\t" + "}" + f"{'' if y != len(array_data) - 1 else ''}")
             # raise Exception
         print(f"{indent_val}]")
         # raise Exception
     elif len(array_data) > 3:
         print(f"{indent_val}{id_string} = [")
         for y, x in enumerate(array_data):
-            print(f"{indent_val}\t{output_item_data(x, array_type)}{',' if y != len(array_data) - 1 else ''}")
+            print(f"{indent_val}\t{output_item_data(x, array_type)}{'' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     else:
         array_string = ""
         for y, x in enumerate(array_data):
             array_string += f"{output_item_data(x, array_type)}"
             if y != len(array_data) - 1:
-                array_string += ", "
+                array_string += " "
         print(f"{indent_val}{id_string}", f"= [{array_string}]")
 
     return
