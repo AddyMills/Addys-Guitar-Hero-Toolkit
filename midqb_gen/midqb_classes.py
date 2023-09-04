@@ -1,5 +1,5 @@
 from mido import second2tick as s2t, tick2second as t2s
-from midqb_definitions import *
+from . midqb_definitions import *
 from CRC import QBKey
 
 colours = {

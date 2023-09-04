@@ -1,5 +1,5 @@
-from midqb_functions import *
-from CreatePAK import pakMaker
+from . midqb_functions import *
+from . CreatePAK import pakMaker
 from mido import MidiFile, MidiTrack
 from io import StringIO
 import os
@@ -7,8 +7,8 @@ import sys
 import re
 
 
-sys.path.append("..\\pak_extract")
-sys.path.append("..\\ska_converter")
+sys.path.append(os.path.join("..", "pak_extract"))
+sys.path.append(os.path.join("..", "ska_converter"))
 root_folder = os.path.realpath(os.path.dirname(__file__))
 from pak_extract.pak_functions import createHeaderDict
 from pak_extract.QB2Text import convert_qb_file, qb_bytes, print_qb_text_file

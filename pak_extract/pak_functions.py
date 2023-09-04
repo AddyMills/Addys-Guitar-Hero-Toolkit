@@ -2,8 +2,8 @@ import sys
 
 sys.path.append("../")
 
-from pak_classes import *
-from pak_definitions import *
+from . pak_classes import *
+from . pak_definitions import *
 
 from dbg import checksum_dbg as dbg
 from copy import deepcopy

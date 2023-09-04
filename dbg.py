@@ -2,7 +2,7 @@ def read_debug():
     import os
     root_folder = os.path.realpath(os.path.dirname(__file__))
     func_dict = {}
-    with open(f"{root_folder}\\debug.txt", 'r') as f:
+    with open(os.path.join(root_folder, "debug.txt"), 'r') as f:
         text_lines = f.readlines()
 
     """with open(f"{root_folder}\\debug_extra.txt", 'r') as f:

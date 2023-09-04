@@ -1,6 +1,6 @@
-from pak_definitions import *
-from pak_functions import *
-from pak_classes import *
+from . pak_definitions import *
+from . pak_functions import *
+from . pak_classes import *
 from io import StringIO
 import os
 import sys

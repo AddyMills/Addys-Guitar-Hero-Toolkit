@@ -3,8 +3,8 @@ sys.path.append("../")
 
 from CRC import QBKey as qb_key
 import struct
-from pak_definitions import console_lookup, console_endian, qbNodeHeaders
-from pak_classes import basic_data, script_data, struct_data
+from . pak_definitions import console_lookup, console_endian, qbNodeHeaders
+from . pak_classes import basic_data, script_data, struct_data
 import os
 import re
 

@@ -2,7 +2,7 @@ import sys
 sys.path.append("../")
 
 from dbg import checksum_dbg
-from pak_functions import *
+from . pak_functions import *
 from CRC import QBKey
 from io import BytesIO
 import os

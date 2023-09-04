@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QPushButton, QVBoxLayo
                                QGridLayout, QTextEdit, QStackedWidget)
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import QMargins
-from pak_edit.pak_manipulation import PakExtract as pakEx
-from gui_initialize import compile_package as compPack
+from . pak_edit.pak_manipulation import PakExtract as pakEx
+from . gui_initialize import compile_package as compPack
 
 class ConsoleOutput(io.StringIO):
     def __init__(self, console_widget):

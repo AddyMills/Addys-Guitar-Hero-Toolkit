@@ -1,4 +1,4 @@
-from LookupTable import binaryReverse as br
+from . LookupTable import binaryReverse as br
 import time
 import os
 import sys
@@ -8,11 +8,11 @@ import sox
 import json
 
 
-from crypt_keys import ghwor_keys, ghwor_cipher
+from . crypt_keys import ghwor_keys, ghwor_cipher
 from struct import pack as floatPack, unpack as f_up
 from time import gmtime, strftime
 root_folder = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{root_folder}\\..\\")
+sys.path.append(os.path.join(root_folder, ".."))
 from CRC import QBKey
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
@@ -43,27 +43,22 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     # Calculate the required padding
     padding = target_length - duration
 
-    # Set up SoX transform parameters
-    tfm = sox.Transformer()
-    transform_args = ["mp3"]
-    if sample_rate != 48000:
-        transform_args.append(48000)
-    tfm.set_output_format(*transform_args)
-
-    # Add the padding to the input file and convert it to an MP3
-    if padding > 0:
-        tfm.pad(end_duration=padding)
     # Run the sox command, save temp file, and re-read
-    temp_dir = ".\\temp"
-    temp_out = temp_dir + f"\\temp_{file_num}.mp3"
+    temp_dir = os.path.join(".", "temp")
+    temp_out = os.path.join(temp_dir, f"temp_{file_num}.mp3")
 
     try:
         os.mkdir(temp_dir)
     except:
         pass
 
+    sox_command = ["sox", input_file, "-C", "128", "-r", "48000", temp_out]
+    # Add the padding to the input file
+    if padding > 0:
+        sox_command.extend(["pad", "0", str(padding)])
     try:
-        tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
+        subprocess.run(sox_command)
+        #tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
     except Exception as E:
         raise E
 
@@ -75,8 +70,8 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
 def make_preview_sox(start_time, end_time, *args):
 
     # Run the sox command, save temp file, and re-read
-    temp_dir = ".\\temp"
-    temp_out = temp_dir + "\\temp.mp3"
+    temp_dir = os.path.join(".", "temp")
+    temp_out = os.path.join(temp_dir, "temp.mp3")
 
     if os.path.exists(temp_out):
         os.remove(temp_out)
@@ -88,7 +83,7 @@ def make_preview_sox(start_time, end_time, *args):
 
     else:
         for file in os.listdir(temp_dir):
-            audio_list.append(temp_dir + "\\" + file)
+            audio_list.append(os.path.join(temp_dir, file))
 
     extra_args = []
 
@@ -110,7 +105,6 @@ def make_preview_sox(start_time, end_time, *args):
         preview = sox.Transformer()
         audio_list = audio_list[0]
     preview.set_output_format("mp3", 48000)
-
 
     try:
         preview.build(audio_list, temp_out, *extra_args)
@@ -153,9 +147,9 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
     padding = target_length - duration
 
     # Define output file
-    temp_dir = ".\\temp"
-    temp_out = temp_dir + f"\\temp_{file_num}.mp3"
-    silent_file = temp_dir + "\\silent.mp3"
+    temp_dir = os.path.join(".", "temp")
+    temp_out = os.path.join(temp_dir, f"temp_{file_num}.mp3")
+    silent_file = os.path.join(temp_dir, "silent.mp3")
 
     try:
         os.mkdir(temp_dir)
@@ -173,18 +167,18 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
             'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ], check=True)
 
-        with open(f"{temp_dir}\\temp_concat.txt", "w") as f:
+        with open(os.path.join(temp_dir, "temp_concat.txt"), 'w') as f:
             f.write(f"file temp_{file_num}.mp3\n")
             f.write(f"file silent.mp3\n")
 
         # Concatenate the input audio file and the silent audio file
         subprocess.run([
-            'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', f"{temp_dir}\\temp_concat.txt", '-c', 'copy', '-map_metadata', '-1',
+            'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', os.path.join(temp_dir, "temp_concat.txt"), '-c', 'copy', '-map_metadata', '-1',
             temp_out
         ], check=True)
 
-        os.remove(f"{temp_dir}\\temp_concat.txt")
-        os.remove(f"{temp_dir}\\silent.mp3")
+        os.remove(os.path.join(temp_dir, "temp_concat.txt"))
+        os.remove(os.path.join(temp_dir, "silent.txt"))
 
     else:
         # Convert audio to mp3 with 48000 sample rate
@@ -200,8 +194,8 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
 
 def make_preview_ffmpeg(start_time, end_time, *args):
     # Set temp directory and output file
-    temp_dir = ".\\temp"
-    temp_out = temp_dir + "\\temp.mp3"
+    temp_dir = os.path.join(".", "temp")
+    temp_out = os.path.join(temp_dir, "temp.mp3")
 
     if os.path.exists(temp_out):
         os.remove(temp_out)
@@ -835,11 +829,12 @@ def file_renamer(file_name):
 
 
 def main(gh3 = False):
-    dirin = f".\\input"
-    dirout = f".\\output"
+    dirin = os.path.join(".", "input")
+    dirout = os.path.join(".", "output")
+    
     for filename in os.listdir(dirin):
         t0 = time.process_time()
-        with open(f"{dirin}\\{filename}", 'rb') as f:
+        with open(os.path.join(dirin, filename), 'rb') as f:
             audio = f.read()
         if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
             crypted = decrypt_file(audio, filename)
@@ -855,15 +850,16 @@ def main(gh3 = False):
             continue
         t1 = time.process_time()
         fileout = (f"{filename}.xen" if filename.endswith(".fsb") else filename[:-4])
-        with open(f"{dirout}\\{fileout}", 'wb') as f:
+        
+        with open(os.path.join(dirout, fileout), 'wb') as f:
             f.write(crypted)
         print(filename, t1 - t0)
 
     return
 
 def test_make():
-    dirin = f".\\input"
-    dirout = f".\\output"
+    dirin = os.path.join(".", "input")
+    dirout = os.path.join(".", "output")
     song_name = "aqualung"
     files = []
     songs = {}
@@ -879,13 +875,13 @@ def test_make():
     for song_name, song_b in songs.items():
         fsb_file = createFSB4(song_b, song_name)
         # fsb_file = encrypt_wor(fsb_file)
-        with open(f"{dirout}\\{'a' if song_name.startswith('dlc') else ''}{song_name}.fsb.xen", 'wb') as f:
+        with open(os.path.join(dirout, f"{'a' if song_name.startswith('dlc') else ''}{song_name}.fsb.xen"), 'wb') as f:
             f.write(fsb_file)
     return
 
 def test_combine(song_name = "output"):
-    dirin = f".\\input"
-    dirout = f".\\output"
+    dirin = os.path.join(".", "input")
+    dirout = os.path.join(".", "output")
     song_name = song_name
     files = []
     for filename in os.listdir(dirin):
@@ -897,10 +893,10 @@ def test_combine(song_name = "output"):
     drum, inst, other, preview = compile_wt_audio(files, song_name, 0, 0, "no_convert")
     for enum, x in enumerate([drum, inst, other, preview]):
         if enum != 3:
-            with open(f"{dirout}\\{song_name}_{enum+1}.fsb.xen", 'wb') as f:
+            with open(os.path.join(dirout, f"{song_name}_{enum+1}.fsb.xen"), 'wb') as f:
                 f.write(x)
         else:
-            with open(f"{dirout}\\{song_name}_preview.fsb.xen", 'wb') as f:
+            with open(os.path.join(dirout, f"{song_name}_preview.fsb.xen"), 'wb') as f:
                 f.write(x)
     return
 

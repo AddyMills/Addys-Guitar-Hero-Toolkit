@@ -6,7 +6,7 @@ Some logic is done with the designer (such as enabling/disabling certain widgets
 
 from PySide6.QtWidgets import QWidget, QFileDialog, QRadioButton, QDoubleSpinBox, QCheckBox, QLineEdit, QLabel, \
     QComboBox, QSpinBox, QPushButton, QHBoxLayout, QVBoxLayout, QGridLayout, QGroupBox, QMessageBox, QInputDialog
-from project_files.compile_package import Ui_Form as compile_pack
+from . project_files.compile_package import Ui_Form as compile_pack
 from functools import partial
 
 import json
@@ -19,16 +19,18 @@ import traceback
 curr_dir = os.path.dirname(__file__)
 root_dir = os.path.dirname(curr_dir)
 
-if os.path.exists(f"{curr_dir}\\create_audio"):
-    audio_folder = f"{curr_dir}\\create_audio"
+create_audio_dir = os.path.join(curr_dir, "create_audio")
+if os.path.exists(create_audio_dir):
+    audio_folder = create_audio_dir
 else:
-    audio_folder = f"{root_dir}\\create_audio"
+    audio_folder = os.path.join(root_dir, "create_audio")
+    
 sys.path.append(audio_folder)
-import audio_functions as af
+import create_audio.audio_functions as af
 
-midqb_folder = f"{root_dir}\\midqb_gen"
+midqb_folder = os.path.join(root_dir, "midqb_gen")
 sys.path.append(midqb_folder)
-import MidQbGen as mid_gen
+import midqb_gen.MidQbGen as mid_gen
 
 sys.path.append(root_dir)
 from CRC import QBKey, QBKey_qs
@@ -1008,7 +1010,7 @@ class compile_package(QWidget, compile_pack):
         song_name = self.checksum_input.text()
         compile_args = self.set_compile_args(*["gh3"])
         project_folder = os.path.dirname(self.project_file_path.text())
-        save_folder = f"{project_folder}\\gh3_compile"
+        save_folder = os.path.join(project_folder, "gh3_compile")
         try:
             os.mkdir(save_folder)
         except:
@@ -1025,9 +1027,9 @@ class compile_package(QWidget, compile_pack):
             return
         if not "skip_audio" in args:
             audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
-            audio_path = f"{save_folder}\\{song_name}"
+            audio_path = os.path.join(save_folder, song_name)
             af.writeFSB3(audio, dat, audio_path)
-        with open(f"{save_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"{self.checksum_input.text()}_song.pak.xen"), 'wb') as f:
             f.write(song_pak)
         print("Compile complete!")
         return
@@ -1068,7 +1070,7 @@ class compile_package(QWidget, compile_pack):
             traceback.print_exc()
             # raise E
             return
-        with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
+        with open(os.path.join(song_folder, "Content", f"a{song_name}_song.pak.xen"), 'wb') as f:
             f.write(song_pak)
 
         if not "skip_audio" in args:
@@ -1077,10 +1079,10 @@ class compile_package(QWidget, compile_pack):
                 return
             for enum, x in enumerate([drum, inst, other, preview]):
                 if enum != 3:
-                    with open(f"{music_folder}\\{song_name}_{enum + 1}.fsb.xen", 'wb') as f:
+                    with open(os.path.join(music_folder, f"{song_name}_{enum + 1}.fsb.xen"), 'wb') as f:
                         f.write(x)
                 else:
-                    with open(f"{music_folder}\\{song_name}_preview.fsb.xen", 'wb') as f:
+                    with open(os.path.join(music_folder, f"{song_name}_preview.fsb.xen"), 'wb') as f:
                         f.write(x)
         print("Compile complete!")
         return
@@ -1135,7 +1137,7 @@ class compile_package(QWidget, compile_pack):
                                    self.checksum_input.text())
 
         project_folder = os.path.dirname(self.project_file_path.text())
-        save_folder = f"{project_folder}\\{self.checksum_input.text()}_WoR_Files"
+        save_folder = os.path.join(project_folder, f"{self.checksum_input.text()}_WoR_Files")
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
@@ -1150,22 +1152,22 @@ class compile_package(QWidget, compile_pack):
                 return
             for enum, x in enumerate([drum, inst, other, preview]):
                 if enum != 3:
-                    with open(f"{save_folder}\\a{self.checksum_input.text()}_{enum + 1}.fsb.xen", 'wb') as f:
+                    with open(os.path.join(save_folder, f"a{self.checksum_input.text()}_{enum + 1}.fsb.xen"), 'wb') as f:
                         f.write(x)
                 else:
-                    with open(f"{save_folder}\\a{self.checksum_input.text()}_preview.fsb.xen", 'wb') as f:
+                    with open(os.path.join(save_folder, f"a{self.checksum_input.text()}_preview.fsb.xen"), 'wb') as f:
                         f.write(x)
         print("Compile complete!")
 
         dl_num = self.checksum_input.text()[3:]
 
-        with open(f"{save_folder}\\cmanifest_{cmanifest}.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cmanifest_{cmanifest}.pak.xen"), 'wb') as f:
             f.write(manifest_pak)
-        with open(f"{save_folder}\\cdl{dl_num}.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cdl{dl_num}.pak.xen"), 'wb') as f:
             f.write(cdl_pak)
-        with open(f"{save_folder}\\cdl{dl_num}_text.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cdl{dl_num}_text.pak.xen"), 'wb') as f:
             f.write(cdl_text_pak)
-        with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"b{self.checksum_input.text()}_song.pak.xen"), 'wb') as f:
             f.write(wor_pak)
         return
 
