@@ -43,16 +43,6 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     # Calculate the required padding
     padding = target_length - duration
 
-    # Set up SoX transform parameters
-    tfm = sox.Transformer()
-    transform_args = ["mp3"]
-    if sample_rate != 48000:
-        transform_args.append(48000)
-    tfm.set_output_format(*transform_args)
-
-    # Add the padding to the input file and convert it to an MP3
-    if padding > 0:
-        tfm.pad(end_duration=padding)
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
     temp_out = temp_dir + f"\\temp_{file_num}.mp3"
@@ -62,8 +52,13 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     except:
         pass
 
+    sox_command = ["sox", input_file, "-C", "128", "-r", "48000", temp_out]
+    # Add the padding to the input file
+    if padding > 0:
+        sox_command.extend(["pad", "0", str(padding)])
     try:
-        tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
+        subprocess.run(sox_command)
+        #tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
     except Exception as E:
         raise E
 
@@ -110,7 +105,6 @@ def make_preview_sox(start_time, end_time, *args):
         preview = sox.Transformer()
         audio_list = audio_list[0]
     preview.set_output_format("mp3", 48000)
-
 
     try:
         preview.build(audio_list, temp_out, *extra_args)
