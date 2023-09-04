@@ -3579,7 +3579,7 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
                 e_note = int(e_bin[8:16], 2)
                 e_vel = int(e_bin[:8], 2)
                 if "drums" in x.section_id:
-                    if e_note < 85:
+                    if e_note < 69:
                         e_note = mid_qb.drumKeyMapRB_wt[mid_qb.wor_to_rb_drums[e_note]]
                         e_prac = mid_qb.AnimNoteWT(t, e_note-13, e_vel, e_len)
                         if t in anim_notes[to_add]:
