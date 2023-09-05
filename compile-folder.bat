@@ -1,9 +1,9 @@
-pyinstaller -p "D:\GitHub\Guitar-Hero-III-Tools\create_audio" ^
--p D:\GitHub\Guitar-Hero-III-Tools\midqb_gen ^
--p D:\GitHub\Guitar-Hero-III-Tools\pak_extract ^
--p D:\GitHub\Guitar-Hero-III-Tools\ska_converter ^
--p D:\GitHub\Guitar-Hero-III-Tools ^
--p "D:\GitHub\Guitar-Hero-III-Tools\gui" ^
+pyinstaller -p ".\create_audio" ^
+-p .\midqb_gen ^
+-p .\pak_extract ^
+-p .\ska_converter ^
+-p . ^
+-p ".\gui" ^
 --add-data "anim_loops.txt;." ^
 --add-data "debug.txt;." ^
 --add-data "conversion_files_prod;conversion_files" ^
