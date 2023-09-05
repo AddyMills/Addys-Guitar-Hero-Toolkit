@@ -607,8 +607,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     end_event_secs, end_event_ticks = process_text_event(x, markers, time, time_sec)
                     if end_event_secs and end_event_ticks:
                         continue
-            elif re.search(track.name, venue_track, flags=re.IGNORECASE):
-                track.name = track.name.upper()
+            elif re.search(track.name, rf'{venue_track}|cameras_wt', flags=re.IGNORECASE):
+                if track.name == "cameras_wt":
+                    track.name = "CAMERAS"
+                else:
+                    track.name = track.name.upper()
                 valid_check = valid_anims[track.name]
                 if x.type == "note_on" or x.type == "note_off":
                     if x.note in valid_check:
