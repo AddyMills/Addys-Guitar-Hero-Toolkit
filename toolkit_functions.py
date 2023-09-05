@@ -3567,6 +3567,8 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
                 to_add = "CROWD"
             elif "lightshow" in x.section_id:
                 to_add = "LIGHTSHOW"
+            elif "cameras" in x.section_id:
+                continue
             else:
                 input(f"Unknown track {x.section_id} found. Enter to continue.")
                 continue
@@ -3579,7 +3581,7 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
                 e_note = int(e_bin[8:16], 2)
                 e_vel = int(e_bin[:8], 2)
                 if "drums" in x.section_id:
-                    if e_note < 69:
+                    if e_note <= 59:
                         e_note = mid_qb.drumKeyMapRB_wt[mid_qb.wor_to_rb_drums[e_note]]
                         e_prac = mid_qb.AnimNoteWT(t, e_note-13, e_vel, e_len)
                         if t in anim_notes[to_add]:
@@ -3602,6 +3604,8 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
                             anim_notes[to_add][t].append(e_prac)
                         else:
                             anim_notes[to_add][t] = [e_prac]
+                    elif e_note in range(60,84):
+                        pass
                     else:
                         continue
                 e_anim = mid_qb.AnimNoteWT(t, e_note, e_vel, e_len)
@@ -3645,8 +3649,19 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
                         gh6_anims.append(loops)
         compile_args.extend(["add_loops", gh6_anims])
     else:
-        input("Contact me for gh5 loops!")
-        raise Exception
+        anim_structs.pop("type")
+        for x in anim_structs.keys():
+            struct_string += f"{x}" + " = {\n"
+            for structs in anim_structs[x].keys():
+                struct_string += "\t" + f"{structs}" + " = {\n"
+                for anims in anim_structs[x][structs].keys():
+                    struct_string += "\t\t" + f"{anims}" + f" = {anim_structs[x][structs][anims]}" + "\n"
+                struct_string += "\t}\n"
+            struct_string += "}\n"
+        scripts_override = struct_string
+        if perf_clips:
+            scripts_override += perf_clips
+
     if scripts_override:
         compile_args.extend(["song_script", scripts_override])
     if ska_override:
