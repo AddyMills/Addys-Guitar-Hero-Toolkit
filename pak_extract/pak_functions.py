@@ -21,7 +21,7 @@ def round_time(entry):
     elif time_trunc == 99:
         new_time = entry + 1
     elif time_trunc == 1:
-        new_time = int(str(entry)[:-2] + str(00))
+        new_time = int(str(entry)[:-2] + "00")
     elif time_trunc <= 34:
         new_time = int(str(entry)[:-2] + str(33))
     elif time_trunc <= 68:

@@ -1020,7 +1020,7 @@ class compile_package(QWidget, compile_pack):
         try:
             song_pak = mid_gen.make_mid(*compile_args)[0]
         except Exception as E:
-            raise E
+            # raise E
             traceback.print_exc()
             return
         if not "skip_audio" in args:
@@ -1066,7 +1066,7 @@ class compile_package(QWidget, compile_pack):
             song_pak, xplus_pak = mid_gen.make_mid(*compile_args)
         except Exception as E:
             traceback.print_exc()
-            # raise E
+            raise E
             return
         with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
             f.write(song_pak)

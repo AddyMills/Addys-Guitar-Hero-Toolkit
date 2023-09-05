@@ -52,7 +52,7 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     except:
         pass
 
-    sox_command = ["sox", input_file, "-C", "128", "-r", "48000", temp_out]
+    sox_command = ["sox", input_file, "-c", "2", "-C", "128", "-r", "48000", temp_out]
     # Add the padding to the input file
     if padding > 0:
         sox_command.extend(["pad", "0", str(padding)])
@@ -158,32 +158,16 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
 
     if padding > 0:
         # Use FFmpeg to add silence to the end of the audio
-        subprocess.run([
-            'ffmpeg', '-y', '-f', 'lavfi', '-i', f'anullsrc=r=48000:cl=stereo:d={padding}',
-            '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', silent_file
-        ], check=True)
 
         subprocess.run([
-            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-ac', '2', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ], check=True)
 
-        with open(f"{temp_dir}\\temp_concat.txt", "w") as f:
-            f.write(f"file temp_{file_num}.mp3\n")
-            f.write(f"file silent.mp3\n")
-
-        # Concatenate the input audio file and the silent audio file
-        subprocess.run([
-            'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', f"{temp_dir}\\temp_concat.txt", '-c', 'copy', '-map_metadata', '-1',
-            temp_out
-        ], check=True)
-
-        os.remove(f"{temp_dir}\\temp_concat.txt")
-        os.remove(f"{temp_dir}\\silent.mp3")
 
     else:
         # Convert audio to mp3 with 48000 sample rate
         subprocess.run([
-            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-ac', '2', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ], check=True)
 
     # Read the padded mp3 file
@@ -232,7 +216,7 @@ def make_preview_ffmpeg(start_time, end_time, *args):
     else:
         # Add the rest of the command without filters
         command.extend([
-            '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+            '-ac', '2', '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ])
 
     try:
@@ -907,6 +891,13 @@ if __name__ == "__main__":
             test_combine(song_name)
         elif sys.argv[1] == "make":
             test_make()
+        elif sys.argv[1] == "header":
+            with open(sys.argv[2], 'rb') as f:
+                headerFile = f.read()[:4]
+            header = parseMP3header("{:08b}".format(int(headerFile.hex(), 16)))
+
+            for k, v in header.items():
+                print(k, v)
     else:
         main()
     #test_combine()
