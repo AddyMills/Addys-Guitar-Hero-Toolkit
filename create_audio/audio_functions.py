@@ -7,6 +7,7 @@ import shutil
 import sox
 import json
 
+import strip_mp3_padding as pad_strip
 
 from crypt_keys import ghwor_keys, ghwor_cipher
 from struct import pack as floatPack, unpack as f_up
@@ -810,34 +811,38 @@ def file_renamer(file_name):
         file_name = file_name[1:]
     return file_name
 
-
+def crypt_files(dirin, filename, gh3 = False):
+    t0 = time.process_time()
+    with open(f"{dirin}\\{filename}", 'rb') as f:
+        audio = f.read()
+    if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
+        crypted = decrypt_file(audio, filename)
+    elif filename.endswith(".fsb"):
+        if gh3:
+            crypted = encrypt_fsb3(audio)
+        else:
+            no_ext = file_renamer(os.path.basename(filename[:-4]).lower())
+            key = generate_fsb_key(no_ext)
+            crypted = encrypt_fsb4(audio, key)
+    else:
+        print(f"Unknown file {filename} found, skipping...")
+        return 0, 0
+    t1 = time.process_time()
+    fileout = (f"{filename}.xen" if filename.endswith(".fsb") else filename[:-4])
+    print(filename, t1 - t0)
+    return crypted, fileout
 
 def main(gh3 = False):
     dirin = f".\\input"
     dirout = f".\\output"
     for filename in os.listdir(dirin):
-        t0 = time.process_time()
-        with open(f"{dirin}\\{filename}", 'rb') as f:
-            audio = f.read()
-        if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
-            crypted = decrypt_file(audio, filename)
-        elif filename.endswith(".fsb"):
-            if gh3:
-                crypted = encrypt_fsb3(audio)
-            else:
-                no_ext = file_renamer(os.path.basename(filename[:-4]).lower())
-                key = generate_fsb_key(no_ext)
-                crypted = encrypt_fsb4(audio, key)
-        else:
-            print(f"Unknown file {filename} found, skipping...")
-            continue
-        t1 = time.process_time()
-        fileout = (f"{filename}.xen" if filename.endswith(".fsb") else filename[:-4])
-        with open(f"{dirout}\\{fileout}", 'wb') as f:
+      crypted, fileout = crypt_files(dirin, filename, gh3)
+      with open(f"{dirout}\\{fileout}", 'wb') as f:
             f.write(crypted)
-        print(filename, t1 - t0)
-
     return
+
+def strip_mp3(in_folder):
+    pad_strip.main(in_folder)
 
 def test_make():
     dirin = f".\\input"
@@ -861,9 +866,7 @@ def test_make():
             f.write(fsb_file)
     return
 
-def test_combine(song_name = "output"):
-    dirin = f".\\input"
-    dirout = f".\\output"
+def test_combine(song_name = "output", dirin = ".\\input", dirout = ".\\output"):
     song_name = song_name
     files = []
     for filename in os.listdir(dirin):
