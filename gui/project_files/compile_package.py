@@ -1700,7 +1700,7 @@ class Ui_Form(object):
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(3)
+        self.compile_tabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1879,7 +1879,7 @@ class Ui_Form(object):
         self.beat_8th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
         self.hopo_mode_label.setText(QCoreApplication.translate("Form", u"HOPO Mode", None))
         self.hopo_mode_select.setItemText(0, QCoreApplication.translate("Form", u"Rock Band", None))
-        self.hopo_mode_select.setItemText(1, QCoreApplication.translate("Form", u"HMX/NS Hybrid", None))
+        self.hopo_mode_select.setItemText(1, QCoreApplication.translate("Form", u"Moonscraper", None))
         self.hopo_mode_select.setItemText(2, QCoreApplication.translate("Form", u"Guitar Hero 3", None))
         self.hopo_mode_select.setItemText(3, QCoreApplication.translate("Form", u"Guitar Hero World Tour+", None))
 

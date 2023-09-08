@@ -982,7 +982,7 @@ class compile_package(QWidget, compile_pack):
             elif "ghwt" in args and os.path.exists(self.ghwt_preview_audio_input.text()):
                 compile_args += ["rendered_preview", self.ghwt_preview_audio_input.text()]
             else:
-                print("Rendered preview audio selected, but file is not found. Creating basic preview.")
+                print("Rendered preview audio selected, but file is not found. Creating preview based on time.")
 
         hopo_mode = self.hopo_mode_select.currentText()
         if hopo_mode == "Guitar Hero 3":
@@ -1057,7 +1057,7 @@ class compile_package(QWidget, compile_pack):
         with open(f"{song_folder}/song.ini", "w") as f:
             ini.write(f, space_around_delimiters=False)
 
-        compile_args = self.set_compile_args(*["ghwt", "wtde"])
+        compile_args = self.set_compile_args(*["ghwt", "wtde", "gh5_mode"])
 
         if not compile_args:
             return
@@ -1066,7 +1066,7 @@ class compile_package(QWidget, compile_pack):
             song_pak, xplus_pak = mid_gen.make_mid(*compile_args)
         except Exception as E:
             traceback.print_exc()
-            # raise E
+            raise E
             return
         with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
             f.write(song_pak)

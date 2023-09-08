@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>5</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -2232,7 +2232,7 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>HMX/NS Hybrid</string>
+                     <string>Moonscraper</string>
                     </property>
                    </item>
                    <item>
