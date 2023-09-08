@@ -112,6 +112,7 @@ def manual_input():
                 with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                     f.write(song_pak)
                 input("Convert complete! Press Enter to continue. ")
+
             elif main_menu == "convert_to_5" or main_menu == "convert_to_ghwor":
                 compile_args = []
                 if main_menu == "convert_to_ghwor":
