@@ -7,6 +7,7 @@ import shutil
 import sox
 import json
 
+import strip_mp3_padding as pad_strip
 
 from crypt_keys import ghwor_keys, ghwor_cipher
 from struct import pack as floatPack, unpack as f_up
@@ -43,16 +44,6 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     # Calculate the required padding
     padding = target_length - duration
 
-    # Set up SoX transform parameters
-    tfm = sox.Transformer()
-    transform_args = ["mp3"]
-    if sample_rate != 48000:
-        transform_args.append(48000)
-    tfm.set_output_format(*transform_args)
-
-    # Add the padding to the input file and convert it to an MP3
-    if padding > 0:
-        tfm.pad(end_duration=padding)
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
     temp_out = temp_dir + f"\\temp_{file_num}.mp3"
@@ -62,8 +53,13 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
     except:
         pass
 
+    sox_command = ["sox", input_file, "-c", "2", "-C", "128", "-r", "48000", temp_out]
+    # Add the padding to the input file
+    if padding > 0:
+        sox_command.extend(["pad", "0", str(padding)])
     try:
-        tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
+        subprocess.run(sox_command)
+        #tfm.build_file(input_filepath=input_file, output_filepath=temp_out)
     except Exception as E:
         raise E
 
@@ -72,7 +68,7 @@ def pad_wav_file_sox(input_file, target_length, file_num = 0):
 
     return padded_mp3_data
 
-def make_preview_sox(start_time, end_time):
+def make_preview_sox(start_time, end_time, *args):
 
     # Run the sox command, save temp file, and re-read
     temp_dir = ".\\temp"
@@ -82,24 +78,34 @@ def make_preview_sox(start_time, end_time):
         os.remove(temp_out)
 
     audio_list = []
-    for file in os.listdir(temp_dir):
-        audio_list.append(temp_dir + "\\" + file)
+    if "rendered_preview" in args:
+        print("Converting custom preview audio")
+        audio_list.append(args[args.index("rendered_preview") + 1])
+
+    else:
+        for file in os.listdir(temp_dir):
+            audio_list.append(temp_dir + "\\" + file)
 
     extra_args = []
-    # Create SoX Combiner
-    if len(audio_list) == 1:
-        preview = sox.Transformer()
-        preview.set_input_format("mp3")
-        audio_list = audio_list[0]
-    else:
-        preview = sox.Combiner()
-        preview.set_input_format(["mp3"] * len(audio_list))
-        extra_args.append("mix")
-    preview.set_output_format("mp3", 48000)
-    preview.trim(start_time, end_time)
-    preview.fade(1.0, 1.0)
-    preview.vol(-7.0, "db")
 
+    # Create SoX Combiner
+    if "rendered_preview" not in args:
+        if len(audio_list) == 1:
+            preview = sox.Transformer()
+            preview.set_input_format("mp3")
+            audio_list = audio_list[0]
+        else:
+            preview = sox.Combiner()
+            preview.set_input_format(["mp3"] * len(audio_list))
+            extra_args.append("mix")
+
+        preview.trim(start_time, end_time)
+        preview.fade(1.0, 1.0)
+        preview.vol(-7.0, "db")
+    else:
+        preview = sox.Transformer()
+        audio_list = audio_list[0]
+    preview.set_output_format("mp3", 48000)
 
     try:
         preview.build(audio_list, temp_out, *extra_args)
@@ -153,32 +159,16 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
 
     if padding > 0:
         # Use FFmpeg to add silence to the end of the audio
-        subprocess.run([
-            'ffmpeg', '-y', '-f', 'lavfi', '-i', f'anullsrc=r=48000:cl=stereo:d={padding}',
-            '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', silent_file
-        ], check=True)
 
         subprocess.run([
-            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-ac', '2', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ], check=True)
 
-        with open(f"{temp_dir}\\temp_concat.txt", "w") as f:
-            f.write(f"file temp_{file_num}.mp3\n")
-            f.write(f"file silent.mp3\n")
-
-        # Concatenate the input audio file and the silent audio file
-        subprocess.run([
-            'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', f"{temp_dir}\\temp_concat.txt", '-c', 'copy', '-map_metadata', '-1',
-            temp_out
-        ], check=True)
-
-        os.remove(f"{temp_dir}\\temp_concat.txt")
-        os.remove(f"{temp_dir}\\silent.mp3")
 
     else:
         # Convert audio to mp3 with 48000 sample rate
         subprocess.run([
-            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+            'ffmpeg', '-y', '-i', input_file, '-ar', '48000', '-ac', '2', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
         ], check=True)
 
     # Read the padded mp3 file
@@ -187,7 +177,7 @@ def pad_wav_file_ffmpeg(input_file, target_length, file_num=0):
 
     return padded_mp3_data
 
-def make_preview_ffmpeg(start_time, end_time):
+def make_preview_ffmpeg(start_time, end_time, *args):
     # Set temp directory and output file
     temp_dir = ".\\temp"
     temp_out = temp_dir + "\\temp.mp3"
@@ -196,17 +186,11 @@ def make_preview_ffmpeg(start_time, end_time):
         os.remove(temp_out)
 
     # Get a list of all audio files in temp directory
-    audio_list = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir)]
-
-    trim_duration = end_time - start_time
-    fade_duration = 1.0
-
-    # Build filtergraph for mixing and trimming audio
-    mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2:normalize=0[mixout]'
-    # trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
-    trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:st={start_time}:d=1,afade=t=out:st={start_time+trim_duration - 1}:d=1,volume=-7.0dB[final]'
-    #trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:ss=0:d={fade_duration},afade=t=out:st={trim_duration-fade_duration}:d={fade_duration}[final]'
-    filtergraph = mix_filter + ';' + trim_filter
+    if "rendered_preview" in args:
+        print("Using custom preview audio")
+        audio_list = [args[args.index("rendered_preview") + 1]]
+    else:
+        audio_list = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir)]
 
     command = ['ffmpeg']
 
@@ -214,11 +198,27 @@ def make_preview_ffmpeg(start_time, end_time):
     for audio_file in audio_list:
         command.extend(['-i', audio_file])
 
-    # Add the rest of the command
-    command.extend([
-        '-filter_complex', filtergraph, '-map', '[final]',
-        '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
-    ])
+    if "rendered_preview" not in args:
+        trim_duration = end_time - start_time
+        fade_duration = 1.0
+
+        # Build filtergraph for mixing and trimming audio
+        mix_filter = ''.join([f'[{i}:0]' for i in range(len(audio_list))]) + f'amix=inputs={len(audio_list)}:duration=first:dropout_transition=2:normalize=0[mixout]'
+        # trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration}[final]'
+        trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:st={start_time}:d=1,afade=t=out:st={start_time+trim_duration - 1}:d=1,volume=-7.0dB[final]'
+        #trim_filter = f'[mixout]atrim=start={start_time}:duration={trim_duration},afade=t=in:ss=0:d={fade_duration},afade=t=out:st={trim_duration-fade_duration}:d={fade_duration}[final]'
+        filtergraph = mix_filter + ';' + trim_filter
+
+        # Add the rest of the command
+        command.extend([
+            '-filter_complex', filtergraph, '-map', '[final]',
+            '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+        ])
+    else:
+        # Add the rest of the command without filters
+        command.extend([
+            '-ac', '2', '-ar', '48000', '-acodec', 'libmp3lame', '-b:a', '128k', '-map_metadata', '-1', temp_out
+        ])
 
     try:
         # Run FFmpeg command
@@ -237,58 +237,70 @@ def make_preview_ffmpeg(start_time, end_time):
 def is_program_in_path(program_name):
     return shutil.which(program_name) is not None
 
-def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args):
+def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
     # Get the maximum length
+    max_length = 0
+    if not "audio_len" in args:
+        print("Converting all files to MP3 and padding to the longest")
+    if "no_convert" in args:
+        padded_mp3_data_list = []
+        for enum, input_file in enumerate(all_audio):
+            with open(input_file, 'rb') as f:
+                padded_mp3_data_list.append(f.read())
+        preview = padded_mp3_data_list[-1]
+        padded_mp3_data_list.pop()
+    else:
+        if is_program_in_path("sox") and "ffmpeg" not in args:
+            for input_file in all_audio:
+                duration = get_audio_duration_sox(input_file)
+                max_length = max(max_length, duration)
+            if "audio_len" in args:
+                return max_length
+            print("Using SoX to convert")
+            # Pad each input file and store the output in a list
+            print(f"Padding all files to match the longest file ({strftime('%M:%S', gmtime(max_length))})")
+            # Pad each input file and store the output in a list
+            padded_mp3_data_list = []
+            for enum, input_file in enumerate(all_audio):
+                if input_file.endswith("default_audio/blank.mp3"):
+                    with open(input_file, 'rb') as f:
+                        padded_mp3_data_list.append(f.read())
+                else:
+                    padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
+            preview = make_preview_sox(start_time, end_time, *args)
+        elif is_program_in_path("ffmpeg"):
+            for input_file in all_audio:
+                duration = get_audio_duration_ffmpeg(input_file)
+                max_length = max(max_length, duration)
+            if "audio_len" in args:
+                return max_length
+            print("Using FFmpeg to convert")
+            # Pad each input file and store the output in a list
+            padded_mp3_data_list = []
+            for enum, input_file in enumerate(all_audio):
+                if input_file.endswith("default_audio/blank.mp3"):
+                    with open(input_file, 'rb') as f:
+                        padded_mp3_data_list.append(f.read())
+                else:
+                    padded_mp3_data_list.append(pad_wav_file_ffmpeg(input_file, max_length, enum))
+            preview = make_preview_ffmpeg(start_time, end_time, *args)
+        elif "ffmpeg" in args:
+            print("FFmpeg was asked to use, but cannot find it in PATH")
+            return 0
+        else:
+            print("Could not find ffmpeg or SoX in PATH")
+            return 0
+    stream_size = 0
+    for x in padded_mp3_data_list:
+        stream_size = max(len(pullMP3Frames(x)[0]), stream_size)
+    return padded_mp3_data_list, preview, stream_size
+
+def compile_wt_audio(all_audio, shortname, start_time, end_time, *args):
     time_0 = time.time()
     encrypt = False
     if "encrypt" in args:
         encrypt = True
-    max_length = 0
-    if not "audio_len" in args:
-        print("Converting all files to MP3 and padding to the longest")
-    if is_program_in_path("sox") and "ffmpeg" not in args:
-        for input_file in all_audio:
-            duration = get_audio_duration_sox(input_file)
-            max_length = max(max_length, duration)
-        if "audio_len" in args:
-            return max_length
-        print("Using SoX to convert")
-        # Pad each input file and store the output in a list
-        print(f"Padding all files to match the longest file ({strftime('%M:%S', gmtime(max_length))})")
-        # Pad each input file and store the output in a list
-        padded_mp3_data_list = []
-        for enum, input_file in enumerate(all_audio):
-            if input_file.endswith("default_audio/blank.mp3"):
-                with open(input_file, 'rb') as f:
-                    padded_mp3_data_list.append(f.read())
-            else:
-                padded_mp3_data_list.append(pad_wav_file_sox(input_file, max_length, enum))
-        preview = make_preview_sox(start_time, end_time)
-    elif is_program_in_path("ffmpeg"):
-        for input_file in all_audio:
-            duration = get_audio_duration_ffmpeg(input_file)
-            max_length = max(max_length, duration)
-        if "audio_len" in args:
-            return max_length
-        print("Using FFmpeg to convert")
-        # Pad each input file and store the output in a list
-        padded_mp3_data_list = []
-        for enum, input_file in enumerate(all_audio):
-            if input_file.endswith("default_audio/blank.mp3"):
-                with open(input_file, 'rb') as f:
-                    padded_mp3_data_list.append(f.read())
-            else:
-                padded_mp3_data_list.append(pad_wav_file_ffmpeg(input_file, max_length, enum))
-        preview = make_preview_ffmpeg(start_time, end_time)
-    elif "ffmpeg" in args:
-        print("FFmpeg was asked to use, but cannot find it in PATH")
-        return 0
-    else:
-        print("Could not find ffmpeg or SoX in PATH")
-        return 0
-    stream_size = 0
-    for x in padded_mp3_data_list:
-        stream_size = max(len(pullMP3Frames(x)[0]), stream_size)
+    padded_mp3_data_list, preview, stream_size = get_padded_audio(all_audio, start_time, end_time, *args)
     extra_args = ["-stream_size", stream_size]
     print("Creating Drum Audio")
     drum_files = createFSB4(padded_mp3_data_list[:4], f"{shortname}_1", encrypt, *extra_args)
@@ -303,6 +315,23 @@ def get_padded_audio(all_audio, shortname, start_time = 30, end_time = 60, *args
     print(f"Audio generation took {time_1-time_0} seconds")
     return drum_files, inst_files, song_files, preview
 
+def compile_gh3_audio(all_audio, shortname, start_time, end_time, *args):
+    time_0 = time.time()
+    audio_names = []
+    audio_paths = []
+    for key,value in all_audio.items():
+        audio_names.append(key)
+        audio_paths.append(value)
+    padded_mp3_data_list, preview, stream_size = get_padded_audio(audio_paths, start_time, end_time, *args)
+    padded_mp3_data_list.append(preview)
+    audio_names.append("preview")
+    extra_args = ["-stream_size", stream_size, "compiler"]
+    print("Creating Audio")
+    fsb_file, fsb_dat = createFSB3(padded_mp3_data_list, f"{shortname}", *extra_args, audio_names = audio_names)
+    time_1 = time.time()
+
+    print(f"Audio generation took {time_1 - time_0} seconds")
+    return fsb_file, fsb_dat
 def flipBits(audio):
     return bytes(br[x] for x in audio)
 
@@ -571,10 +600,10 @@ def pullMP3Frames(audio):
         position += to_pull
     return frames, first_frame
 
-def FSBentry(data, filename):
+def FSBentry(data, filename, *args):
     filesize = len(data)
     frameSize = 1152
-    frames = len(pullMP3Frames(data))
+    frames = len(pullMP3Frames(data)[0])
     file_entry_len = 80
     fsb_file = bytes(filename if len(filename) <= 30 else filename[:30], "latin-1")
     while len(fsb_file) < 30:
@@ -583,7 +612,10 @@ def FSBentry(data, filename):
     loop_start = 0
     loop_end = samples_length - 1
     mode = 576
-    sample_rate = 44100
+    if "compiler" in args:
+        sample_rate = 48000
+    else:
+        sample_rate = 44100
     volume, priority = 255, 255
     pan = 128
     channels = 2
@@ -610,17 +642,27 @@ def FSBentry(data, filename):
 
     return fsb_entry
 
-def createFSB3(file, shortname):
+def createFSB3(files, shortname, *args, **kwargs):
     headers = []
     audio = bytearray()
     dat_entries = []
-    for x in file:
-        audio_name = f"{shortname}_{os.path.basename(x)}"
-        with open(x, 'rb') as f:
-            audio_data = f.read()
-        headers.append(FSBentry(audio_data, audio_name)[0])
-        dat_entries.append(os.path.splitext(audio_name)[0])
-        audio += audio_data
+    if type(files) == list:
+        for y, x in enumerate(files):
+            if type(x) == str:
+                audio_name = f"{shortname}_{os.path.basename(x)}"
+                with open(x, 'rb') as f:
+                    audio_data = f.read()
+            else:
+                stream_frames, temp_frame = pullMP3Frames(x)
+                audio_name = f"{shortname}_{kwargs['audio_names'][y]}"
+                if "-stream_size" in args and not audio_name.endswith("preview"):
+                    stream_length = int(args[args.index("-stream_size") + 1])
+                    if len(stream_frames) != stream_length:
+                        stream_frames.extend([blank_48k_mp3] * (stream_length - len(stream_frames)))
+                audio_data = b''.join(stream_frames)
+            audio += audio_data
+            headers.append(FSBentry(audio_data, audio_name, *args))
+            dat_entries.append(os.path.splitext(audio_name)[0])
     print(dat_entries)
     fsb_file = bytearray()
     fsb_file += b'FSB3' # FSB3 header
@@ -643,12 +685,15 @@ def createFSB3(file, shortname):
         fsb_dat += toBytes(y, 4, "big")
         fsb_dat += toBytes(0, 12)
 
-    raise Exception
-    with open(f"{shortname}.fsb.xen", 'wb') as f:
+        # print(binascii.hexlify(fsb_dat, ' ', 1))
+    return fsb_file, fsb_dat
+
+def writeFSB3(fsb_file, fsb_dat, filepath):
+    print("Encrypting FSB file.")
+    with open(f"{filepath}.fsb.xen", 'wb') as f:
         f.write(encrypt_fsb3(fsb_file))
-    with open(f"{shortname}.dat.xen", 'wb') as f:
+    with open(f"{filepath}.dat.xen", 'wb') as f:
         f.write(fsb_dat)
-    # print(binascii.hexlify(fsb_dat, ' ', 1))
     return
 
 def splitFSBFrames(audio):
@@ -766,39 +811,43 @@ def file_renamer(file_name):
         file_name = file_name[1:]
     return file_name
 
-
+def crypt_files(dirin, filename, gh3 = False):
+    t0 = time.process_time()
+    with open(f"{dirin}\\{filename}", 'rb') as f:
+        audio = f.read()
+    if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
+        crypted = decrypt_file(audio, filename)
+    elif filename.endswith(".fsb"):
+        if gh3:
+            crypted = encrypt_fsb3(audio)
+        else:
+            no_ext = file_renamer(os.path.basename(filename[:-4]).lower())
+            key = generate_fsb_key(no_ext)
+            crypted = encrypt_fsb4(audio, key)
+    else:
+        print(f"Unknown file {filename} found, skipping...")
+        return 0, 0
+    t1 = time.process_time()
+    fileout = (f"{filename}.xen" if filename.endswith(".fsb") else filename[:-4])
+    print(filename, t1 - t0)
+    return crypted, fileout
 
 def main(gh3 = False):
     dirin = f".\\input"
     dirout = f".\\output"
     for filename in os.listdir(dirin):
-        t0 = time.process_time()
-        with open(f"{dirin}\\{filename}", 'rb') as f:
-            audio = f.read()
-        if filename.lower().endswith(".fsb.xen") or filename.lower().endswith(".fsb.ps3"):
-            crypted = decrypt_file(audio, filename)
-        elif filename.endswith(".fsb"):
-            if gh3:
-                crypted = encrypt_fsb3(audio)
-            else:
-                no_ext = file_renamer(os.path.basename(filename[:-4]).lower())
-                key = generate_fsb_key(no_ext)
-                crypted = encrypt_fsb4(audio, key)
-        else:
-            print(f"Unknown file {filename} found, skipping...")
-            continue
-        t1 = time.process_time()
-        fileout = (f"{filename}.xen" if filename.endswith(".fsb") else filename[:-4])
-        with open(f"{dirout}\\{fileout}", 'wb') as f:
+      crypted, fileout = crypt_files(dirin, filename, gh3)
+      with open(f"{dirout}\\{fileout}", 'wb') as f:
             f.write(crypted)
-        print(filename, t1 - t0)
-
     return
+
+def strip_mp3(in_folder):
+    pad_strip.main(in_folder)
 
 def test_make():
     dirin = f".\\input"
     dirout = f".\\output"
-    song_name = ""
+    song_name = "aqualung"
     files = []
     songs = {}
     for filename in os.listdir(dirin):
@@ -817,14 +866,16 @@ def test_make():
             f.write(fsb_file)
     return
 
-def test_combine():
-    dirin = f".\\input"
-    dirout = f".\\output"
-    song_name = "test"
+def test_combine(song_name = "output", dirin = ".\\input", dirout = ".\\output"):
+    song_name = song_name
     files = []
     for filename in os.listdir(dirin):
-        files.append(f"{os.path.join(dirin,filename)}")
-    drum, inst, other, preview = get_padded_audio(files, song_name)
+        if filename.endswith(".mp3"):
+            files.append(f"{os.path.join(dirin,filename)}")
+    if not len(files) == 10:
+        print(f"Not enough files found. Found {len(files)}, expected 10.")
+        return
+    drum, inst, other, preview = compile_wt_audio(files, song_name, 0, 0, "no_convert")
     for enum, x in enumerate([drum, inst, other, preview]):
         if enum != 3:
             with open(f"{dirout}\\{song_name}_{enum+1}.fsb.xen", 'wb') as f:
@@ -837,7 +888,21 @@ def test_combine():
  # Playable:
  # Preview: sox -m D:\RB\Songs\Pleymo\Sept\GH3\Guitar.wav D:\RB\Songs\Pleymo\Sept\GH3\Bass.wav D:\RB\Songs\Pleymo\Sept\GH3\Backing.wav -C 128 output.mp3 trim 0:35 1:05
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "combine":
+            song_name = input("Enter the checksum for this song: ")
+            test_combine(song_name)
+        elif sys.argv[1] == "make":
+            test_make()
+        elif sys.argv[1] == "header":
+            with open(sys.argv[2], 'rb') as f:
+                headerFile = f.read()[:4]
+            header = parseMP3header("{:08b}".format(int(headerFile.hex(), 16)))
+
+            for k, v in header.items():
+                print(k, v)
+    else:
+        main()
     #test_combine()
     #test_make()
 

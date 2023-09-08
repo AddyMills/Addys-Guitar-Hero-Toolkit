@@ -592,12 +592,26 @@ def make_modern_ska(ska, game = "GH5", *args, **kwargs):
 
     total_size = len(quat_data) + len(trans_data) + len(block_sizes) + len(partial_anim) + len(custom_keys) + 256
     quat_pos = 256
-    custom_key_pos = (total_size - len(custom_keys)) if custom_keys else NO_OFF
-    partial_anim_offset = (total_size - len(partial_anim)) if partial_anim else NO_OFF
+    to_move_back = 0
+    if custom_keys:
+        custom_key_pos = total_size
+        if partial_anim:
+            custom_key_pos -= len(partial_anim)
+        custom_key_pos -= len(custom_keys)
+        to_move_back += len(custom_keys)
+    else:
+        custom_key_pos = NO_OFF
+
+    if partial_anim:
+        partial_anim_offset = total_size - len(partial_anim)
+        to_move_back += len(partial_anim)
+    else:
+        partial_anim_offset = NO_OFF
+
     if all([custom_key_pos == NO_OFF, partial_anim_offset == NO_OFF]):
         bone_start = total_size
     else:
-        bone_start = custom_key_pos if partial_anim_offset == NO_OFF else partial_anim_offset
+        bone_start = total_size - to_move_back
     if bone_pointers:
         bonepointer_offset = total_size
         bone_header = bytearray()
@@ -630,5 +644,5 @@ def make_modern_ska(ska, game = "GH5", *args, **kwargs):
                 for y in x:
                     header_bytes += struct.pack(">f", y)
     header_bytes += b'\x00' * (256 - len(header_bytes))
-    ska_file = header_bytes + quat_data + trans_data + block_sizes + partial_anim + custom_keys + bone_header + bone_pointers
+    ska_file = header_bytes + quat_data + trans_data + block_sizes + custom_keys + partial_anim + bone_header + bone_pointers
     return ska_file

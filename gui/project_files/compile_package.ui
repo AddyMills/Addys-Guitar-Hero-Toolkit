@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>562</width>
-    <height>659</height>
+    <height>712</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>5</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -86,7 +86,7 @@
                <item>
                 <widget class="QRadioButton" name="gh3">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string notr="true">GH3</string>
@@ -102,7 +102,7 @@
                <item>
                 <widget class="QRadioButton" name="gha">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string>GHA</string>
@@ -391,10 +391,30 @@
               <property name="bottomMargin">
                <number>9</number>
               </property>
-              <item row="4" column="2">
-               <widget class="QLineEdit" name="toms_input">
+              <item row="14" column="3">
+               <widget class="QToolButton" name="crowd_select">
                 <property name="enabled">
                  <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="2">
+               <widget class="QLineEdit" name="vocals_input">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLabel" name="toms_label">
+                <property name="text">
+                 <string>Toms</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
@@ -408,13 +428,13 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="3">
-               <widget class="QToolButton" name="cymbals_select">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
+              <item row="12" column="1">
+               <widget class="QLabel" name="backing_label">
                 <property name="text">
-                 <string>...</string>
+                 <string>Backing</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
@@ -425,72 +445,15 @@
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
-               <widget class="QLabel" name="bass_label">
-                <property name="text">
-                 <string>Bass</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <item row="3" column="2">
+               <widget class="QLineEdit" name="cymbals_input">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
               <item row="2" column="3">
                <widget class="QToolButton" name="snare_select">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="kick_label">
-                <property name="text">
-                 <string>Kick</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="2">
-               <widget class="QLineEdit" name="bass_input">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="1">
-               <widget class="QLabel" name="crowd_label">
-                <property name="text">
-                 <string>Crowd</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="snare_label">
-                <property name="text">
-                 <string>Snare</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="15" column="0" colspan="4">
-               <widget class="Line" name="line_8">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="3">
-               <widget class="QToolButton" name="bass_select">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -506,8 +469,15 @@
                 </property>
                </widget>
               </item>
-              <item row="10" column="2">
-               <widget class="QLineEdit" name="vocals_input">
+              <item row="11" column="0" colspan="4">
+               <widget class="Line" name="line_6">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLineEdit" name="kick_input">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -523,30 +493,54 @@
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
-               <widget class="QLabel" name="vocals_label">
-                <property name="text">
-                 <string>Vocals</string>
+              <item row="10" column="3">
+               <widget class="QToolButton" name="vocals_select">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                <property name="text">
+                 <string>...</string>
                 </property>
                </widget>
               </item>
-              <item row="13" column="0" colspan="4">
-               <widget class="Line" name="line_7">
+              <item row="2" column="2">
+               <widget class="QLineEdit" name="snare_input">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0" colspan="4">
+               <widget class="Line" name="line_5">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="toms_label">
+              <item row="8" column="1">
+               <widget class="QLabel" name="bass_label">
                 <property name="text">
-                 <string>Toms</string>
+                 <string>Bass</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="3">
+               <widget class="QToolButton" name="bass_select">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="2">
+               <widget class="QLineEdit" name="crowd_input">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -557,8 +551,22 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="3">
-               <widget class="QToolButton" name="toms_select">
+              <item row="17" column="0" colspan="4">
+               <widget class="Line" name="line_8">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="0" colspan="4">
+               <widget class="Line" name="line_7">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QToolButton" name="cymbals_select">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -577,20 +585,37 @@
                 </property>
                </widget>
               </item>
-              <item row="14" column="3">
-               <widget class="QToolButton" name="crowd_select">
+              <item row="4" column="2">
+               <widget class="QLineEdit" name="toms_input">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QLabel" name="vocals_label">
                 <property name="text">
-                 <string>...</string>
+                 <string>Vocals</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="11" column="0" colspan="4">
-               <widget class="Line" name="line_6">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+              <item row="16" column="2">
+               <widget class="QLineEdit" name="ghwt_preview_audio_input">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLabel" name="snare_label">
+                <property name="text">
+                 <string>Snare</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
@@ -620,6 +645,50 @@
                 </property>
                </widget>
               </item>
+              <item row="1" column="3">
+               <widget class="QToolButton" name="kick_select">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="1" alignment="Qt::AlignRight">
+               <widget class="QLabel" name="ghwt_preview_label">
+                <property name="text">
+                 <string>Preview</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="kick_label">
+                <property name="text">
+                 <string>Kick</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3">
+               <widget class="QToolButton" name="toms_select">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="2">
+               <widget class="QLineEdit" name="bass_input">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="1">
                <widget class="QLabel" name="track_label">
                 <property name="sizePolicy">
@@ -636,51 +705,20 @@
                 </property>
                </widget>
               </item>
-              <item row="14" column="2">
-               <widget class="QLineEdit" name="crowd_input">
+              <item row="16" column="3">
+               <widget class="QToolButton" name="ghwt_preview_audio_select">
                 <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="3">
-               <widget class="QToolButton" name="vocals_select">
-                <property name="enabled">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <property name="text">
                  <string>...</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="2">
-               <widget class="QLineEdit" name="cymbals_input">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="QToolButton" name="kick_select">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
+              <item row="14" column="1">
+               <widget class="QLabel" name="crowd_label">
                 <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QLineEdit" name="snare_input">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="1">
-               <widget class="QLabel" name="backing_label">
-                <property name="text">
-                 <string>Backing</string>
+                 <string>Crowd</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -694,28 +732,10 @@
                 </property>
                </widget>
               </item>
-              <item row="9" column="0" colspan="4">
-               <widget class="Line" name="line_5">
+              <item row="15" column="0" colspan="4">
+               <widget class="Line" name="line_11">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QLineEdit" name="kick_input">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_13">
-              <item alignment="Qt::AlignRight">
-               <widget class="QCheckBox" name="encrypt_audio">
-                <property name="text">
-                 <string>Encrypt Audio</string>
                 </property>
                </widget>
               </item>
@@ -783,6 +803,24 @@
               </item>
              </layout>
             </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_13">
+              <item alignment="Qt::AlignLeft">
+               <widget class="QCheckBox" name="encrypt_audio">
+                <property name="text">
+                 <string>Encrypt Audio</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="ghwt_rendered_preview_check">
+                <property name="text">
+                 <string>Use Rendered Preview Audio</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
            </layout>
           </widget>
          </item>
@@ -822,17 +860,30 @@
             </property>
             <item>
              <layout class="QGridLayout" name="gh3_stems_layout">
-              <item row="11" column="0" colspan="3">
-               <widget class="Line" name="line_9">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="0">
                <widget class="QLabel" name="guitar_label_gh3">
                 <property name="text">
                  <string>Guitar</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="backing_label_gh3">
+                <property name="text">
+                 <string>Backing</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="0">
+               <widget class="QLabel" name="crowd_label_gh3">
+                <property name="text">
+                 <string>Crowd</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -849,201 +900,6 @@
                 </property>
                 <property name="text">
                  <string>Track</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QToolButton" name="guitar_select_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QLineEdit" name="coop_guitar_input_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="rhythm_label_gh3">
-                <property name="text">
-                 <string>Bass</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="1">
-               <widget class="QLineEdit" name="crowd_input_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QToolButton" name="backing_select_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="2">
-               <widget class="QToolButton" name="coop_backing_select_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="gh3_file_path_label">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Audio File Path</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="guitar_input_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="backing_label_gh3">
-                <property name="text">
-                 <string>Backing</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="2">
-               <widget class="QToolButton" name="crowd_select_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QToolButton" name="rhythm_select_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="1">
-               <widget class="QLineEdit" name="coop_backing_input_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="backing_input_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="coop_guitar_label_gh3">
-                <property name="text">
-                 <string>Guitar</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="rhythm_input_gh3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="coop_rhythm_label_gh3">
-                <property name="text">
-                 <string>Rhythm</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="1">
-               <widget class="QLineEdit" name="coop_rhythm_input_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="0">
-               <widget class="QLabel" name="crowd_label_gh3">
-                <property name="text">
-                 <string>Crowd</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="2">
-               <widget class="QToolButton" name="coop_rhythm_select_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="2">
-               <widget class="QToolButton" name="coop_guitar_select_gh3">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0">
-               <widget class="QLabel" name="coop_backing_label_gh3">
-                <property name="text">
-                 <string>Backing</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1071,7 +927,220 @@
                 </item>
                </layout>
               </item>
+              <item row="10" column="1">
+               <widget class="QLineEdit" name="coop_backing_input_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="QLineEdit" name="coop_rhythm_input_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="2">
+               <widget class="QToolButton" name="coop_guitar_select_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QLabel" name="coop_rhythm_label_gh3">
+                <property name="text">
+                 <string>Rhythm</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QToolButton" name="backing_select_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="gh3_file_path_label">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Audio File Path</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="2">
+               <widget class="QToolButton" name="crowd_select_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="rhythm_label_gh3">
+                <property name="text">
+                 <string>Bass</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QToolButton" name="guitar_select_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="coop_backing_label_gh3">
+                <property name="text">
+                 <string>Backing</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="coop_guitar_label_gh3">
+                <property name="text">
+                 <string>Guitar</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="rhythm_input_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QLineEdit" name="coop_guitar_input_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QToolButton" name="rhythm_select_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="2">
+               <widget class="QToolButton" name="coop_backing_select_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="0" colspan="3">
+               <widget class="Line" name="line_9">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="backing_input_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QLineEdit" name="crowd_input_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="2">
+               <widget class="QToolButton" name="coop_rhythm_select_gh3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="guitar_input_gh3">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="0">
+               <widget class="QLabel" name="gh3_preview_audio_label">
+                <property name="text">
+                 <string>Preview</string>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="1">
+               <widget class="QLineEdit" name="gh3_preview_audio_input">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="2">
+               <widget class="QToolButton" name="gh3_preview_audio_select">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="gh3_rendered_preview_check">
+              <property name="text">
+               <string>Use Rendered Preview</string>
+              </property>
+             </widget>
             </item>
             <item>
              <layout class="QHBoxLayout" name="gh3_preview_layout">
@@ -1126,6 +1195,13 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QCheckBox" name="gh3_set_end">
+                <property name="text">
+                 <string>Set End Time</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1155,10 +1231,48 @@
             </property>
             <item>
              <layout class="QGridLayout" name="gridLayout_3">
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="ghwt_song_script_input"/>
+              <item row="17" column="1" colspan="2">
+               <layout class="QHBoxLayout" name="setlist_settings_layout">
+                <item>
+                 <widget class="QLabel" name="game_icon_label">
+                  <property name="text">
+                   <string>Game Icon</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_icon_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="game_category_label">
+                  <property name="text">
+                   <string>Game Category</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="game_category_input"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="band_label">
+                  <property name="text">
+                   <string>Band</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="band_input"/>
+                </item>
+               </layout>
               </item>
-              <item row="10" column="1">
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="ghwt_perf_override_input">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a file with a performance array to override the generated performance array.&lt;/p&gt;&lt;p&gt;Can be a text file compatible with the toolkit, or an already compiled qb file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
                <widget class="QDoubleSpinBox" name="ghwt_band_vol">
                 <property name="minimum">
                  <double>-10.000000000000000</double>
@@ -1171,13 +1285,6 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="ghwor_stfs_label">
-                <property name="text">
-                 <string>WoR STFS File</string>
-                </property>
-               </widget>
-              </item>
               <item row="7" column="0">
                <widget class="QLabel" name="ghwt_drumkit_label">
                 <property name="text">
@@ -1185,59 +1292,32 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="0" colspan="3">
-               <widget class="Line" name="line_10">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="ghwt_midi_file_input"/>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="ghwt_countoff_label">
+                <property name="text">
+                 <string>Count Off:</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="2">
-               <widget class="QToolButton" name="ghwt_midi_file_select">
+              <item row="15" column="0" colspan="3" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="other_settings_label">
+                <property name="text">
+                 <string>World Tour Definitive Edition Settings</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="2">
+               <widget class="QToolButton" name="ghwor_stfs_select">
                 <property name="text">
                  <string>...</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="ghwt_ska_files_input">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="1">
-               <widget class="QComboBox" name="ghwt_vocal_gender_select">
-                <item>
-                 <property name="text">
-                  <string>Male</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Female</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>None</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QToolButton" name="ghwt_song_script_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="ghwt_vocal_gender_label">
-                <property name="text">
-                 <string>Vocal Gender:</string>
-                </property>
-               </widget>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="ghwor_stfs_input"/>
               </item>
               <item row="3" column="0">
                <widget class="QLabel" name="ghwt_song_script_label">
@@ -1246,24 +1326,41 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="ghwt_ska_files_label">
-                <property name="text">
-                 <string>SKA Files:</string>
-                </property>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="ghwt_countoff_select">
+                <item>
+                 <property name="text">
+                  <string notr="true">Hihat01</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string notr="true">Hihat02</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string notr="true">Hihat03</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string notr="true">Sticks_Huge</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string notr="true">Sticks_Normal</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string notr="true">Sticks_Tiny</string>
+                 </property>
+                </item>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="ghwor_stfs_input"/>
-              </item>
-              <item row="1" column="2">
-               <widget class="QToolButton" name="ghwt_perf_override_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="1">
+              <item row="13" column="1">
                <layout class="QGridLayout" name="tiers_layout">
                 <item row="4" column="0">
                  <widget class="QLabel" name="band_tier_label">
@@ -1382,110 +1479,28 @@
                 </item>
                </layout>
               </item>
-              <item row="5" column="1">
-               <widget class="QComboBox" name="ghwt_countoff_select">
-                <item>
-                 <property name="text">
-                  <string notr="true">Hihat01</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string notr="true">Hihat02</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string notr="true">Hihat03</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string notr="true">Sticks_Huge</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string notr="true">Sticks_Normal</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string notr="true">Sticks_Tiny</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QToolButton" name="ghwt_ska_files_select">
-                <property name="text">
-                 <string>...</string>
+              <item row="9" column="1">
+               <widget class="QDoubleSpinBox" name="vocal_scroll_speed_input">
+                <property name="value">
+                 <double>1.000000000000000</double>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="ghwt_countoff_label">
-                <property name="text">
-                 <string>Count Off:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="0">
+              <item row="13" column="0">
                <widget class="QLabel" name="tiers_label">
                 <property name="text">
                  <string>Tiers</string>
                 </property>
                </widget>
               </item>
-              <item row="15" column="1" colspan="2">
-               <layout class="QHBoxLayout" name="setlist_settings_layout">
-                <item>
-                 <widget class="QLabel" name="game_icon_label">
-                  <property name="text">
-                   <string>Game Icon</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_icon_input"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="game_category_label">
-                  <property name="text">
-                   <string>Game Category</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="game_category_input"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="band_label">
-                  <property name="text">
-                   <string>Band</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="band_input"/>
-                </item>
-               </layout>
-              </item>
-              <item row="13" column="0" colspan="3" alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="other_settings_label">
+              <item row="9" column="0">
+               <widget class="QLabel" name="vocal_speed_label">
                 <property name="text">
-                 <string>World Tour Definitive Edition Settings</string>
+                 <string>Vocal Scroll Speed:</string>
                 </property>
                </widget>
               </item>
-              <item row="15" column="0">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Setlist Settings</string>
-                </property>
-               </widget>
-              </item>
-              <item row="16" column="1" colspan="2">
+              <item row="18" column="1" colspan="2">
                <layout class="QHBoxLayout" name="skeleton_types_layout">
                 <item>
                  <widget class="QLabel" name="skeleton_type_g_label">
@@ -1565,76 +1580,14 @@
                 </item>
                </layout>
               </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="vocal_speed_label">
-                <property name="text">
-                 <string>Vocal Scroll Speed:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="2">
-               <widget class="QToolButton" name="ghwor_stfs_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="16" column="0">
-               <widget class="QLabel" name="skeleton_types_label">
-                <property name="text">
-                 <string>Skeleton Types</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QComboBox" name="ghwt_drumkit_select"/>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="ghwt_perf_override_label">
-                <property name="text">
-                 <string>Perf Override:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="ghwt_perf_override_input">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a file with a performance array to override the generated performance array.&lt;/p&gt;&lt;p&gt;Can be a text file compatible with the toolkit, or an already compiled qb file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0">
+              <item row="11" column="0">
                <widget class="QLabel" name="ghwt_band_vol_label">
                 <property name="text">
                  <string>Overall Volume:</string>
                 </property>
                </widget>
               </item>
-              <item row="9" column="1">
-               <widget class="QDoubleSpinBox" name="vocal_scroll_speed_input">
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="ghwt_midi_file_input"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="ghwt_midi_file_label">
-                <property name="text">
-                 <string>MIDI File:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="0">
-               <widget class="QLabel" name="label_7">
-                <property name="text">
-                 <string>In-game Settings</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="1" colspan="2">
+              <item row="16" column="1" colspan="2">
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QCheckBox" name="guitar_mic_check">
@@ -1658,6 +1611,163 @@
                  </widget>
                 </item>
                </layout>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="ghwt_vocal_cents_label">
+                <property name="text">
+                 <string>Vocal Tuning Cents:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="ghwt_ska_files_input">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QToolButton" name="ghwt_perf_override_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QToolButton" name="ghwt_ska_files_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="ghwt_ska_files_label">
+                <property name="text">
+                 <string>SKA Files:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Setlist Settings</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QToolButton" name="ghwt_song_script_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="0">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>In-game Settings</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="ghwt_song_script_input"/>
+              </item>
+              <item row="14" column="0" colspan="3">
+               <widget class="Line" name="line_10">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QComboBox" name="ghwt_drumkit_select"/>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="ghwt_vocal_gender_label">
+                <property name="text">
+                 <string>Vocal Gender:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="ghwt_midi_file_label">
+                <property name="text">
+                 <string>MIDI File:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="ghwt_perf_override_label">
+                <property name="text">
+                 <string>Perf Override:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="ghwor_stfs_label">
+                <property name="text">
+                 <string>WoR STFS File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="0">
+               <widget class="QLabel" name="skeleton_types_label">
+                <property name="text">
+                 <string>Skeleton Types</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QComboBox" name="ghwt_vocal_gender_select">
+                <item>
+                 <property name="text">
+                  <string>Male</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Female</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>None</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QSpinBox" name="ghwt_vocal_cents">
+                <property name="minimum">
+                 <number>-50</number>
+                </property>
+                <property name="maximum">
+                 <number>50</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QToolButton" name="ghwt_midi_file_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="0">
+               <widget class="QLabel" name="ghwt_whammy_cutoff_label">
+                <property name="text">
+                 <string>Sustain Threshold:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QDoubleSpinBox" name="ghwt_whammy_cutoff">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The threshold at which sustains appear. In World Tour, the default is 0.50 and it can be read as &amp;quot;If a note is longer than 50% of the current beat's length, it is a sustain.&amp;quot;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;In GH5 and up, this value is 0.45, meaning that a note only needs to be 45% the length of the distance between 2 beats.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Make the number smaller to have more sustains appear (for lower BPMs), and make it larger to have fewer sustains appear (for higher BPMs).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="value">
+                 <double>0.500000000000000</double>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -1688,7 +1798,45 @@
             </property>
             <item>
              <layout class="QGridLayout" name="gridLayout_5">
+              <item row="2" column="2">
+               <widget class="QToolButton" name="gh3_ska_files_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="gh3_ska_files_label">
+                <property name="text">
+                 <string>SKA Files:</string>
+                </property>
+               </widget>
+              </item>
               <item row="7" column="1">
+               <widget class="QComboBox" name="gh3_vocal_gender_select">
+                <item>
+                 <property name="text">
+                  <string>Male</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Female</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Bret Michaels</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>None</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="10" column="1">
                <layout class="QHBoxLayout" name="horizontalLayout_7">
                 <item>
                  <widget class="QLabel" name="gh3_gtr_vol_label">
@@ -1738,21 +1886,38 @@
                 </item>
                </layout>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="gh3_perf_override_label">
-                <property name="text">
-                 <string>Perf Override</string>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="gh3_perf_override_input">
+                <property name="toolTip">
+                 <string>Select a qb file with a performance array to override the generated performance array.</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="5" column="0">
                <widget class="QLabel" name="gh3_countoff_label">
                 <property name="text">
                  <string>Count Off:</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="9" column="0" colspan="3">
+               <widget class="Line" name="line">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="gh3_midi_file_input"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="gh3_perf_override_label">
+                <property name="text">
+                 <string>Perf Override:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
                <widget class="QComboBox" name="gh3_countoff_select">
                 <item>
                  <property name="text">
@@ -1786,56 +1951,22 @@
                 </item>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QComboBox" name="gh3_vocal_gender_select">
-                <item>
-                 <property name="text">
-                  <string>Male</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Female</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Bret Michaels</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>None</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="gh3_bassist_select_label">
-                <property name="text">
-                 <string>Bassist:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="gh3_midi_file_input"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="gh3_midi_file_label">
-                <property name="text">
-                 <string>MIDI File</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QToolButton" name="gh3_perf_override_select">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
+              <item row="8" column="1">
                <widget class="QComboBox" name="gh3_bassist_select"/>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="gh3_volume_label">
+                <property name="text">
+                 <string>Volume:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="gh3_song_script_label">
+                <property name="text">
+                 <string>Song Script:</string>
+                </property>
+               </widget>
               </item>
               <item row="0" column="2">
                <widget class="QToolButton" name="gh3_midi_file_select">
@@ -1844,31 +1975,51 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="gh3_perf_override_input">
-                <property name="toolTip">
-                 <string>Select a qb file with a performance array to override the generated performance array.</string>
+              <item row="8" column="0">
+               <widget class="QLabel" name="gh3_bassist_select_label">
+                <property name="text">
+                 <string>Bassist:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="2">
+               <widget class="QToolButton" name="gh3_song_script_select">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="gh3_song_script_input"/>
+              </item>
+              <item row="1" column="2">
+               <widget class="QToolButton" name="gh3_perf_override_select">
+                <property name="text">
+                 <string>...</string>
                 </property>
                </widget>
               </item>
               <item row="7" column="0">
-               <widget class="QLabel" name="gh3_volume_label">
-                <property name="text">
-                 <string>Volume:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
                <widget class="QLabel" name="gh3_vocal_gender_label">
                 <property name="text">
                  <string>Vocal Gender:</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="0" colspan="3">
-               <widget class="Line" name="line">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="gh3_ska_files_input"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="gh3_midi_file_label">
+                <property name="text">
+                 <string>MIDI File:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QCheckBox" name="gh3_ska_file_convert_check">
+                <property name="text">
+                 <string>Do not convert SKA Files</string>
                 </property>
                </widget>
               </item>
@@ -2081,7 +2232,7 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>HMX/NS Hybrid</string>
+                     <string>Moonscraper</string>
                     </property>
                    </item>
                    <item>
@@ -2099,7 +2250,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <layout class="QHBoxLayout" name="platform_select">
                  <item>
                   <widget class="QLabel" name="platform_label">
                    <property name="text">
@@ -2250,11 +2401,11 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>240</x>
-     <y>238</y>
+     <x>330</x>
+     <y>261</y>
     </hint>
     <hint type="destinationlabel">
-     <x>391</x>
+     <x>541</x>
      <y>239</y>
     </hint>
    </hints>
@@ -2270,8 +2421,8 @@
      <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>96</x>
-     <y>187</y>
+     <x>155</x>
+     <y>213</y>
     </hint>
    </hints>
   </connection>
@@ -2282,12 +2433,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>229</x>
-     <y>163</y>
+     <x>512</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>395</x>
-     <y>186</y>
+     <x>541</x>
+     <y>199</y>
     </hint>
    </hints>
   </connection>
@@ -2298,12 +2449,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>238</x>
-     <y>167</y>
+     <x>512</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>77</x>
-     <y>216</y>
+     <x>136</x>
+     <y>243</y>
     </hint>
    </hints>
   </connection>
@@ -2314,12 +2465,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>232</x>
-     <y>161</y>
+     <x>512</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>396</x>
-     <y>216</y>
+     <x>541</x>
+     <y>227</y>
     </hint>
    </hints>
   </connection>
@@ -2334,8 +2485,8 @@
      <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>122</x>
-     <y>240</y>
+     <x>181</x>
+     <y>273</y>
     </hint>
    </hints>
   </connection>
@@ -2346,12 +2497,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>239</x>
-     <y>163</y>
+     <x>512</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel">
-     <x>393</x>
-     <y>244</y>
+     <x>541</x>
+     <y>255</y>
     </hint>
    </hints>
   </connection>
@@ -2362,12 +2513,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>186</x>
-     <y>229</y>
+     <x>330</x>
+     <y>261</y>
     </hint>
     <hint type="destinationlabel">
-     <x>188</x>
-     <y>250</y>
+     <x>305</x>
+     <y>293</y>
     </hint>
    </hints>
   </connection>
@@ -2378,12 +2529,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>84</x>
-     <y>143</y>
+     <x>107</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>300</x>
-     <y>130</y>
+     <x>376</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -2394,12 +2545,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>70</x>
-     <y>143</y>
+     <x>93</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>391</x>
-     <y>130</y>
+     <x>529</x>
+     <y>166</y>
     </hint>
    </hints>
   </connection>
@@ -2410,12 +2561,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>97</x>
-     <y>143</y>
+     <x>120</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>300</x>
-     <y>158</y>
+     <x>376</x>
+     <y>177</y>
     </hint>
    </hints>
   </connection>
@@ -2426,12 +2577,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>105</x>
-     <y>143</y>
+     <x>128</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>391</x>
-     <y>158</y>
+     <x>529</x>
+     <y>197</y>
     </hint>
    </hints>
   </connection>
@@ -2442,18 +2593,194 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>76</x>
-     <y>158</y>
+     <x>136</x>
+     <y>182</y>
     </hint>
     <hint type="destinationlabel">
-     <x>240</x>
-     <y>166</y>
+     <x>512</x>
+     <y>170</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>ghwt_preview_audio_input</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>329</x>
+     <y>425</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>ghwt_preview_audio_select</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>541</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>preview_minutes</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>preview_seconds</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>188</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>preview_mills</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>241</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>length_minutes</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>339</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>length_seconds</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>388</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>length_mills</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>441</x>
+     <y>513</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ghwt_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>ghwt_set_end</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>541</x>
+     <y>511</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>gh3_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>gh3_preview_audio_input</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>88</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>115</x>
+     <y>335</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>gh3_rendered_preview_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>gh3_preview_audio_select</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>453</x>
+     <y>355</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>526</x>
+     <y>330</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="game_select_group"/>
   <buttongroup name="platform_button_group"/>
+  <buttongroup name="game_select_group"/>
  </buttongroups>
 </ui>

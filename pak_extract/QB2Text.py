@@ -1,12 +1,20 @@
 from pak_definitions import *
 from pak_functions import *
 from pak_classes import *
+from io import StringIO
 import os
 import sys
 
 
 orig_stdout = sys.stdout
-
+def print_to_var(text_qb):
+    result = StringIO()
+    orig_stdout = sys.stdout
+    sys.stdout = result
+    print_qb_text_file(text_qb)
+    sys.stdout = orig_stdout
+    qb_text = result.getvalue()
+    return qb_text
 def convert_qb_file(qb_file, file_name, file_headers, console = "PC"):
     endian = console_endian[console]
     consoleType = console_lookup[console]

@@ -112,7 +112,7 @@ face_off = ["FaceOffP1", "FaceOffP2", "FaceOffStar"]
 others = ["_BossBattleP1", "_BossBattleP2", "_timesig", "_fretbars", "_markers",
           "_scripts_notes", "_anim_notes", "_triggers_notes", "_cameras_notes", "_lightshow_notes", "_crowd_notes",
           "_drums_notes", "_performance_notes", "_scripts", "_anim", "_triggers", "_cameras", "_lightshow", "_crowd",
-          "_drums", "_performance"]
+          "_drums", "_performance", "_song_drums_expertplus"]
 
 markers_wt = ["_guitar_markers", "_rhythm_markers", "_drum_markers"]
 

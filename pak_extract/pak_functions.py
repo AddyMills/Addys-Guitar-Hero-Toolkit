@@ -20,9 +20,11 @@ def round_time(entry):
         new_time = entry
     elif time_trunc == 99:
         new_time = entry + 1
-    elif time_trunc < 33:
+    elif time_trunc == 1:
+        new_time = int(str(entry)[:-2] + "00")
+    elif time_trunc <= 34:
         new_time = int(str(entry)[:-2] + str(33))
-    elif time_trunc < 67:
+    elif time_trunc <= 68:
         new_time = int(str(entry)[:-2] + str(67))
     else:
         new_time = int(str(entry)[:-2] + str(99)) + 1
@@ -511,7 +513,7 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
         for y, x in enumerate(array_data):
             array_string += f"{output_item_data(x, array_type)}"
             if y != len(array_data) - 1:
-                array_string += ", "
+                array_string += " "
         # print(f"{indent_val}{id_string}", f"= [{array_string}]")
         return array_string + "]"
     elif array_type.endswith("Array"):
@@ -526,12 +528,12 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
                     print(f"{indent_val}\t\t" + "{")
                     for items in struct.data_value:
                         print_struct_item(items, indent + 3)
-                    print(f"{indent_val}\t\t" + "}" + f"{',' if s_count != len(array_data[y]) - 1 else ''}")
-                print(f"{indent_val}\t]" + f"{',' if y != len(array_data) - 1 else ''}")
+                    print(f"{indent_val}\t\t" + "}" + f"{'' if s_count != len(array_data[y]) - 1 else ''}")
+                print(f"{indent_val}\t]" + f"{'' if y != len(array_data) - 1 else ''}")
                 # raise Exception
             else:
                 print(
-                    f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{',' if y != len(array_data) - 1 else ''}")
+                    f"{print_array_data(x, sub_array[y], 1, '', indent + 1)}{'' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     elif array_type.endswith("Struct"):
         """if sub_array:
@@ -545,21 +547,21 @@ def print_array_data(array_data, array_type, sub_array="", id_string="", indent=
             else:
                 for z in x.data_value:
                     print_struct_item(z, indent + 2)
-            print(f"{indent_val}\t" + "}" + f"{',' if y != len(array_data) - 1 else ''}")
+            print(f"{indent_val}\t" + "}" + f"{'' if y != len(array_data) - 1 else ''}")
             # raise Exception
         print(f"{indent_val}]")
         # raise Exception
     elif len(array_data) > 3:
         print(f"{indent_val}{id_string} = [")
         for y, x in enumerate(array_data):
-            print(f"{indent_val}\t{output_item_data(x, array_type)}{',' if y != len(array_data) - 1 else ''}")
+            print(f"{indent_val}\t{output_item_data(x, array_type)}{'' if y != len(array_data) - 1 else ''}")
         print(f"{indent_val}]")
     else:
         array_string = ""
         for y, x in enumerate(array_data):
             array_string += f"{output_item_data(x, array_type)}"
             if y != len(array_data) - 1:
-                array_string += ", "
+                array_string += " "
         print(f"{indent_val}{id_string}", f"= [{array_string}]")
 
     return
@@ -713,11 +715,17 @@ def new_play_clip(time, clip, start, end = 0):
 
     return play_clip
 
-def make_script_struct(script_data):
+def make_script_struct(script_data, to_round = True):
     final_struct = struct_data()
-    time = basic_data("time", round_time(script_data.time))
+    if to_round:
+        time = basic_data("time", round_time(script_data.time))
+    else:
+        time = basic_data("time", script_data.time)
     time.set_type("Integer")
-    time.set_bin_data(struct.pack(">i", round_time(script_data.time)))
+    if to_round:
+        time.set_bin_data(struct.pack(">i", round_time(script_data.time)))
+    else:
+        time.set_bin_data(struct.pack(">i", script_data.time))
     scr = basic_data("scr", script_data.type)
     scr.set_type("QbKey")
     scr.set_bin_data(bytes.fromhex(CRC.QBKey(script_data.type)))
@@ -772,16 +780,16 @@ def new_band_clip_gh5(char_class):
 
     return char_array
 
-def new_stance_gh3(time, name, stance):
-    params_list = []
-    params_list.append(struct_item("StructItemQbKey", "name", name, 0))
-    params_list.append(struct_item("StructItemQbKey", "stance", stance, 0))
-
-    time = struct_item("StructItemInteger", "time", time, 0)
-    scr = struct_item("StructItemQbKey", "scr", "Band_ChangeStance", 0)
-    params = struct_item("StructItemStruct", "params", params_list, 0)
-
-    new_stance = struct_item("StructHeader", 0, [time, scr, params], 0)
+def new_stance_gh3(name, stance, anim_type, *args):
+    param_name = {"param": "name", "data": name, "type": "QbKey"}
+    param_stance = {"param": anim_type, "data": stance, "type": "QbKey"}
+    new_stance = [param_name, param_stance]
+    if "cycle" in args:
+        new_stance.append({"param": "no_id", "data": "cycle", "type": "QbKey"})
+    if "no_wait" in args:
+        new_stance.append({"param": "no_id", "data": "no_wait", "type": "QbKey"})
+    if "repeat" in args:
+        new_stance.append({"param": "repeat_count", "data": int(args[args.index("repeat")+1]), "type": "Integer"})
     return new_stance
 
 

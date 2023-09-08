@@ -16,6 +16,7 @@ menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_to_5", "conv
 menu_options = [
                 "compile_wt_song - Compile a Guitar Hero: World Tour song pak file from audio and a MIDI file",
                 "convert_ska_file - Convert a SKA file from one game to another (for conversions)",
+                # "convert_5_to_wt - Convert a song from Guitar Hero 5 or Warriors of Rock to the World Tour format",
                 "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
                 "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
                 "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
@@ -96,19 +97,22 @@ def manual_input():
                     print("Choose your singer: ")
                     print("1.) Default\n2.) Steven Tyler\n3.) Run DMC\n4.) Joe Perry")
                     singer = singer_dict[input("Type in the number corresponding to your singer: ")]
-                song_name, song_pak = convert_to_gha(midqb_file, output, lipsync_dict[singer])
+                song_name, song_pak = convert_to_gha(midqb_file, output, singer)
                 if midqb_file.lower().endswith(".mid"):
                     pak_name = f'\\{song_name}_song.pak.xen'
                 else:
                     pak_name = f'\\{song_name}_song_GHA.pak.xen'
                 with open(output + pak_name, 'wb') as f:
                     f.write(song_pak)
+                input("Convert complete! Press Enter to continue. ")
             elif main_menu == "convert_to_gh3":
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 song_name, song_pak = convert_to_gh3(midqb_file, output)
                 with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
                     f.write(song_pak)
+                input("Convert complete! Press Enter to continue. ")
+
             elif main_menu == "convert_to_5" or main_menu == "convert_to_ghwor":
                 compile_args = []
                 if main_menu == "convert_to_ghwor":
@@ -240,6 +244,25 @@ def manual_input():
                         input("\nPress any key to exit.")
 
                 input("Complete! Press any key to exit.")
+            elif main_menu == "convert_5_to_wt":
+                midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
+                output = f'{os.path.dirname(midqb_file)}'
+                midname = os.path.basename(midqb_file)[:os.path.basename(midqb_file).find(".")]
+                if re.search(r'^[a-c]dlc', midname, flags=re.IGNORECASE):
+                    midname = midname[1:]
+                print("""\nYou can add a performance override file to be added to the song.\nFor example, you can add tapping animation events or for WoR songs, add PlayIdle events.""".replace("\t",""))
+                perf_override = input("Drag in your perf override file (or leave this blank) and press Enter to continue: ").replace("\"", "")
+                music_override = input("Drag in the folder containing your audio files from the PS3 version.\nLeave blank to skip: ").replace("\"", "")
+                if music_override:
+                    try:
+                        audio_functions.strip_mp3(music_override)
+                    except Exception as E:
+                        raise E
+                        print("Could not convert audio.")
+                print(midname)
+                wt_pak = convert_5_to_wt(midqb_file, perf_override)
+                with open(f"{output}\\a{midname}.pak.xen".lower(), "wb") as f:
+                    f.write(wt_pak)
 
             elif main_menu == 1337:
                 input("Ha! Got ourselves a leet hacker over here ")
@@ -438,6 +461,18 @@ if __name__ == "__main__":
                     anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
                     with open(f"{output}\\{midname}_scripts.txt", "w") as f:
                         f.write(anim_string)
+            elif sys.argv[1] == "convert_5_to_wt":
+                if "output" not in locals():
+                    output = f'{os.path.dirname(input_file)}'
+                midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
+                if re.search(r'^[a-c]dlc', midname, flags=re.IGNORECASE):
+                    midname = midname[1:]
+                compile_args = []
+                if len(sys.argv) > 3:
+                    compile_args.extend(sys.argv[3:])
+                wt_pak = convert_5_to_wt(input_file, *compile_args)
+                with open(f"{output}\\a{midname}.pak.xen".lower(), "wb") as f:
+                    f.write(wt_pak)
             elif sys.argv[1] == "make_wt_mid":
                 qb_file = mid_qb.make_wt_qb(sys.argv[2])
             elif sys.argv[1] == "extract_fsb":

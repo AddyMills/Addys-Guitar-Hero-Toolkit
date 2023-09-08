@@ -228,7 +228,7 @@ def add_to_dict(p_dict, t, entry):
     return
 
 
-def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gh3_singer"]):
+def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer="gh3_singer"):
     if not "_song.pak" in pakmid:
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
@@ -405,11 +405,10 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gh3_sin
     song_pak = mid_qb.pakMaker(gh3_array)
 
     # raise Exception
-
     return song_name, song_pak
 
 
-def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_singer"]):
+def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer="gha_singer"):
     if "_song.pak" in pakmid:
         song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
     elif ".mid" in pakmid:
@@ -507,7 +506,7 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_sin
             if re.search("[0-9][bB]\.ska", x['file_name'].lower()):
                 # raise Exception
 
-                x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch=lipsync_dict["gha_guitarist"],
+                x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch="gha_guitarist",
                                               quats_mult=2)
             else:
                 x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch=singer, quats_mult=2)
@@ -1377,7 +1376,7 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                     if "vocals_note_range" in x:
                         continue
                     temp_sections[x] = y
-                override_sections = mid_qb.create_wt_qb(temp_sections, song_name)
+                override_sections = mid_qb.create_game_qb(temp_sections, song_name)
                 override_sections = QB2Text.convert_qb_file(QB2Text.qb_bytes(override_sections), song_name,
                                                             file_headers)
                 del (temp_sections)
@@ -2583,7 +2582,7 @@ def rename_track(avatar):
     return track
 
 
-def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
+def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
     if game == "GH3":
         gtr_anims = range(117, 128)
         bass_anims = range(100, 111)
@@ -2657,6 +2656,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
         "anim": [],
         "triggers": [],
         "cameras": [],
+        "cameras_wt": [],
         "lightshow": [],
         "crowd": [],
         "drums": [],
@@ -2794,8 +2794,10 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
                         note_val -= 1 if note_val != 40 else 0
                         note_charts[track].append({"time": t_sec, "length": length, "note": note_val})
                         continue
-                    # if misc_type == "drum":
-
+                    if misc_type == "cameras":
+                        if "gha" not in args:
+                            misc_charts["cameras_wt"].append({"time": t_sec, "length": length, "note": gh3_to_wt[note_val]})
+                        #print()
                     misc_note.append({"time": t_sec, "length": length, "note": note_val})
                 misc_charts[misc_type] += misc_note.copy()
             elif re.search(r"(lightshow)", misc_type, flags=re.IGNORECASE):
@@ -2940,7 +2942,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3"):
     return mid
 
 
-def read_gh5_note(note_bin, drum_mode=False):
+def read_gh5_note(note_bin, drum_mode=False, *args):
     note_file = BytesIO(note_bin)
     read_int = lambda a=4, note=note_file: int.from_bytes(note.read(a), "big")
     dbg = lambda check: PAKExtract.pull_dbg_name(check)
@@ -3010,21 +3012,50 @@ def read_gh5_note(note_bin, drum_mode=False):
                 base_notes = drum_base_notes
             else:
                 base_notes = other_base_notes
+            if "raw" in args:
+                note_file_dict[entry_id] = {
+                    "normal": [],
+                    "xplus": []
+                }
             for entry in range(entry_count):
                 entry_time = read_int()
                 entry_length = read_int(2)
                 drum_note = read_int(1)
                 drum_accent = read_int(1)
+                drum_ghost = 0
                 if entry_type == "gh6_expert_drum_note":
                     drum_ghost = read_int(1)
+                if "raw" in args:
+                    len_bin = bin(entry_length)[2:].zfill(16)
+                    acc_bin = bin(drum_accent)[2:].zfill(9)
+                    if "drum" in entry_id:
+                        if drum_ghost:
+                            drum_note += drum_ghost
+                        norm_bin = bin(drum_note)[2:].zfill(7)
+                        xplus_bin = norm_bin
+                        if drum_note & 1 << 6 and drum_note & 1 << 5: # 2x note
+                            norm_bin = bin(drum_note)[3:].zfill(7)
+                            xplus_bin = norm_bin
+                        elif drum_note & 1 << 6:
+                            norm_bin = bin(drum_note)[3:].zfill(7)
+                            xplus_bin = f"1{bin(drum_note)[4:]}".zfill(7)
+
+                        if int(norm_bin, 2):
+                            note_file_dict[entry_id]["normal"].extend([entry_time, int(acc_bin+norm_bin+len_bin,2)])
+
+                        if diff == "expert":
+                            note_file_dict[entry_id]["xplus"].extend(
+                                [entry_time, int(acc_bin + xplus_bin + len_bin, 2)])
+                    else:
+                        norm_bin = bin(drum_note)[2:].zfill(7)
+                        note_file_dict[entry_id]["normal"].extend([entry_time, int(acc_bin + norm_bin + len_bin, 2)])
+                else:
                     entry_note = set_note_type(drum_note, drum_accent, drum_ghost)
 
-                else:
-                    entry_note = set_note_type(drum_note, drum_accent)
-                for note in entry_note:
-                    note_file_dict[entry_id].append({"time": entry_time, "length": entry_length,
-                                                     "note": base_notes[note["colour"]] + (12 * note_mult[entry_diff]),
-                                                     "velocity": note["velocity"]})
+                    for note in entry_note:
+                        note_file_dict[entry_id].append({"time": entry_time, "length": entry_length,
+                                                         "note": base_notes[note["colour"]] + (12 * note_mult[entry_diff]),
+                                                         "velocity": note["velocity"]})
         elif entry_type == "gh5_band_moment_note":
             for entry in range(entry_count):
                 entry_time = read_int()
@@ -3244,7 +3275,403 @@ def gh5_to_midi(notes, tempo_data, tpb, vox=False, anim=False, drums=False):
 
         return temp_tracks
 
+def perf_override_check(perf_override, to_add):
+    if perf_override:
+        perf_override += f",\n {to_add}"
+    else:
+        perf_override = to_add
+    return perf_override
 
+def convert_5_to_wt(pakmid, perf_override = "", *args):
+    ska_override = []
+    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
+    if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
+        song_name = song_name[1:]
+    qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
+    sections_dict = get_section_dict(qb_sections, file_headers_hex)
+    game_check = ''.join(x for x in sections_dict.keys())
+    if perf_override:
+        with open(perf_override) as f:
+            perf_override = "\n".join(f.read().split("\n")[1:-1])
+    if not re.search(rf"{song_name}_song_easy", game_check, flags=re.IGNORECASE):
+        pass
+    else:
+        print("Not a valid GH5+ file.")
+        return
+    playable_qb = {
+        "Guitar": {},
+        "Bass": {},
+        "Drums": {},
+        "Vocals": {
+            "song_vocals": [],
+            "vocals_freeform": [],
+            "vocals_phrases": [],
+            "vocals_note_range": [60, 60],
+            "lyrics": [],
+            "vocals_markers": [],
+            "qs_file": {}
+        }
+    }
+
+    playable_face_off = {
+        "Guitar": {"P1": [], "P2": []},
+        "Bass": {"P1": [], "P2": []},
+        "Drums": {"P1": [], "P2": []}
+    }
+
+    playable_fo_star_power = {
+        "Guitar": {},
+        "Bass": {},
+        "Drums": {}
+    }
+
+    playable_star_power = {
+        "Guitar": {},
+        "Bass": {},
+        "Drums": {}
+    }
+
+    playable_bm_star_power = {
+        "Guitar": {},
+        "Bass": {},
+        "Drums": {}
+    }
+
+    playable_tap = {
+        "Guitar": [],
+        "Bass": []
+    }
+
+    playable_solo_markers = {
+        "Guitar": [],
+        "Bass": [],
+        "Drums": []
+    }
+
+    playable_drum_fills = []
+    anim_notes = {
+        "scripts_notes": {},
+        "left_hand": {},
+        "triggers_notes": {},
+        "CAMERAS": {},
+        "LIGHTSHOW": {},
+        "CROWD": {},
+        "drum_anims": {},
+        "scripts": {},
+        "anim": {},
+        "triggers": {},
+        "cameras": [],
+        "lightshow": [],
+        "crowd": {},
+        "drums": {},
+        "performance": []
+    }
+    band_clips = []
+    instruments = 0
+    perf_clips = 0
+    use_cams = 0
+    pull_struct = 0
+    struct_string = ""
+    anim_structs = []
+    anim_loops = []
+    qs_dict = 0
+    lyrics_qs = []
+    lyrics_qs_dict = {}
+    gtr_markers = []
+    xplus = 0
+    new_perf = ""
+    for files in song_files:
+        if re.search(fr"songs/{song_name}\.mid.qb$", files["file_name"], flags=re.IGNORECASE):
+            qb_mid_file = QB2Text.convert_qb_file(QB2Text.qb_bytes(files["file_data"]), song_name, file_headers)
+            qb_mid_text = QB2Text.print_to_var(qb_mid_file)
+            qb_mid_nohead = "\n".join(qb_mid_text.split("\n")[1:])
+            lip_events_loc = qb_mid_nohead.find(f"{song_name}_facial")
+            lip_events_end = qb_mid_nohead.find("]", lip_events_loc)
+            lip_events = "\n".join(qb_mid_nohead[lip_events_loc:lip_events_end].strip().split("\n")[1:])
+            perf_override = perf_override_check(perf_override, lip_events)
+        if re.search(fr"songs/{song_name}\.mid\.qs.en$", files["file_name"], flags=re.IGNORECASE):
+            qs_dict = get_qs_strings(files["file_data"])
+        elif re.search(fr"songs/{song_name}\.note$", files["file_name"], flags=re.IGNORECASE):
+            instruments = read_gh5_note(files["file_data"], False, "raw")
+        elif re.search(fr"songs/{song_name}\.perf$", files["file_name"], flags=re.IGNORECASE):
+            cameras, anim_structs = read_gh5_perf(files["file_data"], song_name)
+            use_cams = 1
+            pull_struct = 1
+        elif re.search(fr"songs/{song_name}\.perf.xml.qb$", files["file_name"], flags=re.IGNORECASE):
+            perf_xml_file = QB2Text.convert_qb_file(QB2Text.qb_bytes(files["file_data"]), song_name, file_headers)
+            for x in perf_xml_file:
+                if x.section_id.endswith("scriptevents"):
+                    for y in x.section_data:
+                        if y.data_dict["scr"] == "Band_PlayClip":
+                            clip_params = y.data_dict["params"]
+                            clip_len = round((clip_params["endframe"] - clip_params["startframe"]) / 30 / clip_params[
+                                "timefactor"] * 1000)
+                            band_clips.append(
+                                [clip_params["clip"], y.data_dict["time"], clip_len + y.data_dict["time"]])
+                        elif y.data_dict["scr"] == "Band_PlayLoop":
+                            anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
+            perf_xml_text = QB2Text.print_to_var(perf_xml_file)
+            perf_xml_nohead = "\n".join(perf_xml_text.split("\n")[1:]).strip()
+            perf_events_loc = perf_xml_nohead.find(f"{song_name}_scriptevents")
+            perf_clips = perf_xml_nohead[:perf_events_loc]
+            perf_events = "\n".join(perf_xml_nohead[perf_events_loc:].split("\n")[1:-1])
+            if perf_events.endswith("]"):
+                perf_events = perf_events[:-1]
+            perf_override = perf_override_check(perf_override, perf_events)
+        elif re.search(r".ska$", files["file_name"], flags=re.IGNORECASE):
+            wt_ska = make_modern_ska(ska_bytes(files["file_data"]),"GHWT", quats_mult=1, ska_switch = "wt_rocker")
+            #wt_ska = files["file_data"]
+            ska_override.append([wt_ska, files["file_name"]])
+    if perf_override:
+        perf_override = f"song_performance = [\n{perf_override}\n]"
+    fretbars = instruments["fretbar"]
+    instruments.pop("fretbar")
+    timesigs = [mid_qb.timeSigEvent(x[0],x[1],x[2]) for x in instruments["timesig"]]
+    instruments.pop("timesig")
+    temp_phrase = []
+    temp_freeform = []
+    to_pop = []
+    for k, v in instruments.items():
+        key_name = k
+        reg = re.search(r'^(drums|bass|guitar)', key_name)
+        if reg:
+            play = reg[0].title()
+            key_name = key_name[len(play):]
+            type_reg = re.search(r'(starpower|tapping|instrument|markers)$', key_name)[0]
+            key_name = key_name[:-len(type_reg)].title()
+            if type_reg == "markers":
+                gtr_markers = []
+                for x in v:
+                    marker = qs_dict[int(x["text"], 16)]
+                    if marker.startswith("\\u[m]"):
+                        marker = marker[5:]
+                    gtr_markers.append(mid_qb.markerNode(x["time"], marker))
+            elif type_reg == "instrument":
+                new_chart = mid_qb.NoteChart(play, key_name)
+                new_chart.notes = v["normal"]
+                if v["normal"] != v["xplus"] and play == "Drums" and key_name == "Expert":
+                    xplus = mid_qb.NoteChart(play, key_name)
+                    xplus.notes = v["xplus"]
+
+                playable_qb[play][key_name] = new_chart
+            elif type_reg == "starpower":
+                playable_star_power[play][key_name] = [[x["time"], x["length"]] for x in v]
+            else:
+                if v and key_name == "Expert":
+                    playable_tap[play] = [[x["time"], x["length"], 1] for x in v]
+            to_pop.append(k)
+            continue
+        reg = re.search(r'(drumfill)', key_name)
+        if reg:
+            to_pop.append(k)
+            if "expert" in k:
+                playable_drum_fills.extend([[x["time"], x["time"]+x["length"]] for x in v])
+            continue
+        reg = re.search(r'(vocal)', key_name)
+        if reg:
+            curr = playable_qb["Vocals"]
+            #to_pop.append(k)
+            if k == "vocals":
+                low = 128
+                high = 0
+                for vox in v:
+                    if vox["note"] > 27:
+                        low = min(vox["note"], low)
+                        high = max(vox["note"], high)
+                    curr["song_vocals"].extend([vox["time"],vox["length"],vox["note"]])
+                curr["vocals_note_range"] = [low, high]
+            elif "freeform" in k:
+                for vox in v:
+                    temp_freeform.append(vox["time"])
+                    curr["vocals_freeform"].append([vox["time"], vox["length"], round(vox["length"]/6)])
+            elif "lyrics" in k:
+                split_word = 0
+                for vox in v:
+                    raw_text = vox['text']
+                    if split_word:
+                        split_word = 0
+                        raw_text = "=" + raw_text
+                    if raw_text.endswith("-"):
+                        split_word = 1
+                        raw_text = raw_text[:-1]
+                    elif raw_text.endswith("="):
+                        split_word = 1
+                        raw_text = raw_text[:-1] + "-"
+                    lyric = f"\\L{raw_text}"
+                    if lyric not in lyrics_qs:
+                        lyrics_qs.append(lyric)
+                    curr["lyrics"].append(mid_qb.markerNode(vox["time"], f"qbs(0x{CRC.QBKey_qs(lyric)})"))
+
+    for vox in instruments["vocalsmarkers"]:
+        raw_text = vox['text']
+        if not raw_text:
+            if vox["time"] in temp_freeform:
+                playable_qb["Vocals"]["vocals_markers"].append(mid_qb.markerNode(vox["time"], f"$vocal_marker_freeform"))
+            continue
+        lyric = f"\\L{raw_text}"
+        if lyric not in lyrics_qs:
+            lyrics_qs.append(lyric)
+        temp_phrase.append(vox["time"])
+        playable_qb["Vocals"]["vocals_markers"].append(mid_qb.markerNode(vox["time"], f"qbs(0x{CRC.QBKey_qs(lyric)})"))
+
+    for lyrics in sorted(lyrics_qs):
+        playable_qb["Vocals"]["qs_file"][lyrics] = CRC.QBKey_qs(lyrics)
+
+    lyric_time = np.array(playable_qb["Vocals"]["song_vocals"][::3])
+    phrase_time = []
+    for enum, phrase in enumerate(instruments["vocalphrase"]):
+        if enum != 0:
+            phrase_time.append(phrase["time"])
+        phrase_time.append(phrase["time"])
+        if enum == len(instruments["vocalphrase"]) - 1:
+            if phrase["time"] <= lyric_time[-1]:
+                phrase_time.append(lyric_time[-1]+60)
+            else:
+                phrase_time.append(phrase["time"]+1)
+    phrase_mod = mid_qb.split_list(phrase_time)
+    player = 0
+    for times in phrase_mod:
+        phrase_check = mid_qb.mod_notes(lyric_time, times)[0]
+        phrase_to = 0
+        if len(phrase_check) > 0:
+            phrase_to = (player % 2) + 1
+            player += 1
+        elif times[0] in temp_freeform:
+            phrase_to = 3
+        playable_qb["Vocals"]["vocals_phrases"].extend([times[0], phrase_to])
+
+    for x in to_pop:
+        instruments.pop(x)
+    # Calculate Star Power notes!
+    for inst, v in playable_star_power.items():
+        inst_play = playable_qb[inst]
+        for diff, val in inst_play.items():
+            diff_time = np.array(val.notes[::2])
+            if diff == "Expert":
+                playable_face_off[inst]["P1"] = playable_face_off[inst]["P2"] = [int(diff_time[0]-50), int(diff_time[-1]-diff_time[0]+50)]
+            diff_split = v[diff]
+            for starpower in diff_split:
+                star_list = [starpower[0],starpower[0] + starpower[1]]
+                notes = mid_qb.mod_notes(diff_time, star_list)[0]
+                starpower.append(len(notes))
+    for x in qb_sections:
+        if x.array_node_type == "Floats":
+            continue
+        elif x.section_id.endswith("_notes"):
+            if "anim" in x.section_id:
+                to_add = "left_hand"
+            elif "drums" in x.section_id:
+                to_add = "drum_anims"
+            elif "crowd" in x.section_id:
+                to_add = "CROWD"
+            elif "lightshow" in x.section_id:
+                to_add = "LIGHTSHOW"
+            elif "cameras" in x.section_id:
+                continue
+            else:
+                input(f"Unknown track {x.section_id} found. Enter to continue.")
+                continue
+            anim_time = x.section_data[::2]
+            anim_event = x.section_data[1::2]
+            drum_count = ""
+            for t, e in zip(anim_time, anim_event):
+                e_bin = bin(e)[2:].zfill(32)
+                e_len = int(e_bin[16:], 2)
+                e_note = int(e_bin[8:16], 2)
+                e_vel = int(e_bin[:8], 2)
+                if "drums" in x.section_id:
+                    if e_note <= 59:
+                        e_note = mid_qb.drumKeyMapRB_wt[mid_qb.wor_to_rb_drums[e_note]]
+                        e_prac = mid_qb.AnimNoteWT(t, e_note-13, e_vel, e_len)
+                        if t in anim_notes[to_add]:
+                            anim_notes[to_add][t].append(e_prac)
+                        else:
+                            anim_notes[to_add][t] = [e_prac]
+                    elif e_note in range(108,114):
+                        e_prac = mid_qb.AnimNoteWT(t, 70, e_vel, e_len)
+                        if e_note in range(108,111):
+                            e_note = 83
+                        else:
+                            e_note = 78
+                        if not drum_count:
+                            if e_note == 83:
+                                drum_count = f"Sticks"
+                            else:
+                                drum_count = f"Hihat"
+                            print(drum_count)
+                        if t in anim_notes[to_add]:
+                            anim_notes[to_add][t].append(e_prac)
+                        else:
+                            anim_notes[to_add][t] = [e_prac]
+                    elif e_note in range(60,84):
+                        pass
+                    else:
+                        continue
+                e_anim = mid_qb.AnimNoteWT(t, e_note, e_vel, e_len)
+                if t in anim_notes[to_add]:
+                    anim_notes[to_add][t].append(e_anim)
+                else:
+                    anim_notes[to_add][t] = [e_anim]
+        elif "lightshow" in x.section_id:
+            for y in x.section_data:
+                blendtime = mid_qb.lightshow_script(y.data_dict['params']['time'])
+                anim_notes["lightshow"].append(mid_qb.scriptsNode(y.data_dict['time'], "LightShow_SetTime", [blendtime]))
+
+    for cams in cameras["momentcameras"]:
+        anim_notes["CAMERAS"][cams["time"]] = [mid_qb.AnimNoteWT(cams["time"], cams["note"], 100, cams["length"])]
+    for cams in cameras["autocutcameras"]:
+        if not cams["time"] in anim_notes["CAMERAS"]:
+            anim_notes["CAMERAS"][cams["time"]] = [mid_qb.AnimNoteWT(cams["time"], cams["note"], 100, cams["length"])]
+    anim_notes["CAMERAS"] = dict(sorted(anim_notes["CAMERAS"].items()))
+
+    playable_bm_star_power = playable_fo_star_power = playable_star_power
+    qb_dict = {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
+                 "tap": playable_tap, "fo_star_power": playable_fo_star_power, "face_off": playable_face_off,
+                 "gtr_markers": gtr_markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timesigs,
+                 "fretbars": fretbars, "vox_sp": 0, "ghost_notes": 0,
+                 "solo_markers": playable_solo_markers,
+                 "has_2x_kick": 0, "xplus": xplus
+                 }
+    compile_args = []
+    if perf_override:
+        compile_args.extend(["replace_perf", perf_override])
+    if anim_structs['type'] == "gh6":
+        with open(f"{root_folder}\\conversion_files\\basic_loops.txt", "r") as f:
+            scripts_override = f.read()
+        if perf_clips:
+            scripts_override += f"\n{perf_clips}"
+        gh6_anims = []
+        for gen in ["male", "female"]:
+            for k, v in anim_structs[f"car_{gen}_anim_struct_{song_name}"].items():
+                for loops in v:
+                    if loops not in gh6_anims:
+                        gh6_anims.append(loops)
+        compile_args.extend(["add_loops", gh6_anims])
+    else:
+        anim_structs.pop("type")
+        for x in anim_structs.keys():
+            struct_string += f"{x}" + " = {\n"
+            for structs in anim_structs[x].keys():
+                struct_string += "\t" + f"{structs}" + " = {\n"
+                for anims in anim_structs[x][structs].keys():
+                    struct_string += "\t\t" + f"{anims}" + f" = {anim_structs[x][structs][anims]}" + "\n"
+                struct_string += "\t}\n"
+            struct_string += "}\n"
+        scripts_override = struct_string
+        if perf_clips:
+            scripts_override += perf_clips
+
+    if scripts_override:
+        compile_args.extend(["song_script", scripts_override])
+    if ska_override:
+        compile_args.extend(["add_ska", ska_override])
+
+    compile_args.extend(["ghwt", "wtde"])
+    midQB, midQS = mid_qb.make_wt_files(file_headers, qb_dict, song_name, *compile_args)
+    if "performance" in qb_dict:
+        midQB = mid_qb.add_perf_to_qb(midQB, song_name, file_headers, qb_dict, *compile_args)
+    wt_pak = mid_qb.create_pak_file(midQB, song_name, midQS, *compile_args)
+    return wt_pak
 def create_mid_from_qb(pakmid):
     song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
@@ -3253,11 +3680,16 @@ def create_mid_from_qb(pakmid):
     sections_dict = get_section_dict(qb_sections, file_headers_hex)
     game_check = ''.join(x for x in sections_dict.keys())
     gh3 = False
+    gha = False
     ghwt = False
     if not re.search(rf"{song_name}_song_easy", game_check, flags=re.IGNORECASE):
         print("GH5+ song found")
     elif not re.search(rf"{song_name}_drum_easy", game_check, flags=re.IGNORECASE):
-        print("GH3 song found")
+        if re.search(r"_song_aux", game_check, flags=re.IGNORECASE):
+            gha = True
+            print("GHA song found")
+        else:
+            print("GH3 song found")
         gh3 = True
     else:
         print("GHWT song found")
@@ -3268,12 +3700,16 @@ def create_mid_from_qb(pakmid):
     pull_struct = 0
     struct_string = ""
     anim_structs = []
+    anim_loops = []
+    qs_dict = 0
     for files in song_files:
         if re.search(fr"songs/{song_name}\.mid\.qs$", files["file_name"], flags=re.IGNORECASE):
             qs_dict = get_qs_strings(files["file_data"])
             note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name,
                                                                               convert="")
             instruments = read_gh5_note(convert_to_gh5_bin(note_file, "note", song_name))
+        elif re.search(fr"songs/{song_name}\.mid\.qs.en$", files["file_name"], flags=re.IGNORECASE):
+            qs_dict = get_qs_strings(files["file_data"])
         elif re.search(fr"songs/{song_name}\.note$", files["file_name"], flags=re.IGNORECASE):
             instruments = read_gh5_note(files["file_data"])
         elif re.search(fr"songs/{song_name}\.perf$", files["file_name"], flags=re.IGNORECASE):
@@ -3289,6 +3725,8 @@ def create_mid_from_qb(pakmid):
                             clip_params = y.data_dict["params"]
                             clip_len = round((clip_params["endframe"] - clip_params["startframe"]) / 30 / clip_params["timefactor"] * 1000)
                             band_clips.append([clip_params["clip"],y.data_dict["time"], clip_len+y.data_dict["time"]])
+                        elif y.data_dict["scr"] == "Band_PlayLoop":
+                            anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
             #print()
     try:
         timesig = sections_dict[f"{song_name}_timesig"].section_data
@@ -3341,7 +3779,10 @@ def create_mid_from_qb(pakmid):
     tempo_data.set_seconds_array(np.array(tempo_data.songSeconds))
 
     if gh3:
-        new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb)
+        extra_args = []
+        if gha:
+            extra_args.append("gha")
+        new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb, "GH3", *extra_args)
         return new_mid, struct_string
     """elif ghwt:
         new_mid.tracks += read_gh3_note(sections_dict, tempo_data, tpb, "GHWT")"""
@@ -3351,6 +3792,7 @@ def create_mid_from_qb(pakmid):
     gtr_events = {"name": "PART GUITAR"}
     bass_events = {"name": "PART BASS"}
     vox_events = {"name": "PART VOCALS"}
+    event_markers = {"name": "EVENTS"}
     to_pop = []
 
     if instruments:
@@ -3367,6 +3809,17 @@ def create_mid_from_qb(pakmid):
             elif "vocal" in x and not "marker" in x:
                 vox_events[x] = instruments[x]
                 to_pop.append(x)
+            elif "guitarmarker" in x:
+                event_markers[x] = instruments[x]
+                for marker in event_markers[x]:
+                    qs_entry = int(marker["text"],16)
+                    if qs_entry in qs_dict:
+                        marker_text = qs_dict[qs_entry]
+                        if "ENDOFSONG" in marker_text:
+                            marker_text = "[end]"
+                        elif marker_text.startswith("\\u[m]"):
+                            marker_text = f"[section {marker_text[5:]}]"
+                        marker["text"] = marker_text
         for x in to_pop:
             instruments.pop(x)
         for inst in [drum_events, gtr_events, bass_events, vox_events]:
@@ -3384,8 +3837,13 @@ def create_mid_from_qb(pakmid):
                     all_tracks.append(mido.merge_tracks(gh5_to_midi(inst[track], tempo_data, tpb)))
                 elif "vocal" in track:
                     all_tracks.append(mido.merge_tracks(gh5_to_midi(inst[track], tempo_data, tpb, vox=True)))
-            new_mid.tracks[-1] = mido.merge_tracks(all_tracks)
 
+            new_mid.tracks[-1] = mido.merge_tracks(all_tracks)
+    new_mid.add_track(event_markers["name"])
+    if "guitarmarkers" in event_markers:
+        events = gh5_to_midi(event_markers["guitarmarkers"], tempo_data, tpb)
+        new_mid.tracks[-1] = mido.merge_tracks([new_mid.tracks[-1]] + events)
+        print()
     non_play = ["scripts", "anim", "triggers", "cameras", "lightshow", "crowd", "drums"]
     for x in non_play:
         try:
@@ -3482,6 +3940,9 @@ def create_mid_from_qb(pakmid):
             band_midi[-1].append(Message("note_on", time=timeVal, note=clip_note, velocity=100))
             band_midi[-1].append(Message("note_on", time=timeVal2, note=clip_note, velocity=0))
 
+        if anim_loops:
+            anim_events = gh5_to_midi(anim_loops, tempo_data, tpb)
+            band_midi.extend(anim_events)
         band_midi = mido.merge_tracks(band_midi)
         band_midi.name = "Band_Clips"
         new_mid.tracks.append(band_midi)

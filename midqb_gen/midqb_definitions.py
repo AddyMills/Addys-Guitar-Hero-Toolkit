@@ -55,6 +55,12 @@ idle_events = ["[idle]", "[idle_realtime]", "[idle_intense]"]
 percussion_start = ["[clap_start]", "[cowbell_start]", "[tambourine_start]"]
 percussion_end = ["[clap_end]", "[cowbell_end]", "[tambourine_end]"]
 
+singer_stances = ["Stance_A", "Stance_B"]
+singer_anims = ["special", "jump", "kick", "release", "long_note"]
+guit_stances = singer_stances + ["Stance_C"]
+guit_anims = ["jump", "kick", "solo", "special"]
+gha_guit_stances = guit_stances + ["Stance_D"]
+
 venue_states = ["[verse]", "[chorus]", "[solo]"]
 
 valid_camera_notes_gh3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
@@ -67,26 +73,30 @@ valid_camera_notes_gha = [10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 24, 25
 valid_camera_notes_wt = [0, 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26, 28, 29, 30, 31,
                          33, 34, 35, 36, 38, 40, 41, 43, 45, 46, 48]
 
-valid_camera_notes_wor = [50, 51, 52, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 74, 75, 90, 91,
+valid_camera_notes_wor = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 90, 91,
                           92, 93, 94, 95, 96, 97, 98, 99]
 
-valid_camera_notes_wtde = [50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 62, 63, 64, 65, 66, 68, 69, 70, 71, 72, 74, 75, 81,
+moment_cams = [3, 4, 5, 6, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+
+valid_camera_notes_wtde = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 81,
                            82, 83, 84, 85, 86, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 106, 107,
                            108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
 
 valid_lightshow_notes_gh3 = [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 56, 57, 58, 60, 61, 62, 63, 64,
-                             65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76]
+                             65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 107]
 
 valid_lightshow_notes_wt = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43,
                             44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 57, 58, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71,
                             72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 87, 88, 90, 91, 92, 93, 94, 95, 96, 97,
-                            98, 99, 100, 101, 102, 103, 104, 105]
+                            98, 99, 100, 101, 102, 103, 104, 105, 107]
 
-valid_lightshow_notes_wor = [19, 107]
+valid_lightshow_notes_wor = [19]
 
 valid_crowd_gh3 = [72, 73, 74, 75, 76, 77, 78, 79, 80]
 
 valid_crowd_wt = [82, 83, 84, 85, 86, 87, 88, 90, 91, 92, 93, 94, 95, 96]
+
+venue_track = "LIGHTSHOWCAMERASCROWD"
 
 gh5_camera_dict = {  # This dict is to grab camera cuts to add to a gh5-style perf file
     33: 8,
@@ -96,7 +106,8 @@ gh5_camera_dict = {  # This dict is to grab camera cuts to add to a gh5-style pe
 }
 
 anims_guitar = []  # MIDI Note 127-118 is Lead left hand anims, 110-101 is Bass/Rhythm left hand notes
-stances = ["Stance_A", "Stance_B", "Stance_C", "jump", "special", "Solo", "kick"]
+
+
 drumKeyMapGH3 = {  # More FYI, but may use this dict in later code
     36: "Kick_R",  # Budokan and Hell venues only
     37: "Tom_3_L",
@@ -144,12 +155,13 @@ drumKeyMapRB_gh3 = {
     34: 44,
     32: 50,
     31: 53,
-    30: 41,
+    30: 42,
     29: 52,
     28: 40,
     27: 52,
     26: 40,
     24: 48,
+    23: 36,
     22: 70
 }
 
@@ -221,33 +233,35 @@ wor_camera_converts = {
         59: 97,
         58: 102,
         57: 101,
-        48: 79,
+        48: 87,
         46: 113,
-        45: 112,
-        43: 79,
+        45: 111,
+        43: 91,
         38: 79,
+        36: 97,
+        35: 89,
         34: 104,
-        33: 90,
-        31: 79,
+        33: 81,
+        31: 87,
         30: 85,
         29: 94,
         28: 114,
-        26: 105,
-        25: 105,
+        26: 89,
+        25: 89,
         24: 87,
         23: 89,
-        21: 105,
-        20: 105,
+        21: 97,
+        20: 97,
         19: 110,
         18: 97,
         16: 88,
-        15: 101,
+        15: 88,
         14: 103,
         13: 104,
-        11: 105,
-        10: 106,
+        11: 79,
+        10: 79,
         9: 87,
-        8: 95,
+        8: 95
     },
     "gha": {
 
@@ -322,6 +336,12 @@ leftHandMappingRhythm = {  # Guitar Hero Aerosmith only
     57: 85,
     58: 84,
     59: 84
+}
+
+anim_maps_gh3 = {
+    "Guitar": leftHandGtr_gh3,
+    "Bass": leftHandBass_gh3,
+    "Rhythm": leftHandMappingRhythm
 }
 
 note_mapping_gh3 = {
@@ -531,7 +551,7 @@ bm_star_note = 115
 sp_note = 116
 fo_star_note = 107
 
-playable_range = range(36, 85)
+playable_range = [26] + list(range(36, 85))
 phrase_marker = [105, 106]
 freeform_marker = tap_note
 

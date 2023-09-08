@@ -35,6 +35,13 @@ from CRC import QBKey, QBKey_qs
 from toolkit_functions import convert_to_5
 
 
+def wrap_string(to_wrap, wide=False):
+    new_string = f'"{to_wrap}"'
+    if wide:
+        new_string = "w" + new_string
+    return new_string
+
+
 class main_window(QWidget):
     def __init__(self):
         super().__init__()
@@ -52,14 +59,7 @@ class compile_package(QWidget, compile_pack):
         self.gh3_audio_fields()
         self.gh3_song_data_fields()
         self.compile_fields()
-
-        self.ghwt_checksum = ""
-        self.ghwt_genre = ""
-        self.ghwor_checksum = ""
-        self.ghwor_genre = ""
-
-        self.checksum_input.textEdited.connect(self.set_checksum_variable)
-        self.genre_select.activated.connect(self.set_game_genre)
+        self.changing_fields()
 
         self.first_boot()
 
@@ -95,7 +95,7 @@ class compile_package(QWidget, compile_pack):
             return
         game = self.game_select_group.checkedButton().objectName()
         if game == "gh3":
-            self.compile_gh3()
+            self.compile_gh3("skip_audio")
         elif game == "ghwt":
             self.compile_ghwt("skip_audio")
         elif game == "gh5":
@@ -185,6 +185,8 @@ class compile_package(QWidget, compile_pack):
             "ghwor_checksum": self.ghwor_checksum,
             "ghwt_genre": self.ghwt_genre,
             "ghwor_genre": self.ghwor_genre,
+            "ghwt_drumkit": self.ghwt_drumkit,
+            "ghwor_drumkit": self.ghwor_drumkit,
 
             # WT Data
             "kick_input": self.kick_input.text(),
@@ -198,6 +200,9 @@ class compile_package(QWidget, compile_pack):
 
             "backing_input": self.backing_input.text(),
             "crowd_input": self.crowd_input.text(),
+
+            "ghwt_preview_audio_input": self.ghwt_preview_audio_input.text(),
+            "ghwt_rendered_preview_check": self.ghwt_rendered_preview_check.isChecked(),
 
             "encrypt_audio": self.encrypt_audio.isChecked(),
 
@@ -219,7 +224,9 @@ class compile_package(QWidget, compile_pack):
             "ghwt_drumkit_select": self.ghwt_drumkit_select.currentText(),
             "ghwt_vocal_gender_select": self.ghwt_vocal_gender_select.currentText(),
             "vocal_scroll_speed_input": self.vocal_scroll_speed_input.value(),
+            "ghwt_vocal_cents": self.ghwt_vocal_cents.value(),
             "ghwt_band_vol": self.ghwt_band_vol.value(),
+            "ghwt_whammy_cutoff": self.ghwt_whammy_cutoff.value(),
 
             "band_tier_value": self.band_tier_value.value(),
             "drums_tier_value": self.drums_tier_value.value(),
@@ -253,6 +260,9 @@ class compile_package(QWidget, compile_pack):
             "coop_backing_input_gh3": self.coop_backing_input_gh3.text(),
 
             "crowd_input_gh3": self.crowd_input_gh3.text(),
+            
+            "gh3_preview_audio_input": self.gh3_preview_audio_input.text(),
+            "gh3_rendered_preview_check": self.gh3_rendered_preview_check.isChecked(),
 
             "preview_minutes_gh3": self.preview_minutes_gh3.value(),
             "preview_seconds_gh3": self.preview_seconds_gh3.value(),
@@ -264,6 +274,8 @@ class compile_package(QWidget, compile_pack):
 
             "gh3_midi_file_input": self.gh3_midi_file_input.text(),
             "gh3_perf_override_input": self.gh3_perf_override_input.text(),
+            "gh3_ska_files_input": self.gh3_ska_files_input.text(),
+            "gh3_song_script_input": self.gh3_song_script_input.text(),
             "gh3_countoff_select": self.gh3_countoff_select.currentText(),
             "gh3_vocal_gender_select": self.gh3_vocal_gender_select.currentText(),
             "gh3_bassist_select": self.gh3_bassist_select.currentText(),
@@ -310,7 +322,7 @@ class compile_package(QWidget, compile_pack):
                 i.setChecked(True)
                 break
         self.set_game_fields()
-        platform_index = self.platform_button_group.findChildren(QRadioButton)
+        platform_index = self.platform_button_group.buttons()
         for i in platform_index:
             if i.objectName() == load_vars["platform"]:
                 i.setChecked(True)
@@ -318,7 +330,8 @@ class compile_package(QWidget, compile_pack):
 
         check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio",
                        "ghwt_set_end",
-                       "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check"]
+                       "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check",
+                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check"]
 
         for x in check_boxes:
             try:
@@ -362,12 +375,20 @@ class compile_package(QWidget, compile_pack):
         elif game == "ghwor":
             self.ghwor_checksum = self.checksum_input.text()
 
-    def set_game_genre(self):
+    def set_genre(self):
         game = self.game_select_group.checkedButton().objectName()
         if game == "ghwt":
             self.ghwt_genre = self.genre_select.currentText()
         elif game == "ghwor":
             self.ghwor_genre = self.genre_select.currentText()
+
+    def set_drumkit(self):
+        game = self.game_select_group.checkedButton().objectName()
+        if game == "ghwt":
+            self.ghwt_drumkit = self.ghwt_drumkit_select.currentText()
+        elif game == "ghwor":
+            self.ghwor_drumkit = self.ghwt_drumkit_select.currentText()
+
     def set_game_fields(self):
         self.setUpdatesEnabled(False)
         game = self.game_select_group.checkedButton().objectName()
@@ -400,6 +421,8 @@ class compile_package(QWidget, compile_pack):
 
         self.deactivate_layout(self.setlist_settings_layout)
         self.deactivate_layout(self.skeleton_types_layout)
+        self.platform_360.setEnabled(False)
+        self.platform_pc.setEnabled(False)
         if any([game == "gh3", game == "gha"]):
             self.genre_select.setDisabled(True)
         elif game == "ghwt":
@@ -407,6 +430,7 @@ class compile_package(QWidget, compile_pack):
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_wt))
             self.checksum_input.setText(self.ghwt_checksum)
             self.genre_select.setCurrentText(self.ghwt_genre)
+            self.ghwt_drumkit_select.setCurrentText(self.ghwt_drumkit)
             self.other_settings_label.setText("World Tour Definitive Edition Settings")
             self.activate_layout(self.setlist_settings_layout)
             self.activate_layout(self.skeleton_types_layout)
@@ -418,6 +442,7 @@ class compile_package(QWidget, compile_pack):
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
             self.checksum_input.setText(self.ghwor_checksum)
             self.genre_select.setCurrentText(self.ghwor_genre)
+            self.ghwt_drumkit_select.setCurrentText(self.ghwor_drumkit)
             self.ghwor_stfs_input.setEnabled(True)
             self.ghwor_stfs_select.setEnabled(True)
             self.encrypt_audio.setDisabled(True)
@@ -434,6 +459,8 @@ class compile_package(QWidget, compile_pack):
                 self.crowd_input_gh3.setDisabled(True)
                 self.crowd_select_gh3.setDisabled(True)
                 self.cover_checkbox.setDisabled(True)
+                self.platform_360.setEnabled(True)
+                self.platform_pc.setEnabled(True)
             else:
                 self.crowd_input_gh3.setDisabled(False)
                 self.crowd_select_gh3.setDisabled(False)
@@ -462,6 +489,9 @@ class compile_package(QWidget, compile_pack):
         self.backing_select.clicked.connect(partial(self.open_file_dialog_audio, self.backing_input))
         self.crowd_select.clicked.connect(partial(self.open_file_dialog_audio, self.crowd_input))
 
+        self.ghwt_preview_audio_select.clicked.connect(
+            partial(self.open_file_dialog_audio, self.ghwt_preview_audio_input))
+
         self.ghwt_set_end.toggled.connect(self.set_end_time)
 
     def wt_song_data_fields(self):
@@ -484,11 +514,15 @@ class compile_package(QWidget, compile_pack):
         self.coop_rhythm_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_rhythm_input_gh3))
         self.coop_backing_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_backing_input_gh3))
 
+        self.gh3_preview_audio_select.clicked.connect(partial(self.open_file_dialog_audio, self.gh3_preview_audio_input))
+
         self.p2_rhythm_check.toggled.connect(self.p2_rhythm_toggle)
 
     def gh3_song_data_fields(self):
         self.gh3_midi_file_select.clicked.connect(partial(self.open_file_dialog_midi, self.gh3_midi_file_input))
         self.gh3_perf_override_select.clicked.connect(partial(self.open_file_dialog_qb, self.gh3_perf_override_input))
+        self.gh3_ska_files_select.clicked.connect(partial(self.open_file_dialog_folder, self.gh3_ska_files_input))
+        self.gh3_song_script_select.clicked.connect(partial(self.open_file_dialog_qb, self.gh3_song_script_input))
         bassists = ["Default"] + ["Axel", "Casey", "Izzy", "Judy", "Johnny", "Lars", "Midori", "Xavier", "Slash",
                                   "Tom Morello", "Lou", "God of Rock", "Grim Ripper"]
         self.gh3_bassist_select.addItems(bassists)
@@ -504,6 +538,18 @@ class compile_package(QWidget, compile_pack):
 
         self.compile_button.clicked.connect(self.compile_song_package)
         self.compile_pak_button.clicked.connect(self.compile_pak)
+
+    def changing_fields(self):
+        self.ghwt_checksum = ""
+        self.ghwt_genre = ""
+        self.ghwor_checksum = ""
+        self.ghwor_genre = ""
+        self.ghwt_drumkit = ""
+        self.ghwor_drumkit = ""
+
+        self.checksum_input.textEdited.connect(self.set_checksum_variable)
+        self.genre_select.activated.connect(self.set_genre)
+        self.ghwt_drumkit_select.activated.connect(self.set_drumkit)
 
     def update_ns_value(self):
         self.ns_hopo_value.setText(str(round(self.ns_value(), 5)))
@@ -538,14 +584,14 @@ class compile_package(QWidget, compile_pack):
             item_text = source.itemText(i)
             destination.addItem(item_text)
 
-    def midi_check(self):
-        if not self.ghwt_midi_file_input.text():
+    def midi_check(self, midi_path):
+        if not midi_path:
             print("No MIDI file selected! Cancelling compilation")
             return 0
-        elif not os.path.isfile(self.ghwt_midi_file_input.text()):
+        elif not os.path.isfile(midi_path):
             print("MIDI file not found! Cancelling compilation")
             return 0
-        return self.ghwt_midi_file_input.text()
+        return midi_path
 
     def wor_checksum(self):
         text, ok = QInputDialog.getText(None, "Proper DLC ID Required",
@@ -585,7 +631,7 @@ class compile_package(QWidget, compile_pack):
         ini.optionxform = str
         ini["ModInfo"] = {
             "Name": self.checksum_input.text(),
-            "Description": "Created with Addy's Toolkit",
+            "Description": "Created with the Addy GH Toolkit",
             "Author": self.author_input.text(),
             "Version": "1"
         }
@@ -624,6 +670,15 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["MicForBassist"] = "1"
         if self.guitar_mic_check.isChecked():
             ini["SongInfo"]["MicForGuitarist"] = "1"
+        if self.beatlines_check.isChecked():
+            ini["SongInfo"]["Low8Bars"] = str(self.beat_8th_low_input.value())
+            ini["SongInfo"]["High8Bars"] = str(self.beat_8th_high_input.value())
+            ini["SongInfo"]["Low16Bars"] = str(self.beat_16th_low_input.value())
+            ini["SongInfo"]["High16Bars"] = str(self.beat_16th_high_input.value())
+        if self.ghwt_vocal_cents.value() != 0:
+            ini["SongInfo"]["Cents"] = str(self.ghwt_vocal_cents.value())
+        if self.ghwt_whammy_cutoff.value() != 0.5:
+            ini["SongInfo"]["WhammyCutoff"] = str(self.ghwt_whammy_cutoff.value())
         return ini
 
     def ghwor_songlist_info(self, *args):
@@ -635,6 +690,8 @@ class compile_package(QWidget, compile_pack):
         else:
             artist_text = "$artist_text_as_made_famous_by"
             orig_artist = 0
+
+        cents = self.ghwt_vocal_cents.value()
 
         if self.beatlines_check.isChecked():
             low_8 = self.beat_8th_low_input.text()
@@ -696,12 +753,77 @@ class compile_package(QWidget, compile_pack):
             "cymbal": f'"{drumkit}"',
             "drum_kit": f'"{drumkit}"',
             "countoff": f'"{self.ghwt_countoff_select.currentText().lower()}"',
-            "overall_song_volume": self.ghwt_band_vol.value()
+            "overall_song_volume": self.ghwt_band_vol.value(),
+            "vocals_pitch_score_shift": "{ " + f"cents = {cents} " + "}"
         }
 
         if not parts_with_mic:
             songlist_info.pop("parts_with_mic")
+        if not cents:
+            songlist_info.pop("vocals_pitch_score_shift")
         return songlist_info, qs_keys
+
+    def gh3_songlist_info(self):
+        artist_text = self.artist_text_select.currentText()
+        orig_artist = 1
+        if artist_text == "By":
+            artist_text = "$artist_text_by"
+        elif artist_text == "Other":
+            artist_text = wrap_string(self.artist_text_other.text(), True)
+        else:
+            artist_text = "$artist_text_as_made_famous_by"
+            orig_artist = 0
+        if self.p2_rhythm_check.isChecked():
+            rhythm_track = 1
+        else:
+            rhythm_track = 0
+
+        songlist_info = {
+            "checksum": self.checksum_input.text(),
+            "name": wrap_string(self.checksum_input.text()),
+            "title": wrap_string(self.title_input.text(), True),
+            "artist": wrap_string(self.artist_input.text(), True),
+            "year": wrap_string(f", {self.year_input.text()}", True),
+            "artist_text": artist_text,
+            "original_artist": orig_artist,
+            "version": "gh3",
+            "leaderboard": 1,
+            "gem_offset": 0,
+            "input_offset": 0,
+            "singer": self.gh3_vocal_gender_select.currentText(),
+            "keyboard": "False",
+            "band_playback_volume": self.gh3_gtr_vol.value(),
+            "guitar_playback_volume": self.gh3_band_vol.value(),
+            "countoff": wrap_string(self.gh3_countoff_select.currentText()),
+            "rhythm_track": rhythm_track
+        }
+        if self.coop_audio_check.isChecked():
+            songlist_info["no_id"] = "use_coop_notetracks"
+        return songlist_info
+
+    def gh3_audio_gen(self, song_name, start_time, end_time, compile_args):
+        all_audio = {
+            "guitar": self.guitar_input_gh3.text(),
+            "rhythm": self.rhythm_input_gh3.text(),
+            "song": self.backing_input_gh3.text()
+        }
+        if self.coop_audio_check.isChecked():
+            all_audio["coop_guitar"] = self.coop_guitar_input_gh3.text()
+            all_audio["coop_rhythm"] = self.coop_rhythm_input_gh3.text()
+            all_audio["coop_song"] = self.coop_backing_input_gh3.text()
+        if self.game_select_group.checkedButton().objectName() == "gha":
+            all_audio["crowd"] = self.crowd_input_gh3.text()
+
+        for key, value in all_audio.items():
+            if not os.path.isfile(value):
+                print(f"File for {key} does not exist. Using blank audio")
+                all_audio[key] = f"{audio_folder}/default_audio/blank.mp3"
+            elif value.endswith("default_audio/blank.wav"):
+                value = f"{audio_folder}/default_audio/blank.mp3"
+                all_audio[key] = value
+        fsb_file, fsb_dat = af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
+
+        return fsb_file, fsb_dat
 
     def ghwt_audio_gen(self, song_name, start_time, end_time, compile_args):
         all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
@@ -716,7 +838,7 @@ class compile_package(QWidget, compile_pack):
                 files.setText(f"{audio_folder}/default_audio/blank.mp3")
             all_audio_path.append(files.text())
         try:
-            drum, inst, other, preview = af.get_padded_audio(all_audio_path, song_name, start_time, end_time,
+            drum, inst, other, preview = af.compile_wt_audio(all_audio_path, song_name, start_time, end_time,
                                                              *compile_args)
         except Exception as E:
             traceback.print_exc()
@@ -737,10 +859,38 @@ class compile_package(QWidget, compile_pack):
         duration = int(af.get_padded_audio(all_audio_path, 0, 0, 0, *compile_args))
         return duration
 
+    def gen_gh3_songlist(self, *args):
+        songlist_info = self.gh3_songlist_info()
+        qb_text = ""
+        checksum = songlist_info['checksum']
+        qb_text += f"{checksum} = " + "{\n"
+        for k, v in songlist_info.items():
+            qb_text += f"{k} = {v}\n"
+        qb_text += "}"
+        platform = self.platform_button_group.checkedButton().objectName()
+        if platform == "platform_360":
+            dl_qb = """qb_file = 0xbf0730f0
+            GH3_Download_Songs = {
+	        prefix = "download"
+	        num_tiers = 1
+	        tier1 = {
+		    Title = w"Downloaded songs"
+		    songs = [%s]
+		    no_id = unlockall
+		    level = load_z_artdeco
+	        }
+            }
+            download_songlist = [%s]
+            download_songlist_props = {
+            """.replace("%s", checksum)
+            qb_text = dl_qb + qb_text + " }"
+            qb_text = mid_gen.t2q_main(qb_text, game = "GH3")
+        return qb_text
+
     def gen_wor_songlist(self, *args):
         songlist_info, qs_keys = self.ghwor_songlist_info(*args)
 
-        qb_text_name = f"{hex(int(QBKey(self.checksum_input.text()),16)+2)}"
+        qb_text_name = f"{hex(int(QBKey(self.checksum_input.text()), 16) + 2)}"
         '''.download_songlist.qb'''
         gh6_dlc_songlist = f"gh6_dlc_songlist = [{songlist_info['checksum']}]\n"
 
@@ -799,7 +949,18 @@ class compile_package(QWidget, compile_pack):
         return cmanifest_qb, qb_file_name, cmanifest
 
     def set_compile_args(self, *args):
-        midi_file = self.midi_check()
+        if "gh3" in args:
+            midi_file = self.midi_check(self.gh3_midi_file_input.text())
+            perf = self.gh3_perf_override_input.text()
+            ska_files = self.gh3_ska_files_input.text()
+            song_script = self.gh3_song_script_input.text()
+            rendered_audio = self.gh3_rendered_preview_check.isChecked()
+        else:
+            midi_file = self.midi_check(self.ghwt_midi_file_input.text())
+            perf = self.ghwt_perf_override_input.text()
+            ska_files = self.ghwt_ska_files_input.text()
+            song_script = self.ghwt_song_script_input.text()
+            rendered_audio = self.ghwt_rendered_preview_check.isChecked()
         if not midi_file:
             return 0
 
@@ -808,13 +969,20 @@ class compile_package(QWidget, compile_pack):
 
         if self.encrypt_audio.isChecked():
             compile_args += ["encrypt"]
-        perf = self.ghwt_perf_override_input.text()
+
         if perf and os.path.isfile(perf):
             compile_args += ["replace_perf", perf]
 
-        ska_files = self.ghwt_ska_files_input.text()
         if ska_files and os.path.isdir(ska_files):
             compile_args += ["add_ska", ska_files]
+
+        if rendered_audio:
+            if "gh3" in args and os.path.exists(self.gh3_preview_audio_input.text()):
+                compile_args += ["rendered_preview", self.gh3_preview_audio_input.text()]
+            elif "ghwt" in args and os.path.exists(self.ghwt_preview_audio_input.text()):
+                compile_args += ["rendered_preview", self.ghwt_preview_audio_input.text()]
+            else:
+                print("Rendered preview audio selected, but file is not found. Creating preview based on time.")
 
         hopo_mode = self.hopo_mode_select.currentText()
         if hopo_mode == "Guitar Hero 3":
@@ -824,7 +992,6 @@ class compile_package(QWidget, compile_pack):
         elif hopo_mode == "Guitar Hero World Tour+":
             compile_args += ["force_only"]
 
-        song_script = self.ghwt_song_script_input.text()
         if song_script and os.path.isfile(song_script):
             compile_args += ["song_script", song_script]
 
@@ -832,7 +999,37 @@ class compile_package(QWidget, compile_pack):
             compile_args += ["ffmpeg"]
         return compile_args
 
-    def compile_gh3(self):
+    def compile_gh3(self, *args):
+        start_time = self.conv_to_secs("start")
+        end_time = self.conv_to_secs("end")
+        if not self.ghwt_set_end.isChecked():
+            end_time += start_time
+
+        song_name = self.checksum_input.text()
+        compile_args = self.set_compile_args(*["gh3"])
+        project_folder = os.path.dirname(self.project_file_path.text())
+        save_folder = f"{project_folder}\\gh3_compile"
+        try:
+            os.mkdir(save_folder)
+        except:
+            pass
+        if not compile_args:
+            return
+
+        songlist = self.gen_gh3_songlist()
+        try:
+            song_pak = mid_gen.make_mid(*compile_args)[0]
+        except Exception as E:
+            # raise E
+            traceback.print_exc()
+            return
+        if not "skip_audio" in args:
+            audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
+            audio_path = f"{save_folder}\\{song_name}"
+            af.writeFSB3(audio, dat, audio_path)
+        with open(f"{save_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+            f.write(song_pak)
+        print("Compile complete!")
         return
 
     def compile_ghwt(self, *args):
@@ -860,15 +1057,16 @@ class compile_package(QWidget, compile_pack):
         with open(f"{song_folder}/song.ini", "w") as f:
             ini.write(f, space_around_delimiters=False)
 
-        compile_args = self.set_compile_args(*["ghwt", "wtde"])
+        compile_args = self.set_compile_args(*["ghwt", "wtde", "gh5_mode"])
 
         if not compile_args:
             return
 
         try:
-            song_pak = mid_gen.make_mid(*compile_args)[0]
+            song_pak, xplus_pak = mid_gen.make_mid(*compile_args)
         except Exception as E:
             traceback.print_exc()
+            # raise E
             return
         with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
             f.write(song_pak)
@@ -908,7 +1106,8 @@ class compile_package(QWidget, compile_pack):
             traceback.print_exc()
             return
 
-        wor_pak_files = convert_to_5(song_pak, self.checksum_input.text(), *compile_args, song_name = self.checksum_input.text(), decomp_ska = True)
+        wor_pak_files = convert_to_5(song_pak, self.checksum_input.text(), *compile_args,
+                                     song_name=self.checksum_input.text(), decomp_ska=True)
         songlist_args = []
         if "double_kick" in wor_pak_files:
             songlist_args += ["double_kick"]
@@ -917,21 +1116,23 @@ class compile_package(QWidget, compile_pack):
         songlist_qb, qs_bytes, empty_qs = self.gen_wor_songlist(*songlist_args)
 
         manifest_pak = mid_gen.pakMaker([[cmanifest_qb, f"{man_file_name}.0xb2a7df81.qb"]])
-        cdl_pak = mid_gen.pakMaker([[b'\x00\x00\x00\x00\x00\x00\x00\x1C\x1C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-                                        "0xb1392214.0x179eac5.qb"]])
+        cdl_pak = mid_gen.pakMaker([[
+            b'\x00\x00\x00\x00\x00\x00\x00\x1C\x1C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+            "0xb1392214.0x179eac5.qb"]])
         cdl_text_files = []
         langs = ["de", "en", "fr", "it", "es"]
         for enum, blanks in enumerate(["0x5a7a551", "0x8b6e4d98", "0xb4424214", "0xdab9fbee", "0xe8682141"]):
             cdl_text_files.append([empty_qs, f"{blanks}.0x179eac5.qs.{langs[enum]}"])
-        dl_qb = hex(int(QBKey(self.checksum_input.text()),16))
+        dl_qb = hex(int(QBKey(self.checksum_input.text()), 16))
         for lang in langs:
             cdl_text_files.append([qs_bytes, f"{dl_qb}.download_songlist.qs.{lang}"])
-        cdl_text_files.append([songlist_qb, f"{hex(int(QBKey(self.checksum_input.text()), 16)+2)}.download_songlist.qb"])
+        cdl_text_files.append(
+            [songlist_qb, f"{hex(int(QBKey(self.checksum_input.text()), 16) + 2)}.download_songlist.qb"])
 
         cdl_text_pak = mid_gen.pakMaker(cdl_text_files)
 
-
-        wor_pak = mid_gen.pakMaker([[x["file_data"], x["file_name"]] for x in wor_pak_files], self.checksum_input.text())
+        wor_pak = mid_gen.pakMaker([[x["file_data"], x["file_name"]] for x in wor_pak_files],
+                                   self.checksum_input.text())
 
         project_folder = os.path.dirname(self.project_file_path.text())
         save_folder = f"{project_folder}\\{self.checksum_input.text()}_WoR_Files"
@@ -943,7 +1144,8 @@ class compile_package(QWidget, compile_pack):
             end_time = self.conv_to_secs("end")
             if not self.ghwt_set_end.isChecked():
                 end_time += start_time
-            drum, inst, other, preview = self.ghwt_audio_gen(self.checksum_input.text(), start_time, end_time, compile_args)
+            drum, inst, other, preview = self.ghwt_audio_gen(self.checksum_input.text(), start_time, end_time,
+                                                             compile_args)
             if not drum:
                 return
             for enum, x in enumerate([drum, inst, other, preview]):

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'compile_package.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.2
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -25,7 +25,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(562, 659)
+        Form.resize(562, 712)
         self.verticalLayout_11 = QVBoxLayout(Form)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
         self.verticalLayout_4 = QVBoxLayout()
@@ -70,7 +70,7 @@ class Ui_Form(object):
         self.game_select_group.setObjectName(u"game_select_group")
         self.game_select_group.addButton(self.gh3)
         self.gh3.setObjectName(u"gh3")
-        self.gh3.setEnabled(False)
+        self.gh3.setEnabled(True)
         self.gh3.setText(u"GH3")
         self.gh3.setChecked(False)
 
@@ -79,7 +79,7 @@ class Ui_Form(object):
         self.gha = QRadioButton(self.game_select)
         self.game_select_group.addButton(self.gha)
         self.gha.setObjectName(u"gha")
-        self.gha.setEnabled(False)
+        self.gha.setEnabled(True)
 
         self.horizontalLayout.addWidget(self.gha)
 
@@ -269,11 +269,23 @@ class Ui_Form(object):
         self.ghwt_stems_layout = QGridLayout()
         self.ghwt_stems_layout.setObjectName(u"ghwt_stems_layout")
         self.ghwt_stems_layout.setContentsMargins(0, 9, -1, 9)
-        self.toms_input = QLineEdit(self.wt_audio_widget)
-        self.toms_input.setObjectName(u"toms_input")
-        self.toms_input.setEnabled(True)
+        self.crowd_select = QToolButton(self.wt_audio_widget)
+        self.crowd_select.setObjectName(u"crowd_select")
+        self.crowd_select.setEnabled(True)
 
-        self.ghwt_stems_layout.addWidget(self.toms_input, 4, 2, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.crowd_select, 14, 3, 1, 1)
+
+        self.vocals_input = QLineEdit(self.wt_audio_widget)
+        self.vocals_input.setObjectName(u"vocals_input")
+        self.vocals_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.vocals_input, 10, 2, 1, 1)
+
+        self.toms_label = QLabel(self.wt_audio_widget)
+        self.toms_label.setObjectName(u"toms_label")
+        self.toms_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.ghwt_stems_layout.addWidget(self.toms_label, 4, 1, 1, 1)
 
         self.backing_select = QToolButton(self.wt_audio_widget)
         self.backing_select.setObjectName(u"backing_select")
@@ -281,11 +293,11 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.backing_select, 12, 3, 1, 1)
 
-        self.cymbals_select = QToolButton(self.wt_audio_widget)
-        self.cymbals_select.setObjectName(u"cymbals_select")
-        self.cymbals_select.setEnabled(True)
+        self.backing_label = QLabel(self.wt_audio_widget)
+        self.backing_label.setObjectName(u"backing_label")
+        self.backing_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.ghwt_stems_layout.addWidget(self.cymbals_select, 3, 3, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.backing_label, 12, 1, 1, 1)
 
         self.line_4 = QFrame(self.wt_audio_widget)
         self.line_4.setObjectName(u"line_4")
@@ -294,54 +306,17 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.line_4, 7, 0, 1, 4)
 
-        self.bass_label = QLabel(self.wt_audio_widget)
-        self.bass_label.setObjectName(u"bass_label")
-        self.bass_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cymbals_input = QLineEdit(self.wt_audio_widget)
+        self.cymbals_input.setObjectName(u"cymbals_input")
+        self.cymbals_input.setEnabled(True)
 
-        self.ghwt_stems_layout.addWidget(self.bass_label, 8, 1, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.cymbals_input, 3, 2, 1, 1)
 
         self.snare_select = QToolButton(self.wt_audio_widget)
         self.snare_select.setObjectName(u"snare_select")
         self.snare_select.setEnabled(True)
 
         self.ghwt_stems_layout.addWidget(self.snare_select, 2, 3, 1, 1)
-
-        self.kick_label = QLabel(self.wt_audio_widget)
-        self.kick_label.setObjectName(u"kick_label")
-        self.kick_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.ghwt_stems_layout.addWidget(self.kick_label, 1, 1, 1, 1)
-
-        self.bass_input = QLineEdit(self.wt_audio_widget)
-        self.bass_input.setObjectName(u"bass_input")
-        self.bass_input.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.bass_input, 8, 2, 1, 1)
-
-        self.crowd_label = QLabel(self.wt_audio_widget)
-        self.crowd_label.setObjectName(u"crowd_label")
-        self.crowd_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.ghwt_stems_layout.addWidget(self.crowd_label, 14, 1, 1, 1)
-
-        self.snare_label = QLabel(self.wt_audio_widget)
-        self.snare_label.setObjectName(u"snare_label")
-        self.snare_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.ghwt_stems_layout.addWidget(self.snare_label, 2, 1, 1, 1)
-
-        self.line_8 = QFrame(self.wt_audio_widget)
-        self.line_8.setObjectName(u"line_8")
-        self.line_8.setFrameShape(QFrame.HLine)
-        self.line_8.setFrameShadow(QFrame.Sunken)
-
-        self.ghwt_stems_layout.addWidget(self.line_8, 15, 0, 1, 4)
-
-        self.bass_select = QToolButton(self.wt_audio_widget)
-        self.bass_select.setObjectName(u"bass_select")
-        self.bass_select.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.bass_select, 8, 3, 1, 1)
 
         self.line_3 = QFrame(self.wt_audio_widget)
         self.line_3.setObjectName(u"line_3")
@@ -350,11 +325,18 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.line_3, 5, 0, 1, 4)
 
-        self.vocals_input = QLineEdit(self.wt_audio_widget)
-        self.vocals_input.setObjectName(u"vocals_input")
-        self.vocals_input.setEnabled(True)
+        self.line_6 = QFrame(self.wt_audio_widget)
+        self.line_6.setObjectName(u"line_6")
+        self.line_6.setFrameShape(QFrame.HLine)
+        self.line_6.setFrameShadow(QFrame.Sunken)
 
-        self.ghwt_stems_layout.addWidget(self.vocals_input, 10, 2, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.line_6, 11, 0, 1, 4)
+
+        self.kick_input = QLineEdit(self.wt_audio_widget)
+        self.kick_input.setObjectName(u"kick_input")
+        self.kick_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.kick_input, 1, 2, 1, 1)
 
         self.guitar_select = QToolButton(self.wt_audio_widget)
         self.guitar_select.setObjectName(u"guitar_select")
@@ -362,11 +344,55 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.guitar_select, 6, 3, 1, 1)
 
-        self.vocals_label = QLabel(self.wt_audio_widget)
-        self.vocals_label.setObjectName(u"vocals_label")
-        self.vocals_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.vocals_select = QToolButton(self.wt_audio_widget)
+        self.vocals_select.setObjectName(u"vocals_select")
+        self.vocals_select.setEnabled(True)
 
-        self.ghwt_stems_layout.addWidget(self.vocals_label, 10, 1, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.vocals_select, 10, 3, 1, 1)
+
+        self.snare_input = QLineEdit(self.wt_audio_widget)
+        self.snare_input.setObjectName(u"snare_input")
+        self.snare_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.snare_input, 2, 2, 1, 1)
+
+        self.line_5 = QFrame(self.wt_audio_widget)
+        self.line_5.setObjectName(u"line_5")
+        self.line_5.setFrameShape(QFrame.HLine)
+        self.line_5.setFrameShadow(QFrame.Sunken)
+
+        self.ghwt_stems_layout.addWidget(self.line_5, 9, 0, 1, 4)
+
+        self.bass_label = QLabel(self.wt_audio_widget)
+        self.bass_label.setObjectName(u"bass_label")
+        self.bass_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.ghwt_stems_layout.addWidget(self.bass_label, 8, 1, 1, 1)
+
+        self.bass_select = QToolButton(self.wt_audio_widget)
+        self.bass_select.setObjectName(u"bass_select")
+        self.bass_select.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.bass_select, 8, 3, 1, 1)
+
+        self.crowd_input = QLineEdit(self.wt_audio_widget)
+        self.crowd_input.setObjectName(u"crowd_input")
+        self.crowd_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.crowd_input, 14, 2, 1, 1)
+
+        self.backing_input = QLineEdit(self.wt_audio_widget)
+        self.backing_input.setObjectName(u"backing_input")
+        self.backing_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.backing_input, 12, 2, 1, 1)
+
+        self.line_8 = QFrame(self.wt_audio_widget)
+        self.line_8.setObjectName(u"line_8")
+        self.line_8.setFrameShape(QFrame.HLine)
+        self.line_8.setFrameShadow(QFrame.Sunken)
+
+        self.ghwt_stems_layout.addWidget(self.line_8, 17, 0, 1, 4)
 
         self.line_7 = QFrame(self.wt_audio_widget)
         self.line_7.setObjectName(u"line_7")
@@ -375,23 +401,11 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.line_7, 13, 0, 1, 4)
 
-        self.toms_label = QLabel(self.wt_audio_widget)
-        self.toms_label.setObjectName(u"toms_label")
-        self.toms_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cymbals_select = QToolButton(self.wt_audio_widget)
+        self.cymbals_select.setObjectName(u"cymbals_select")
+        self.cymbals_select.setEnabled(True)
 
-        self.ghwt_stems_layout.addWidget(self.toms_label, 4, 1, 1, 1)
-
-        self.backing_input = QLineEdit(self.wt_audio_widget)
-        self.backing_input.setObjectName(u"backing_input")
-        self.backing_input.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.backing_input, 12, 2, 1, 1)
-
-        self.toms_select = QToolButton(self.wt_audio_widget)
-        self.toms_select.setObjectName(u"toms_select")
-        self.toms_select.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.toms_select, 4, 3, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.cymbals_select, 3, 3, 1, 1)
 
         self.guitar_label = QLabel(self.wt_audio_widget)
         self.guitar_label.setObjectName(u"guitar_label")
@@ -399,18 +413,29 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.guitar_label, 6, 1, 1, 1)
 
-        self.crowd_select = QToolButton(self.wt_audio_widget)
-        self.crowd_select.setObjectName(u"crowd_select")
-        self.crowd_select.setEnabled(True)
+        self.toms_input = QLineEdit(self.wt_audio_widget)
+        self.toms_input.setObjectName(u"toms_input")
+        self.toms_input.setEnabled(True)
 
-        self.ghwt_stems_layout.addWidget(self.crowd_select, 14, 3, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.toms_input, 4, 2, 1, 1)
 
-        self.line_6 = QFrame(self.wt_audio_widget)
-        self.line_6.setObjectName(u"line_6")
-        self.line_6.setFrameShape(QFrame.HLine)
-        self.line_6.setFrameShadow(QFrame.Sunken)
+        self.vocals_label = QLabel(self.wt_audio_widget)
+        self.vocals_label.setObjectName(u"vocals_label")
+        self.vocals_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.ghwt_stems_layout.addWidget(self.line_6, 11, 0, 1, 4)
+        self.ghwt_stems_layout.addWidget(self.vocals_label, 10, 1, 1, 1)
+
+        self.ghwt_preview_audio_input = QLineEdit(self.wt_audio_widget)
+        self.ghwt_preview_audio_input.setObjectName(u"ghwt_preview_audio_input")
+        self.ghwt_preview_audio_input.setEnabled(False)
+
+        self.ghwt_stems_layout.addWidget(self.ghwt_preview_audio_input, 16, 2, 1, 1)
+
+        self.snare_label = QLabel(self.wt_audio_widget)
+        self.snare_label.setObjectName(u"snare_label")
+        self.snare_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.ghwt_stems_layout.addWidget(self.snare_label, 2, 1, 1, 1)
 
         self.cymbals_label = QLabel(self.wt_audio_widget)
         self.cymbals_label.setObjectName(u"cymbals_label")
@@ -426,6 +451,35 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.label, 0, 2, 1, 1)
 
+        self.kick_select = QToolButton(self.wt_audio_widget)
+        self.kick_select.setObjectName(u"kick_select")
+        self.kick_select.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.kick_select, 1, 3, 1, 1)
+
+        self.ghwt_preview_label = QLabel(self.wt_audio_widget)
+        self.ghwt_preview_label.setObjectName(u"ghwt_preview_label")
+
+        self.ghwt_stems_layout.addWidget(self.ghwt_preview_label, 16, 1, 1, 1, Qt.AlignRight)
+
+        self.kick_label = QLabel(self.wt_audio_widget)
+        self.kick_label.setObjectName(u"kick_label")
+        self.kick_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.ghwt_stems_layout.addWidget(self.kick_label, 1, 1, 1, 1)
+
+        self.toms_select = QToolButton(self.wt_audio_widget)
+        self.toms_select.setObjectName(u"toms_select")
+        self.toms_select.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.toms_select, 4, 3, 1, 1)
+
+        self.bass_input = QLineEdit(self.wt_audio_widget)
+        self.bass_input.setObjectName(u"bass_input")
+        self.bass_input.setEnabled(True)
+
+        self.ghwt_stems_layout.addWidget(self.bass_input, 8, 2, 1, 1)
+
         self.track_label = QLabel(self.wt_audio_widget)
         self.track_label.setObjectName(u"track_label")
         sizePolicy2.setHeightForWidth(self.track_label.sizePolicy().hasHeightForWidth())
@@ -434,41 +488,17 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.track_label, 0, 1, 1, 1)
 
-        self.crowd_input = QLineEdit(self.wt_audio_widget)
-        self.crowd_input.setObjectName(u"crowd_input")
-        self.crowd_input.setEnabled(True)
+        self.ghwt_preview_audio_select = QToolButton(self.wt_audio_widget)
+        self.ghwt_preview_audio_select.setObjectName(u"ghwt_preview_audio_select")
+        self.ghwt_preview_audio_select.setEnabled(False)
 
-        self.ghwt_stems_layout.addWidget(self.crowd_input, 14, 2, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.ghwt_preview_audio_select, 16, 3, 1, 1)
 
-        self.vocals_select = QToolButton(self.wt_audio_widget)
-        self.vocals_select.setObjectName(u"vocals_select")
-        self.vocals_select.setEnabled(True)
+        self.crowd_label = QLabel(self.wt_audio_widget)
+        self.crowd_label.setObjectName(u"crowd_label")
+        self.crowd_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.ghwt_stems_layout.addWidget(self.vocals_select, 10, 3, 1, 1)
-
-        self.cymbals_input = QLineEdit(self.wt_audio_widget)
-        self.cymbals_input.setObjectName(u"cymbals_input")
-        self.cymbals_input.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.cymbals_input, 3, 2, 1, 1)
-
-        self.kick_select = QToolButton(self.wt_audio_widget)
-        self.kick_select.setObjectName(u"kick_select")
-        self.kick_select.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.kick_select, 1, 3, 1, 1)
-
-        self.snare_input = QLineEdit(self.wt_audio_widget)
-        self.snare_input.setObjectName(u"snare_input")
-        self.snare_input.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.snare_input, 2, 2, 1, 1)
-
-        self.backing_label = QLabel(self.wt_audio_widget)
-        self.backing_label.setObjectName(u"backing_label")
-        self.backing_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.ghwt_stems_layout.addWidget(self.backing_label, 12, 1, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.crowd_label, 14, 1, 1, 1)
 
         self.guitar_input = QLineEdit(self.wt_audio_widget)
         self.guitar_input.setObjectName(u"guitar_input")
@@ -476,31 +506,15 @@ class Ui_Form(object):
 
         self.ghwt_stems_layout.addWidget(self.guitar_input, 6, 2, 1, 1)
 
-        self.line_5 = QFrame(self.wt_audio_widget)
-        self.line_5.setObjectName(u"line_5")
-        self.line_5.setFrameShape(QFrame.HLine)
-        self.line_5.setFrameShadow(QFrame.Sunken)
+        self.line_11 = QFrame(self.wt_audio_widget)
+        self.line_11.setObjectName(u"line_11")
+        self.line_11.setFrameShape(QFrame.HLine)
+        self.line_11.setFrameShadow(QFrame.Sunken)
 
-        self.ghwt_stems_layout.addWidget(self.line_5, 9, 0, 1, 4)
-
-        self.kick_input = QLineEdit(self.wt_audio_widget)
-        self.kick_input.setObjectName(u"kick_input")
-        self.kick_input.setEnabled(True)
-
-        self.ghwt_stems_layout.addWidget(self.kick_input, 1, 2, 1, 1)
+        self.ghwt_stems_layout.addWidget(self.line_11, 15, 0, 1, 4)
 
 
         self.verticalLayout_9.addLayout(self.ghwt_stems_layout)
-
-        self.horizontalLayout_13 = QHBoxLayout()
-        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.encrypt_audio = QCheckBox(self.wt_audio_widget)
-        self.encrypt_audio.setObjectName(u"encrypt_audio")
-
-        self.horizontalLayout_13.addWidget(self.encrypt_audio, 0, Qt.AlignRight)
-
-
-        self.verticalLayout_9.addLayout(self.horizontalLayout_13)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -557,6 +571,21 @@ class Ui_Form(object):
 
         self.verticalLayout_9.addLayout(self.horizontalLayout_2)
 
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.encrypt_audio = QCheckBox(self.wt_audio_widget)
+        self.encrypt_audio.setObjectName(u"encrypt_audio")
+
+        self.horizontalLayout_13.addWidget(self.encrypt_audio, 0, Qt.AlignLeft)
+
+        self.ghwt_rendered_preview_check = QCheckBox(self.wt_audio_widget)
+        self.ghwt_rendered_preview_check.setObjectName(u"ghwt_rendered_preview_check")
+
+        self.horizontalLayout_13.addWidget(self.ghwt_rendered_preview_check)
+
+
+        self.verticalLayout_9.addLayout(self.horizontalLayout_13)
+
 
         self.verticalLayout_3.addWidget(self.wt_audio_widget)
 
@@ -576,18 +605,23 @@ class Ui_Form(object):
         self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gh3_stems_layout = QGridLayout()
         self.gh3_stems_layout.setObjectName(u"gh3_stems_layout")
-        self.line_9 = QFrame(self.gh3_audio_widget)
-        self.line_9.setObjectName(u"line_9")
-        self.line_9.setFrameShape(QFrame.HLine)
-        self.line_9.setFrameShadow(QFrame.Sunken)
-
-        self.gh3_stems_layout.addWidget(self.line_9, 11, 0, 1, 3)
-
         self.guitar_label_gh3 = QLabel(self.gh3_audio_widget)
         self.guitar_label_gh3.setObjectName(u"guitar_label_gh3")
         self.guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gh3_stems_layout.addWidget(self.guitar_label_gh3, 1, 0, 1, 1)
+
+        self.backing_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.backing_label_gh3.setObjectName(u"backing_label_gh3")
+        self.backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.backing_label_gh3, 3, 0, 1, 1)
+
+        self.crowd_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.crowd_label_gh3.setObjectName(u"crowd_label_gh3")
+        self.crowd_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.crowd_label_gh3, 12, 0, 1, 1)
 
         self.track_label_2 = QLabel(self.gh3_audio_widget)
         self.track_label_2.setObjectName(u"track_label_2")
@@ -596,134 +630,6 @@ class Ui_Form(object):
         self.track_label_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gh3_stems_layout.addWidget(self.track_label_2, 0, 0, 1, 1)
-
-        self.guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.guitar_select_gh3.setObjectName(u"guitar_select_gh3")
-        self.guitar_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.guitar_select_gh3, 1, 2, 1, 1)
-
-        self.coop_guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_guitar_input_gh3.setObjectName(u"coop_guitar_input_gh3")
-        self.coop_guitar_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_input_gh3, 7, 1, 1, 1)
-
-        self.rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.rhythm_label_gh3.setObjectName(u"rhythm_label_gh3")
-        self.rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_label_gh3, 2, 0, 1, 1)
-
-        self.crowd_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.crowd_input_gh3.setObjectName(u"crowd_input_gh3")
-        self.crowd_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.crowd_input_gh3, 12, 1, 1, 1)
-
-        self.backing_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.backing_select_gh3.setObjectName(u"backing_select_gh3")
-        self.backing_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.backing_select_gh3, 3, 2, 1, 1)
-
-        self.coop_backing_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_backing_select_gh3.setObjectName(u"coop_backing_select_gh3")
-        self.coop_backing_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_select_gh3, 10, 2, 1, 1)
-
-        self.gh3_file_path_label = QLabel(self.gh3_audio_widget)
-        self.gh3_file_path_label.setObjectName(u"gh3_file_path_label")
-        sizePolicy2.setHeightForWidth(self.gh3_file_path_label.sizePolicy().hasHeightForWidth())
-        self.gh3_file_path_label.setSizePolicy(sizePolicy2)
-        self.gh3_file_path_label.setAlignment(Qt.AlignCenter)
-
-        self.gh3_stems_layout.addWidget(self.gh3_file_path_label, 0, 1, 1, 1)
-
-        self.guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.guitar_input_gh3.setObjectName(u"guitar_input_gh3")
-        self.guitar_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.guitar_input_gh3, 1, 1, 1, 1)
-
-        self.backing_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.backing_label_gh3.setObjectName(u"backing_label_gh3")
-        self.backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.backing_label_gh3, 3, 0, 1, 1)
-
-        self.crowd_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.crowd_select_gh3.setObjectName(u"crowd_select_gh3")
-        self.crowd_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.crowd_select_gh3, 12, 2, 1, 1)
-
-        self.rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.rhythm_select_gh3.setObjectName(u"rhythm_select_gh3")
-        self.rhythm_select_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_select_gh3, 2, 2, 1, 1)
-
-        self.coop_backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_backing_input_gh3.setObjectName(u"coop_backing_input_gh3")
-        self.coop_backing_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_input_gh3, 10, 1, 1, 1)
-
-        self.backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.backing_input_gh3.setObjectName(u"backing_input_gh3")
-        self.backing_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.backing_input_gh3, 3, 1, 1, 1)
-
-        self.coop_guitar_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_guitar_label_gh3.setObjectName(u"coop_guitar_label_gh3")
-        self.coop_guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_label_gh3, 7, 0, 1, 1)
-
-        self.rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.rhythm_input_gh3.setObjectName(u"rhythm_input_gh3")
-        self.rhythm_input_gh3.setEnabled(True)
-
-        self.gh3_stems_layout.addWidget(self.rhythm_input_gh3, 2, 1, 1, 1)
-
-        self.coop_rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_rhythm_label_gh3.setObjectName(u"coop_rhythm_label_gh3")
-        self.coop_rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_label_gh3, 9, 0, 1, 1)
-
-        self.coop_rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
-        self.coop_rhythm_input_gh3.setObjectName(u"coop_rhythm_input_gh3")
-        self.coop_rhythm_input_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_input_gh3, 9, 1, 1, 1)
-
-        self.crowd_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.crowd_label_gh3.setObjectName(u"crowd_label_gh3")
-        self.crowd_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.crowd_label_gh3, 12, 0, 1, 1)
-
-        self.coop_rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_rhythm_select_gh3.setObjectName(u"coop_rhythm_select_gh3")
-        self.coop_rhythm_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_rhythm_select_gh3, 9, 2, 1, 1)
-
-        self.coop_guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
-        self.coop_guitar_select_gh3.setObjectName(u"coop_guitar_select_gh3")
-        self.coop_guitar_select_gh3.setEnabled(False)
-
-        self.gh3_stems_layout.addWidget(self.coop_guitar_select_gh3, 7, 2, 1, 1)
-
-        self.coop_backing_label_gh3 = QLabel(self.gh3_audio_widget)
-        self.coop_backing_label_gh3.setObjectName(u"coop_backing_label_gh3")
-        self.coop_backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gh3_stems_layout.addWidget(self.coop_backing_label_gh3, 10, 0, 1, 1)
 
         self.gh3_audio_options = QHBoxLayout()
         self.gh3_audio_options.setObjectName(u"gh3_audio_options")
@@ -741,8 +647,153 @@ class Ui_Form(object):
 
         self.gh3_stems_layout.addLayout(self.gh3_audio_options, 5, 1, 1, 1)
 
+        self.coop_backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_backing_input_gh3.setObjectName(u"coop_backing_input_gh3")
+        self.coop_backing_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_input_gh3, 10, 1, 1, 1)
+
+        self.coop_rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_rhythm_input_gh3.setObjectName(u"coop_rhythm_input_gh3")
+        self.coop_rhythm_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_input_gh3, 9, 1, 1, 1)
+
+        self.coop_guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_guitar_select_gh3.setObjectName(u"coop_guitar_select_gh3")
+        self.coop_guitar_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_select_gh3, 7, 2, 1, 1)
+
+        self.coop_rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_rhythm_label_gh3.setObjectName(u"coop_rhythm_label_gh3")
+        self.coop_rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_label_gh3, 9, 0, 1, 1)
+
+        self.backing_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.backing_select_gh3.setObjectName(u"backing_select_gh3")
+        self.backing_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.backing_select_gh3, 3, 2, 1, 1)
+
+        self.gh3_file_path_label = QLabel(self.gh3_audio_widget)
+        self.gh3_file_path_label.setObjectName(u"gh3_file_path_label")
+        sizePolicy2.setHeightForWidth(self.gh3_file_path_label.sizePolicy().hasHeightForWidth())
+        self.gh3_file_path_label.setSizePolicy(sizePolicy2)
+        self.gh3_file_path_label.setAlignment(Qt.AlignCenter)
+
+        self.gh3_stems_layout.addWidget(self.gh3_file_path_label, 0, 1, 1, 1)
+
+        self.crowd_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.crowd_select_gh3.setObjectName(u"crowd_select_gh3")
+        self.crowd_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.crowd_select_gh3, 12, 2, 1, 1)
+
+        self.rhythm_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.rhythm_label_gh3.setObjectName(u"rhythm_label_gh3")
+        self.rhythm_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_label_gh3, 2, 0, 1, 1)
+
+        self.guitar_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.guitar_select_gh3.setObjectName(u"guitar_select_gh3")
+        self.guitar_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.guitar_select_gh3, 1, 2, 1, 1)
+
+        self.coop_backing_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_backing_label_gh3.setObjectName(u"coop_backing_label_gh3")
+        self.coop_backing_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_label_gh3, 10, 0, 1, 1)
+
+        self.coop_guitar_label_gh3 = QLabel(self.gh3_audio_widget)
+        self.coop_guitar_label_gh3.setObjectName(u"coop_guitar_label_gh3")
+        self.coop_guitar_label_gh3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_label_gh3, 7, 0, 1, 1)
+
+        self.rhythm_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.rhythm_input_gh3.setObjectName(u"rhythm_input_gh3")
+        self.rhythm_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_input_gh3, 2, 1, 1, 1)
+
+        self.coop_guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.coop_guitar_input_gh3.setObjectName(u"coop_guitar_input_gh3")
+        self.coop_guitar_input_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_guitar_input_gh3, 7, 1, 1, 1)
+
+        self.rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.rhythm_select_gh3.setObjectName(u"rhythm_select_gh3")
+        self.rhythm_select_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.rhythm_select_gh3, 2, 2, 1, 1)
+
+        self.coop_backing_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_backing_select_gh3.setObjectName(u"coop_backing_select_gh3")
+        self.coop_backing_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_backing_select_gh3, 10, 2, 1, 1)
+
+        self.line_9 = QFrame(self.gh3_audio_widget)
+        self.line_9.setObjectName(u"line_9")
+        self.line_9.setFrameShape(QFrame.HLine)
+        self.line_9.setFrameShadow(QFrame.Sunken)
+
+        self.gh3_stems_layout.addWidget(self.line_9, 11, 0, 1, 3)
+
+        self.backing_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.backing_input_gh3.setObjectName(u"backing_input_gh3")
+        self.backing_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.backing_input_gh3, 3, 1, 1, 1)
+
+        self.crowd_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.crowd_input_gh3.setObjectName(u"crowd_input_gh3")
+        self.crowd_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.crowd_input_gh3, 12, 1, 1, 1)
+
+        self.coop_rhythm_select_gh3 = QToolButton(self.gh3_audio_widget)
+        self.coop_rhythm_select_gh3.setObjectName(u"coop_rhythm_select_gh3")
+        self.coop_rhythm_select_gh3.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.coop_rhythm_select_gh3, 9, 2, 1, 1)
+
+        self.guitar_input_gh3 = QLineEdit(self.gh3_audio_widget)
+        self.guitar_input_gh3.setObjectName(u"guitar_input_gh3")
+        self.guitar_input_gh3.setEnabled(True)
+
+        self.gh3_stems_layout.addWidget(self.guitar_input_gh3, 1, 1, 1, 1)
+
+        self.gh3_preview_audio_label = QLabel(self.gh3_audio_widget)
+        self.gh3_preview_audio_label.setObjectName(u"gh3_preview_audio_label")
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_label, 13, 0, 1, 1)
+
+        self.gh3_preview_audio_input = QLineEdit(self.gh3_audio_widget)
+        self.gh3_preview_audio_input.setObjectName(u"gh3_preview_audio_input")
+        self.gh3_preview_audio_input.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_input, 13, 1, 1, 1)
+
+        self.gh3_preview_audio_select = QToolButton(self.gh3_audio_widget)
+        self.gh3_preview_audio_select.setObjectName(u"gh3_preview_audio_select")
+        self.gh3_preview_audio_select.setEnabled(False)
+
+        self.gh3_stems_layout.addWidget(self.gh3_preview_audio_select, 13, 2, 1, 1)
+
 
         self.verticalLayout_10.addLayout(self.gh3_stems_layout)
+
+        self.gh3_rendered_preview_check = QCheckBox(self.gh3_audio_widget)
+        self.gh3_rendered_preview_check.setObjectName(u"gh3_rendered_preview_check")
+
+        self.verticalLayout_10.addWidget(self.gh3_rendered_preview_check)
 
         self.gh3_preview_layout = QHBoxLayout()
         self.gh3_preview_layout.setObjectName(u"gh3_preview_layout")
@@ -791,6 +842,11 @@ class Ui_Form(object):
 
         self.gh3_preview_layout.addWidget(self.length_mills_gh3)
 
+        self.gh3_set_end = QCheckBox(self.gh3_audio_widget)
+        self.gh3_set_end.setObjectName(u"gh3_set_end")
+
+        self.gh3_preview_layout.addWidget(self.gh3_set_end)
+
 
         self.verticalLayout_10.addLayout(self.gh3_preview_layout)
 
@@ -809,10 +865,45 @@ class Ui_Form(object):
         self.verticalLayout_13.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_3 = QGridLayout()
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.ghwt_song_script_input = QLineEdit(self.wt_song_data_widget)
-        self.ghwt_song_script_input.setObjectName(u"ghwt_song_script_input")
+        self.setlist_settings_layout = QHBoxLayout()
+        self.setlist_settings_layout.setObjectName(u"setlist_settings_layout")
+        self.game_icon_label = QLabel(self.wt_song_data_widget)
+        self.game_icon_label.setObjectName(u"game_icon_label")
 
-        self.gridLayout_3.addWidget(self.ghwt_song_script_input, 3, 1, 1, 1)
+        self.setlist_settings_layout.addWidget(self.game_icon_label)
+
+        self.game_icon_input = QLineEdit(self.wt_song_data_widget)
+        self.game_icon_input.setObjectName(u"game_icon_input")
+
+        self.setlist_settings_layout.addWidget(self.game_icon_input)
+
+        self.game_category_label = QLabel(self.wt_song_data_widget)
+        self.game_category_label.setObjectName(u"game_category_label")
+
+        self.setlist_settings_layout.addWidget(self.game_category_label)
+
+        self.game_category_input = QLineEdit(self.wt_song_data_widget)
+        self.game_category_input.setObjectName(u"game_category_input")
+
+        self.setlist_settings_layout.addWidget(self.game_category_input)
+
+        self.band_label = QLabel(self.wt_song_data_widget)
+        self.band_label.setObjectName(u"band_label")
+
+        self.setlist_settings_layout.addWidget(self.band_label)
+
+        self.band_input = QLineEdit(self.wt_song_data_widget)
+        self.band_input.setObjectName(u"band_input")
+
+        self.setlist_settings_layout.addWidget(self.band_input)
+
+
+        self.gridLayout_3.addLayout(self.setlist_settings_layout, 17, 1, 1, 2)
+
+        self.ghwt_perf_override_input = QLineEdit(self.wt_song_data_widget)
+        self.ghwt_perf_override_input.setObjectName(u"ghwt_perf_override_input")
+
+        self.gridLayout_3.addWidget(self.ghwt_perf_override_input, 1, 1, 1, 1)
 
         self.ghwt_band_vol = QDoubleSpinBox(self.wt_song_data_widget)
         self.ghwt_band_vol.setObjectName(u"ghwt_band_vol")
@@ -820,72 +911,53 @@ class Ui_Form(object):
         self.ghwt_band_vol.setMaximum(5.000000000000000)
         self.ghwt_band_vol.setSingleStep(0.500000000000000)
 
-        self.gridLayout_3.addWidget(self.ghwt_band_vol, 10, 1, 1, 1)
-
-        self.ghwor_stfs_label = QLabel(self.wt_song_data_widget)
-        self.ghwor_stfs_label.setObjectName(u"ghwor_stfs_label")
-
-        self.gridLayout_3.addWidget(self.ghwor_stfs_label, 4, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.ghwt_band_vol, 11, 1, 1, 1)
 
         self.ghwt_drumkit_label = QLabel(self.wt_song_data_widget)
         self.ghwt_drumkit_label.setObjectName(u"ghwt_drumkit_label")
 
         self.gridLayout_3.addWidget(self.ghwt_drumkit_label, 7, 0, 1, 1)
 
-        self.line_10 = QFrame(self.wt_song_data_widget)
-        self.line_10.setObjectName(u"line_10")
-        self.line_10.setFrameShape(QFrame.HLine)
-        self.line_10.setFrameShadow(QFrame.Sunken)
+        self.ghwt_midi_file_input = QLineEdit(self.wt_song_data_widget)
+        self.ghwt_midi_file_input.setObjectName(u"ghwt_midi_file_input")
 
-        self.gridLayout_3.addWidget(self.line_10, 12, 0, 1, 3)
+        self.gridLayout_3.addWidget(self.ghwt_midi_file_input, 0, 1, 1, 1)
 
-        self.ghwt_midi_file_select = QToolButton(self.wt_song_data_widget)
-        self.ghwt_midi_file_select.setObjectName(u"ghwt_midi_file_select")
+        self.ghwt_countoff_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_countoff_label.setObjectName(u"ghwt_countoff_label")
 
-        self.gridLayout_3.addWidget(self.ghwt_midi_file_select, 0, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.ghwt_countoff_label, 5, 0, 1, 1)
 
-        self.ghwt_ska_files_input = QLineEdit(self.wt_song_data_widget)
-        self.ghwt_ska_files_input.setObjectName(u"ghwt_ska_files_input")
+        self.other_settings_label = QLabel(self.wt_song_data_widget)
+        self.other_settings_label.setObjectName(u"other_settings_label")
 
-        self.gridLayout_3.addWidget(self.ghwt_ska_files_input, 2, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.other_settings_label, 15, 0, 1, 3, Qt.AlignHCenter)
 
-        self.ghwt_vocal_gender_select = QComboBox(self.wt_song_data_widget)
-        self.ghwt_vocal_gender_select.addItem("")
-        self.ghwt_vocal_gender_select.addItem("")
-        self.ghwt_vocal_gender_select.addItem("")
-        self.ghwt_vocal_gender_select.setObjectName(u"ghwt_vocal_gender_select")
+        self.ghwor_stfs_select = QToolButton(self.wt_song_data_widget)
+        self.ghwor_stfs_select.setObjectName(u"ghwor_stfs_select")
 
-        self.gridLayout_3.addWidget(self.ghwt_vocal_gender_select, 8, 1, 1, 1)
-
-        self.ghwt_song_script_select = QToolButton(self.wt_song_data_widget)
-        self.ghwt_song_script_select.setObjectName(u"ghwt_song_script_select")
-
-        self.gridLayout_3.addWidget(self.ghwt_song_script_select, 3, 2, 1, 1)
-
-        self.ghwt_vocal_gender_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_vocal_gender_label.setObjectName(u"ghwt_vocal_gender_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_vocal_gender_label, 8, 0, 1, 1)
-
-        self.ghwt_song_script_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_song_script_label.setObjectName(u"ghwt_song_script_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_song_script_label, 3, 0, 1, 1)
-
-        self.ghwt_ska_files_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_ska_files_label.setObjectName(u"ghwt_ska_files_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_ska_files_label, 2, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.ghwor_stfs_select, 4, 2, 1, 1)
 
         self.ghwor_stfs_input = QLineEdit(self.wt_song_data_widget)
         self.ghwor_stfs_input.setObjectName(u"ghwor_stfs_input")
 
         self.gridLayout_3.addWidget(self.ghwor_stfs_input, 4, 1, 1, 1)
 
-        self.ghwt_perf_override_select = QToolButton(self.wt_song_data_widget)
-        self.ghwt_perf_override_select.setObjectName(u"ghwt_perf_override_select")
+        self.ghwt_song_script_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_song_script_label.setObjectName(u"ghwt_song_script_label")
 
-        self.gridLayout_3.addWidget(self.ghwt_perf_override_select, 1, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.ghwt_song_script_label, 3, 0, 1, 1)
+
+        self.ghwt_countoff_select = QComboBox(self.wt_song_data_widget)
+        self.ghwt_countoff_select.addItem(u"Hihat01")
+        self.ghwt_countoff_select.addItem(u"Hihat02")
+        self.ghwt_countoff_select.addItem(u"Hihat03")
+        self.ghwt_countoff_select.addItem(u"Sticks_Huge")
+        self.ghwt_countoff_select.addItem(u"Sticks_Normal")
+        self.ghwt_countoff_select.addItem(u"Sticks_Tiny")
+        self.ghwt_countoff_select.setObjectName(u"ghwt_countoff_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_countoff_select, 5, 1, 1, 1)
 
         self.tiers_layout = QGridLayout()
         self.tiers_layout.setObjectName(u"tiers_layout")
@@ -963,78 +1035,23 @@ class Ui_Form(object):
         self.tiers_layout.addWidget(self.band_tier_value, 4, 1, 1, 1)
 
 
-        self.gridLayout_3.addLayout(self.tiers_layout, 11, 1, 1, 1)
+        self.gridLayout_3.addLayout(self.tiers_layout, 13, 1, 1, 1)
 
-        self.ghwt_countoff_select = QComboBox(self.wt_song_data_widget)
-        self.ghwt_countoff_select.addItem(u"Hihat01")
-        self.ghwt_countoff_select.addItem(u"Hihat02")
-        self.ghwt_countoff_select.addItem(u"Hihat03")
-        self.ghwt_countoff_select.addItem(u"Sticks_Huge")
-        self.ghwt_countoff_select.addItem(u"Sticks_Normal")
-        self.ghwt_countoff_select.addItem(u"Sticks_Tiny")
-        self.ghwt_countoff_select.setObjectName(u"ghwt_countoff_select")
+        self.vocal_scroll_speed_input = QDoubleSpinBox(self.wt_song_data_widget)
+        self.vocal_scroll_speed_input.setObjectName(u"vocal_scroll_speed_input")
+        self.vocal_scroll_speed_input.setValue(1.000000000000000)
 
-        self.gridLayout_3.addWidget(self.ghwt_countoff_select, 5, 1, 1, 1)
-
-        self.ghwt_ska_files_select = QToolButton(self.wt_song_data_widget)
-        self.ghwt_ska_files_select.setObjectName(u"ghwt_ska_files_select")
-
-        self.gridLayout_3.addWidget(self.ghwt_ska_files_select, 2, 2, 1, 1)
-
-        self.ghwt_countoff_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_countoff_label.setObjectName(u"ghwt_countoff_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_countoff_label, 5, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.vocal_scroll_speed_input, 9, 1, 1, 1)
 
         self.tiers_label = QLabel(self.wt_song_data_widget)
         self.tiers_label.setObjectName(u"tiers_label")
 
-        self.gridLayout_3.addWidget(self.tiers_label, 11, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.tiers_label, 13, 0, 1, 1)
 
-        self.setlist_settings_layout = QHBoxLayout()
-        self.setlist_settings_layout.setObjectName(u"setlist_settings_layout")
-        self.game_icon_label = QLabel(self.wt_song_data_widget)
-        self.game_icon_label.setObjectName(u"game_icon_label")
+        self.vocal_speed_label = QLabel(self.wt_song_data_widget)
+        self.vocal_speed_label.setObjectName(u"vocal_speed_label")
 
-        self.setlist_settings_layout.addWidget(self.game_icon_label)
-
-        self.game_icon_input = QLineEdit(self.wt_song_data_widget)
-        self.game_icon_input.setObjectName(u"game_icon_input")
-
-        self.setlist_settings_layout.addWidget(self.game_icon_input)
-
-        self.game_category_label = QLabel(self.wt_song_data_widget)
-        self.game_category_label.setObjectName(u"game_category_label")
-
-        self.setlist_settings_layout.addWidget(self.game_category_label)
-
-        self.game_category_input = QLineEdit(self.wt_song_data_widget)
-        self.game_category_input.setObjectName(u"game_category_input")
-
-        self.setlist_settings_layout.addWidget(self.game_category_input)
-
-        self.band_label = QLabel(self.wt_song_data_widget)
-        self.band_label.setObjectName(u"band_label")
-
-        self.setlist_settings_layout.addWidget(self.band_label)
-
-        self.band_input = QLineEdit(self.wt_song_data_widget)
-        self.band_input.setObjectName(u"band_input")
-
-        self.setlist_settings_layout.addWidget(self.band_input)
-
-
-        self.gridLayout_3.addLayout(self.setlist_settings_layout, 15, 1, 1, 2)
-
-        self.other_settings_label = QLabel(self.wt_song_data_widget)
-        self.other_settings_label.setObjectName(u"other_settings_label")
-
-        self.gridLayout_3.addWidget(self.other_settings_label, 13, 0, 1, 3, Qt.AlignHCenter)
-
-        self.label_3 = QLabel(self.wt_song_data_widget)
-        self.label_3.setObjectName(u"label_3")
-
-        self.gridLayout_3.addWidget(self.label_3, 15, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.vocal_speed_label, 9, 0, 1, 1)
 
         self.skeleton_types_layout = QHBoxLayout()
         self.skeleton_types_layout.setObjectName(u"skeleton_types_layout")
@@ -1086,63 +1103,12 @@ class Ui_Form(object):
         self.skeleton_types_layout.addWidget(self.skeleton_type_v_select)
 
 
-        self.gridLayout_3.addLayout(self.skeleton_types_layout, 16, 1, 1, 2)
-
-        self.vocal_speed_label = QLabel(self.wt_song_data_widget)
-        self.vocal_speed_label.setObjectName(u"vocal_speed_label")
-
-        self.gridLayout_3.addWidget(self.vocal_speed_label, 9, 0, 1, 1)
-
-        self.ghwor_stfs_select = QToolButton(self.wt_song_data_widget)
-        self.ghwor_stfs_select.setObjectName(u"ghwor_stfs_select")
-
-        self.gridLayout_3.addWidget(self.ghwor_stfs_select, 4, 2, 1, 1)
-
-        self.skeleton_types_label = QLabel(self.wt_song_data_widget)
-        self.skeleton_types_label.setObjectName(u"skeleton_types_label")
-
-        self.gridLayout_3.addWidget(self.skeleton_types_label, 16, 0, 1, 1)
-
-        self.ghwt_drumkit_select = QComboBox(self.wt_song_data_widget)
-        self.ghwt_drumkit_select.setObjectName(u"ghwt_drumkit_select")
-
-        self.gridLayout_3.addWidget(self.ghwt_drumkit_select, 7, 1, 1, 1)
-
-        self.ghwt_perf_override_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_perf_override_label.setObjectName(u"ghwt_perf_override_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_perf_override_label, 1, 0, 1, 1)
-
-        self.ghwt_perf_override_input = QLineEdit(self.wt_song_data_widget)
-        self.ghwt_perf_override_input.setObjectName(u"ghwt_perf_override_input")
-
-        self.gridLayout_3.addWidget(self.ghwt_perf_override_input, 1, 1, 1, 1)
+        self.gridLayout_3.addLayout(self.skeleton_types_layout, 18, 1, 1, 2)
 
         self.ghwt_band_vol_label = QLabel(self.wt_song_data_widget)
         self.ghwt_band_vol_label.setObjectName(u"ghwt_band_vol_label")
 
-        self.gridLayout_3.addWidget(self.ghwt_band_vol_label, 10, 0, 1, 1)
-
-        self.vocal_scroll_speed_input = QDoubleSpinBox(self.wt_song_data_widget)
-        self.vocal_scroll_speed_input.setObjectName(u"vocal_scroll_speed_input")
-        self.vocal_scroll_speed_input.setValue(1.000000000000000)
-
-        self.gridLayout_3.addWidget(self.vocal_scroll_speed_input, 9, 1, 1, 1)
-
-        self.ghwt_midi_file_input = QLineEdit(self.wt_song_data_widget)
-        self.ghwt_midi_file_input.setObjectName(u"ghwt_midi_file_input")
-
-        self.gridLayout_3.addWidget(self.ghwt_midi_file_input, 0, 1, 1, 1)
-
-        self.ghwt_midi_file_label = QLabel(self.wt_song_data_widget)
-        self.ghwt_midi_file_label.setObjectName(u"ghwt_midi_file_label")
-
-        self.gridLayout_3.addWidget(self.ghwt_midi_file_label, 0, 0, 1, 1)
-
-        self.label_7 = QLabel(self.wt_song_data_widget)
-        self.label_7.setObjectName(u"label_7")
-
-        self.gridLayout_3.addWidget(self.label_7, 14, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.ghwt_band_vol_label, 11, 0, 1, 1)
 
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
@@ -1162,7 +1128,120 @@ class Ui_Form(object):
         self.horizontalLayout_9.addWidget(self.use_new_clips_check)
 
 
-        self.gridLayout_3.addLayout(self.horizontalLayout_9, 14, 1, 1, 2)
+        self.gridLayout_3.addLayout(self.horizontalLayout_9, 16, 1, 1, 2)
+
+        self.ghwt_vocal_cents_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_vocal_cents_label.setObjectName(u"ghwt_vocal_cents_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_vocal_cents_label, 10, 0, 1, 1)
+
+        self.ghwt_ska_files_input = QLineEdit(self.wt_song_data_widget)
+        self.ghwt_ska_files_input.setObjectName(u"ghwt_ska_files_input")
+
+        self.gridLayout_3.addWidget(self.ghwt_ska_files_input, 2, 1, 1, 1)
+
+        self.ghwt_perf_override_select = QToolButton(self.wt_song_data_widget)
+        self.ghwt_perf_override_select.setObjectName(u"ghwt_perf_override_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_perf_override_select, 1, 2, 1, 1)
+
+        self.ghwt_ska_files_select = QToolButton(self.wt_song_data_widget)
+        self.ghwt_ska_files_select.setObjectName(u"ghwt_ska_files_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_ska_files_select, 2, 2, 1, 1)
+
+        self.ghwt_ska_files_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_ska_files_label.setObjectName(u"ghwt_ska_files_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_ska_files_label, 2, 0, 1, 1)
+
+        self.label_3 = QLabel(self.wt_song_data_widget)
+        self.label_3.setObjectName(u"label_3")
+
+        self.gridLayout_3.addWidget(self.label_3, 17, 0, 1, 1)
+
+        self.ghwt_song_script_select = QToolButton(self.wt_song_data_widget)
+        self.ghwt_song_script_select.setObjectName(u"ghwt_song_script_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_song_script_select, 3, 2, 1, 1)
+
+        self.label_7 = QLabel(self.wt_song_data_widget)
+        self.label_7.setObjectName(u"label_7")
+
+        self.gridLayout_3.addWidget(self.label_7, 16, 0, 1, 1)
+
+        self.ghwt_song_script_input = QLineEdit(self.wt_song_data_widget)
+        self.ghwt_song_script_input.setObjectName(u"ghwt_song_script_input")
+
+        self.gridLayout_3.addWidget(self.ghwt_song_script_input, 3, 1, 1, 1)
+
+        self.line_10 = QFrame(self.wt_song_data_widget)
+        self.line_10.setObjectName(u"line_10")
+        self.line_10.setFrameShape(QFrame.HLine)
+        self.line_10.setFrameShadow(QFrame.Sunken)
+
+        self.gridLayout_3.addWidget(self.line_10, 14, 0, 1, 3)
+
+        self.ghwt_drumkit_select = QComboBox(self.wt_song_data_widget)
+        self.ghwt_drumkit_select.setObjectName(u"ghwt_drumkit_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_drumkit_select, 7, 1, 1, 1)
+
+        self.ghwt_vocal_gender_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_vocal_gender_label.setObjectName(u"ghwt_vocal_gender_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_vocal_gender_label, 8, 0, 1, 1)
+
+        self.ghwt_midi_file_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_midi_file_label.setObjectName(u"ghwt_midi_file_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_midi_file_label, 0, 0, 1, 1)
+
+        self.ghwt_perf_override_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_perf_override_label.setObjectName(u"ghwt_perf_override_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_perf_override_label, 1, 0, 1, 1)
+
+        self.ghwor_stfs_label = QLabel(self.wt_song_data_widget)
+        self.ghwor_stfs_label.setObjectName(u"ghwor_stfs_label")
+
+        self.gridLayout_3.addWidget(self.ghwor_stfs_label, 4, 0, 1, 1)
+
+        self.skeleton_types_label = QLabel(self.wt_song_data_widget)
+        self.skeleton_types_label.setObjectName(u"skeleton_types_label")
+
+        self.gridLayout_3.addWidget(self.skeleton_types_label, 18, 0, 1, 1)
+
+        self.ghwt_vocal_gender_select = QComboBox(self.wt_song_data_widget)
+        self.ghwt_vocal_gender_select.addItem("")
+        self.ghwt_vocal_gender_select.addItem("")
+        self.ghwt_vocal_gender_select.addItem("")
+        self.ghwt_vocal_gender_select.setObjectName(u"ghwt_vocal_gender_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_vocal_gender_select, 8, 1, 1, 1)
+
+        self.ghwt_vocal_cents = QSpinBox(self.wt_song_data_widget)
+        self.ghwt_vocal_cents.setObjectName(u"ghwt_vocal_cents")
+        self.ghwt_vocal_cents.setMinimum(-50)
+        self.ghwt_vocal_cents.setMaximum(50)
+
+        self.gridLayout_3.addWidget(self.ghwt_vocal_cents, 10, 1, 1, 1)
+
+        self.ghwt_midi_file_select = QToolButton(self.wt_song_data_widget)
+        self.ghwt_midi_file_select.setObjectName(u"ghwt_midi_file_select")
+
+        self.gridLayout_3.addWidget(self.ghwt_midi_file_select, 0, 2, 1, 1)
+
+        self.ghwt_whammy_cutoff_label = QLabel(self.wt_song_data_widget)
+        self.ghwt_whammy_cutoff_label.setObjectName(u"ghwt_whammy_cutoff_label")
+
+        self.gridLayout_3.addWidget(self.ghwt_whammy_cutoff_label, 12, 0, 1, 1)
+
+        self.ghwt_whammy_cutoff = QDoubleSpinBox(self.wt_song_data_widget)
+        self.ghwt_whammy_cutoff.setObjectName(u"ghwt_whammy_cutoff")
+        self.ghwt_whammy_cutoff.setValue(0.500000000000000)
+
+        self.gridLayout_3.addWidget(self.ghwt_whammy_cutoff, 12, 1, 1, 1)
 
 
         self.verticalLayout_13.addLayout(self.gridLayout_3)
@@ -1182,6 +1261,25 @@ class Ui_Form(object):
         self.verticalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_5 = QGridLayout()
         self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.gh3_ska_files_select = QToolButton(self.gh3_song_data_widget)
+        self.gh3_ska_files_select.setObjectName(u"gh3_ska_files_select")
+
+        self.gridLayout_5.addWidget(self.gh3_ska_files_select, 2, 2, 1, 1)
+
+        self.gh3_ska_files_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_ska_files_label.setObjectName(u"gh3_ska_files_label")
+
+        self.gridLayout_5.addWidget(self.gh3_ska_files_label, 2, 0, 1, 1)
+
+        self.gh3_vocal_gender_select = QComboBox(self.gh3_song_data_widget)
+        self.gh3_vocal_gender_select.addItem("")
+        self.gh3_vocal_gender_select.addItem("")
+        self.gh3_vocal_gender_select.addItem("")
+        self.gh3_vocal_gender_select.addItem("")
+        self.gh3_vocal_gender_select.setObjectName(u"gh3_vocal_gender_select")
+
+        self.gridLayout_5.addWidget(self.gh3_vocal_gender_select, 7, 1, 1, 1)
+
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.gh3_gtr_vol_label = QLabel(self.gh3_song_data_widget)
@@ -1213,17 +1311,34 @@ class Ui_Form(object):
         self.horizontalLayout_7.addWidget(self.gh3_band_vol)
 
 
-        self.gridLayout_5.addLayout(self.horizontalLayout_7, 7, 1, 1, 1)
+        self.gridLayout_5.addLayout(self.horizontalLayout_7, 10, 1, 1, 1)
+
+        self.gh3_perf_override_input = QLineEdit(self.gh3_song_data_widget)
+        self.gh3_perf_override_input.setObjectName(u"gh3_perf_override_input")
+
+        self.gridLayout_5.addWidget(self.gh3_perf_override_input, 1, 1, 1, 1)
+
+        self.gh3_countoff_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_countoff_label.setObjectName(u"gh3_countoff_label")
+
+        self.gridLayout_5.addWidget(self.gh3_countoff_label, 5, 0, 1, 1)
+
+        self.line = QFrame(self.gh3_song_data_widget)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+
+        self.gridLayout_5.addWidget(self.line, 9, 0, 1, 3)
+
+        self.gh3_midi_file_input = QLineEdit(self.gh3_song_data_widget)
+        self.gh3_midi_file_input.setObjectName(u"gh3_midi_file_input")
+
+        self.gridLayout_5.addWidget(self.gh3_midi_file_input, 0, 1, 1, 1)
 
         self.gh3_perf_override_label = QLabel(self.gh3_song_data_widget)
         self.gh3_perf_override_label.setObjectName(u"gh3_perf_override_label")
 
         self.gridLayout_5.addWidget(self.gh3_perf_override_label, 1, 0, 1, 1)
-
-        self.gh3_countoff_label = QLabel(self.gh3_song_data_widget)
-        self.gh3_countoff_label.setObjectName(u"gh3_countoff_label")
-
-        self.gridLayout_5.addWidget(self.gh3_countoff_label, 2, 0, 1, 1)
 
         self.gh3_countoff_select = QComboBox(self.gh3_song_data_widget)
         self.gh3_countoff_select.addItem(u"Hihat01")
@@ -1234,68 +1349,67 @@ class Ui_Form(object):
         self.gh3_countoff_select.addItem(u"Sticks_Tiny")
         self.gh3_countoff_select.setObjectName(u"gh3_countoff_select")
 
-        self.gridLayout_5.addWidget(self.gh3_countoff_select, 2, 1, 1, 1)
-
-        self.gh3_vocal_gender_select = QComboBox(self.gh3_song_data_widget)
-        self.gh3_vocal_gender_select.addItem("")
-        self.gh3_vocal_gender_select.addItem("")
-        self.gh3_vocal_gender_select.addItem("")
-        self.gh3_vocal_gender_select.addItem("")
-        self.gh3_vocal_gender_select.setObjectName(u"gh3_vocal_gender_select")
-
-        self.gridLayout_5.addWidget(self.gh3_vocal_gender_select, 4, 1, 1, 1)
-
-        self.gh3_bassist_select_label = QLabel(self.gh3_song_data_widget)
-        self.gh3_bassist_select_label.setObjectName(u"gh3_bassist_select_label")
-
-        self.gridLayout_5.addWidget(self.gh3_bassist_select_label, 5, 0, 1, 1)
-
-        self.gh3_midi_file_input = QLineEdit(self.gh3_song_data_widget)
-        self.gh3_midi_file_input.setObjectName(u"gh3_midi_file_input")
-
-        self.gridLayout_5.addWidget(self.gh3_midi_file_input, 0, 1, 1, 1)
-
-        self.gh3_midi_file_label = QLabel(self.gh3_song_data_widget)
-        self.gh3_midi_file_label.setObjectName(u"gh3_midi_file_label")
-
-        self.gridLayout_5.addWidget(self.gh3_midi_file_label, 0, 0, 1, 1)
-
-        self.gh3_perf_override_select = QToolButton(self.gh3_song_data_widget)
-        self.gh3_perf_override_select.setObjectName(u"gh3_perf_override_select")
-
-        self.gridLayout_5.addWidget(self.gh3_perf_override_select, 1, 2, 1, 1)
+        self.gridLayout_5.addWidget(self.gh3_countoff_select, 5, 1, 1, 1)
 
         self.gh3_bassist_select = QComboBox(self.gh3_song_data_widget)
         self.gh3_bassist_select.setObjectName(u"gh3_bassist_select")
 
-        self.gridLayout_5.addWidget(self.gh3_bassist_select, 5, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.gh3_bassist_select, 8, 1, 1, 1)
+
+        self.gh3_volume_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_volume_label.setObjectName(u"gh3_volume_label")
+
+        self.gridLayout_5.addWidget(self.gh3_volume_label, 10, 0, 1, 1)
+
+        self.gh3_song_script_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_song_script_label.setObjectName(u"gh3_song_script_label")
+
+        self.gridLayout_5.addWidget(self.gh3_song_script_label, 4, 0, 1, 1)
 
         self.gh3_midi_file_select = QToolButton(self.gh3_song_data_widget)
         self.gh3_midi_file_select.setObjectName(u"gh3_midi_file_select")
 
         self.gridLayout_5.addWidget(self.gh3_midi_file_select, 0, 2, 1, 1)
 
-        self.gh3_perf_override_input = QLineEdit(self.gh3_song_data_widget)
-        self.gh3_perf_override_input.setObjectName(u"gh3_perf_override_input")
+        self.gh3_bassist_select_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_bassist_select_label.setObjectName(u"gh3_bassist_select_label")
 
-        self.gridLayout_5.addWidget(self.gh3_perf_override_input, 1, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.gh3_bassist_select_label, 8, 0, 1, 1)
 
-        self.gh3_volume_label = QLabel(self.gh3_song_data_widget)
-        self.gh3_volume_label.setObjectName(u"gh3_volume_label")
+        self.gh3_song_script_select = QToolButton(self.gh3_song_data_widget)
+        self.gh3_song_script_select.setObjectName(u"gh3_song_script_select")
 
-        self.gridLayout_5.addWidget(self.gh3_volume_label, 7, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.gh3_song_script_select, 4, 2, 1, 1)
+
+        self.gh3_song_script_input = QLineEdit(self.gh3_song_data_widget)
+        self.gh3_song_script_input.setObjectName(u"gh3_song_script_input")
+
+        self.gridLayout_5.addWidget(self.gh3_song_script_input, 4, 1, 1, 1)
+
+        self.gh3_perf_override_select = QToolButton(self.gh3_song_data_widget)
+        self.gh3_perf_override_select.setObjectName(u"gh3_perf_override_select")
+
+        self.gridLayout_5.addWidget(self.gh3_perf_override_select, 1, 2, 1, 1)
 
         self.gh3_vocal_gender_label = QLabel(self.gh3_song_data_widget)
         self.gh3_vocal_gender_label.setObjectName(u"gh3_vocal_gender_label")
 
-        self.gridLayout_5.addWidget(self.gh3_vocal_gender_label, 4, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.gh3_vocal_gender_label, 7, 0, 1, 1)
 
-        self.line = QFrame(self.gh3_song_data_widget)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
+        self.gh3_ska_files_input = QLineEdit(self.gh3_song_data_widget)
+        self.gh3_ska_files_input.setObjectName(u"gh3_ska_files_input")
 
-        self.gridLayout_5.addWidget(self.line, 6, 0, 1, 3)
+        self.gridLayout_5.addWidget(self.gh3_ska_files_input, 2, 1, 1, 1)
+
+        self.gh3_midi_file_label = QLabel(self.gh3_song_data_widget)
+        self.gh3_midi_file_label.setObjectName(u"gh3_midi_file_label")
+
+        self.gridLayout_5.addWidget(self.gh3_midi_file_label, 0, 0, 1, 1)
+
+        self.gh3_ska_file_convert_check = QCheckBox(self.gh3_song_data_widget)
+        self.gh3_ska_file_convert_check.setObjectName(u"gh3_ska_file_convert_check")
+
+        self.gridLayout_5.addWidget(self.gh3_ska_file_convert_check, 3, 1, 1, 1)
 
 
         self.verticalLayout_7.addLayout(self.gridLayout_5)
@@ -1440,12 +1554,12 @@ class Ui_Form(object):
 
         self.verticalLayout_15.addLayout(self.gridLayout_6)
 
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.platform_select = QHBoxLayout()
+        self.platform_select.setObjectName(u"platform_select")
         self.platform_label = QLabel(self.compile_settings)
         self.platform_label.setObjectName(u"platform_label")
 
-        self.horizontalLayout_5.addWidget(self.platform_label)
+        self.platform_select.addWidget(self.platform_label)
 
         self.platform_pc = QRadioButton(self.compile_settings)
         self.platform_button_group = QButtonGroup(Form)
@@ -1454,17 +1568,17 @@ class Ui_Form(object):
         self.platform_pc.setObjectName(u"platform_pc")
         self.platform_pc.setChecked(True)
 
-        self.horizontalLayout_5.addWidget(self.platform_pc)
+        self.platform_select.addWidget(self.platform_pc)
 
         self.platform_360 = QRadioButton(self.compile_settings)
         self.platform_button_group.addButton(self.platform_360)
         self.platform_360.setObjectName(u"platform_360")
         self.platform_360.setEnabled(False)
 
-        self.horizontalLayout_5.addWidget(self.platform_360)
+        self.platform_select.addWidget(self.platform_360)
 
 
-        self.verticalLayout_15.addLayout(self.horizontalLayout_5)
+        self.verticalLayout_15.addLayout(self.platform_select)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -1574,8 +1688,19 @@ class Ui_Form(object):
         self.beatlines_check.toggled.connect(self.beat_16th_low_input.setEnabled)
         self.beatlines_check.toggled.connect(self.beat_16th_high_input.setEnabled)
         self.p2_rhythm_check.toggled.connect(self.coop_audio_check.setEnabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_preview_audio_input.setEnabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_preview_audio_select.setEnabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_minutes.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_seconds.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.preview_mills.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_minutes.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_seconds.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.length_mills.setDisabled)
+        self.ghwt_rendered_preview_check.toggled.connect(self.ghwt_set_end.setDisabled)
+        self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
+        self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(3)
+        self.compile_tabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1603,81 +1728,78 @@ class Ui_Form(object):
         self.artist_label.setText(QCoreApplication.translate("Form", u"Artist:", None))
         self.cover_artist_label.setText(QCoreApplication.translate("Form", u"Cover Artist:", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.metadata_tab), QCoreApplication.translate("Form", u"Metadata", None))
-        self.backing_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.cymbals_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.bass_label.setText(QCoreApplication.translate("Form", u"Bass", None))
-        self.snare_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.kick_label.setText(QCoreApplication.translate("Form", u"Kick", None))
-        self.crowd_label.setText(QCoreApplication.translate("Form", u"Crowd", None))
-        self.snare_label.setText(QCoreApplication.translate("Form", u"Snare", None))
-        self.bass_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.guitar_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.vocals_label.setText(QCoreApplication.translate("Form", u"Vocals", None))
-        self.toms_label.setText(QCoreApplication.translate("Form", u"Toms", None))
-        self.toms_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.guitar_label.setText(QCoreApplication.translate("Form", u"Guitar", None))
         self.crowd_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.toms_label.setText(QCoreApplication.translate("Form", u"Toms", None))
+        self.backing_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.backing_label.setText(QCoreApplication.translate("Form", u"Backing", None))
+        self.snare_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.guitar_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.vocals_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.bass_label.setText(QCoreApplication.translate("Form", u"Bass", None))
+        self.bass_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.cymbals_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.guitar_label.setText(QCoreApplication.translate("Form", u"Guitar", None))
+        self.vocals_label.setText(QCoreApplication.translate("Form", u"Vocals", None))
+        self.snare_label.setText(QCoreApplication.translate("Form", u"Snare", None))
         self.cymbals_label.setText(QCoreApplication.translate("Form", u"Cymbals", None))
         self.label.setText(QCoreApplication.translate("Form", u"Audio File Path", None))
-        self.track_label.setText(QCoreApplication.translate("Form", u"Track", None))
-        self.vocals_select.setText(QCoreApplication.translate("Form", u"...", None))
         self.kick_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.backing_label.setText(QCoreApplication.translate("Form", u"Backing", None))
-        self.encrypt_audio.setText(QCoreApplication.translate("Form", u"Encrypt Audio", None))
+        self.ghwt_preview_label.setText(QCoreApplication.translate("Form", u"Preview", None))
+        self.kick_label.setText(QCoreApplication.translate("Form", u"Kick", None))
+        self.toms_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.track_label.setText(QCoreApplication.translate("Form", u"Track", None))
+        self.ghwt_preview_audio_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.crowd_label.setText(QCoreApplication.translate("Form", u"Crowd", None))
         self.preview_label.setText(QCoreApplication.translate("Form", u"Preview Start:", None))
         self.length_label.setText(QCoreApplication.translate("Form", u"Length:", None))
         self.ghwt_set_end.setText(QCoreApplication.translate("Form", u"Set End Time", None))
+        self.encrypt_audio.setText(QCoreApplication.translate("Form", u"Encrypt Audio", None))
+        self.ghwt_rendered_preview_check.setText(QCoreApplication.translate("Form", u"Use Rendered Preview Audio", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.audio_tab_wt), QCoreApplication.translate("Form", u"Audio (WT)", None))
         self.guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
-        self.track_label_2.setText(QCoreApplication.translate("Form", u"Track", None))
-        self.guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Bass", None))
-        self.backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.gh3_file_path_label.setText(QCoreApplication.translate("Form", u"Audio File Path", None))
         self.backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
-        self.crowd_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
-        self.coop_rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Rhythm", None))
         self.crowd_label_gh3.setText(QCoreApplication.translate("Form", u"Crowd", None))
-        self.coop_rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
-        self.coop_backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
+        self.track_label_2.setText(QCoreApplication.translate("Form", u"Track", None))
         self.p2_rhythm_check.setText(QCoreApplication.translate("Form", u"P2 is Rhythm", None))
         self.coop_audio_check.setText(QCoreApplication.translate("Form", u"Separate Co-op Audio", None))
+        self.coop_guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Rhythm", None))
+        self.backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_file_path_label.setText(QCoreApplication.translate("Form", u"Audio File Path", None))
+        self.crowd_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.rhythm_label_gh3.setText(QCoreApplication.translate("Form", u"Bass", None))
+        self.guitar_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_backing_label_gh3.setText(QCoreApplication.translate("Form", u"Backing", None))
+        self.coop_guitar_label_gh3.setText(QCoreApplication.translate("Form", u"Guitar", None))
+        self.rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_backing_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.coop_rhythm_select_gh3.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_preview_audio_label.setText(QCoreApplication.translate("Form", u"Preview", None))
+        self.gh3_preview_audio_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_rendered_preview_check.setText(QCoreApplication.translate("Form", u"Use Rendered Preview", None))
         self.preview_label_2.setText(QCoreApplication.translate("Form", u"Song Preview:", None))
         self.length_label_2.setText(QCoreApplication.translate("Form", u"Length:", None))
+        self.gh3_set_end.setText(QCoreApplication.translate("Form", u"Set End Time", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.audio_tab_gh3), QCoreApplication.translate("Form", u"Audio (GH3)", None))
-        self.ghwor_stfs_label.setText(QCoreApplication.translate("Form", u"WoR STFS File", None))
-        self.ghwt_drumkit_label.setText(QCoreApplication.translate("Form", u"Drum Kit:", None))
-        self.ghwt_midi_file_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.game_icon_label.setText(QCoreApplication.translate("Form", u"Game Icon", None))
+        self.game_category_label.setText(QCoreApplication.translate("Form", u"Game Category", None))
+        self.band_label.setText(QCoreApplication.translate("Form", u"Band", None))
 #if QT_CONFIG(tooltip)
-        self.ghwt_ska_files_input.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist</p></body></html>", None))
+        self.ghwt_perf_override_input.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Select a file with a performance array to override the generated performance array.</p><p>Can be a text file compatible with the toolkit, or an already compiled qb file.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.ghwt_vocal_gender_select.setItemText(0, QCoreApplication.translate("Form", u"Male", None))
-        self.ghwt_vocal_gender_select.setItemText(1, QCoreApplication.translate("Form", u"Female", None))
-        self.ghwt_vocal_gender_select.setItemText(2, QCoreApplication.translate("Form", u"None", None))
-
-        self.ghwt_song_script_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.ghwt_vocal_gender_label.setText(QCoreApplication.translate("Form", u"Vocal Gender:", None))
+        self.ghwt_drumkit_label.setText(QCoreApplication.translate("Form", u"Drum Kit:", None))
+        self.ghwt_countoff_label.setText(QCoreApplication.translate("Form", u"Count Off:", None))
+        self.other_settings_label.setText(QCoreApplication.translate("Form", u"World Tour Definitive Edition Settings", None))
+        self.ghwor_stfs_select.setText(QCoreApplication.translate("Form", u"...", None))
         self.ghwt_song_script_label.setText(QCoreApplication.translate("Form", u"Song Script:", None))
-        self.ghwt_ska_files_label.setText(QCoreApplication.translate("Form", u"SKA Files:", None))
-        self.ghwt_perf_override_select.setText(QCoreApplication.translate("Form", u"...", None))
+
         self.band_tier_label.setText(QCoreApplication.translate("Form", u"Band", None))
         self.vocal_tier_label.setText(QCoreApplication.translate("Form", u"Vocals", None))
         self.drums_tier_label.setText(QCoreApplication.translate("Form", u"Drums", None))
         self.guitar_tier_label.setText(QCoreApplication.translate("Form", u"Guitar", None))
         self.bass_tier_label.setText(QCoreApplication.translate("Form", u"Bass", None))
-
-        self.ghwt_ska_files_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.ghwt_countoff_label.setText(QCoreApplication.translate("Form", u"Count Off:", None))
         self.tiers_label.setText(QCoreApplication.translate("Form", u"Tiers", None))
-        self.game_icon_label.setText(QCoreApplication.translate("Form", u"Game Icon", None))
-        self.game_category_label.setText(QCoreApplication.translate("Form", u"Game Category", None))
-        self.band_label.setText(QCoreApplication.translate("Form", u"Band", None))
-        self.other_settings_label.setText(QCoreApplication.translate("Form", u"World Tour Definitive Edition Settings", None))
-        self.label_3.setText(QCoreApplication.translate("Form", u"Setlist Settings", None))
+        self.vocal_speed_label.setText(QCoreApplication.translate("Form", u"Vocal Scroll Speed:", None))
         self.skeleton_type_g_label.setText(QCoreApplication.translate("Form", u"G", None))
         self.skeleton_type_g_select.setItemText(0, QCoreApplication.translate("Form", u"Default", None))
         self.skeleton_type_g_select.setItemText(1, QCoreApplication.translate("Form", u"Alex", None))
@@ -1690,39 +1812,59 @@ class Ui_Form(object):
         self.skeleton_type_b_label.setText(QCoreApplication.translate("Form", u"B", None))
         self.skeleton_type_d_label.setText(QCoreApplication.translate("Form", u"D", None))
         self.skeleton_type_v_label.setText(QCoreApplication.translate("Form", u"V", None))
-        self.vocal_speed_label.setText(QCoreApplication.translate("Form", u"Vocal Scroll Speed:", None))
-        self.ghwor_stfs_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.skeleton_types_label.setText(QCoreApplication.translate("Form", u"Skeleton Types", None))
-        self.ghwt_perf_override_label.setText(QCoreApplication.translate("Form", u"Perf Override:", None))
-#if QT_CONFIG(tooltip)
-        self.ghwt_perf_override_input.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Select a file with a performance array to override the generated performance array.</p><p>Can be a text file compatible with the toolkit, or an already compiled qb file.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
         self.ghwt_band_vol_label.setText(QCoreApplication.translate("Form", u"Overall Volume:", None))
-        self.ghwt_midi_file_label.setText(QCoreApplication.translate("Form", u"MIDI File:", None))
-        self.label_7.setText(QCoreApplication.translate("Form", u"In-game Settings", None))
         self.guitar_mic_check.setText(QCoreApplication.translate("Form", u"Guitar Mic", None))
         self.bass_mic_check.setText(QCoreApplication.translate("Form", u"Bass Mic", None))
         self.use_new_clips_check.setText(QCoreApplication.translate("Form", u"Use New Clips", None))
-        self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.song_data_tab_wt), QCoreApplication.translate("Form", u"Song Data (WT)", None))
-        self.gh3_gtr_vol_label.setText(QCoreApplication.translate("Form", u"Guitar:", None))
-        self.gh3_band_vol_label.setText(QCoreApplication.translate("Form", u"Band:", None))
-        self.gh3_perf_override_label.setText(QCoreApplication.translate("Form", u"Perf Override", None))
-        self.gh3_countoff_label.setText(QCoreApplication.translate("Form", u"Count Off:", None))
+        self.ghwt_vocal_cents_label.setText(QCoreApplication.translate("Form", u"Vocal Tuning Cents:", None))
+#if QT_CONFIG(tooltip)
+        self.ghwt_ska_files_input.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.ghwt_perf_override_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.ghwt_ska_files_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.ghwt_ska_files_label.setText(QCoreApplication.translate("Form", u"SKA Files:", None))
+        self.label_3.setText(QCoreApplication.translate("Form", u"Setlist Settings", None))
+        self.ghwt_song_script_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.label_7.setText(QCoreApplication.translate("Form", u"In-game Settings", None))
+        self.ghwt_vocal_gender_label.setText(QCoreApplication.translate("Form", u"Vocal Gender:", None))
+        self.ghwt_midi_file_label.setText(QCoreApplication.translate("Form", u"MIDI File:", None))
+        self.ghwt_perf_override_label.setText(QCoreApplication.translate("Form", u"Perf Override:", None))
+        self.ghwor_stfs_label.setText(QCoreApplication.translate("Form", u"WoR STFS File", None))
+        self.skeleton_types_label.setText(QCoreApplication.translate("Form", u"Skeleton Types", None))
+        self.ghwt_vocal_gender_select.setItemText(0, QCoreApplication.translate("Form", u"Male", None))
+        self.ghwt_vocal_gender_select.setItemText(1, QCoreApplication.translate("Form", u"Female", None))
+        self.ghwt_vocal_gender_select.setItemText(2, QCoreApplication.translate("Form", u"None", None))
 
+        self.ghwt_midi_file_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.ghwt_whammy_cutoff_label.setText(QCoreApplication.translate("Form", u"Sustain Threshold:", None))
+#if QT_CONFIG(tooltip)
+        self.ghwt_whammy_cutoff.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>The threshold at which sustains appear. In World Tour, the default is 0.50 and it can be read as &quot;If a note is longer than 50% of the current beat's length, it is a sustain.&quot;</p><p><br/></p><p>In GH5 and up, this value is 0.45, meaning that a note only needs to be 45% the length of the distance between 2 beats.</p><p><br/></p><p>Make the number smaller to have more sustains appear (for lower BPMs), and make it larger to have fewer sustains appear (for higher BPMs).</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.song_data_tab_wt), QCoreApplication.translate("Form", u"Song Data (WT)", None))
+        self.gh3_ska_files_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_ska_files_label.setText(QCoreApplication.translate("Form", u"SKA Files:", None))
         self.gh3_vocal_gender_select.setItemText(0, QCoreApplication.translate("Form", u"Male", None))
         self.gh3_vocal_gender_select.setItemText(1, QCoreApplication.translate("Form", u"Female", None))
         self.gh3_vocal_gender_select.setItemText(2, QCoreApplication.translate("Form", u"Bret Michaels", None))
         self.gh3_vocal_gender_select.setItemText(3, QCoreApplication.translate("Form", u"None", None))
 
-        self.gh3_bassist_select_label.setText(QCoreApplication.translate("Form", u"Bassist:", None))
-        self.gh3_midi_file_label.setText(QCoreApplication.translate("Form", u"MIDI File", None))
-        self.gh3_perf_override_select.setText(QCoreApplication.translate("Form", u"...", None))
-        self.gh3_midi_file_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_gtr_vol_label.setText(QCoreApplication.translate("Form", u"Guitar:", None))
+        self.gh3_band_vol_label.setText(QCoreApplication.translate("Form", u"Band:", None))
 #if QT_CONFIG(tooltip)
         self.gh3_perf_override_input.setToolTip(QCoreApplication.translate("Form", u"Select a qb file with a performance array to override the generated performance array.", None))
 #endif // QT_CONFIG(tooltip)
+        self.gh3_countoff_label.setText(QCoreApplication.translate("Form", u"Count Off:", None))
+        self.gh3_perf_override_label.setText(QCoreApplication.translate("Form", u"Perf Override:", None))
+
         self.gh3_volume_label.setText(QCoreApplication.translate("Form", u"Volume:", None))
+        self.gh3_song_script_label.setText(QCoreApplication.translate("Form", u"Song Script:", None))
+        self.gh3_midi_file_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_bassist_select_label.setText(QCoreApplication.translate("Form", u"Bassist:", None))
+        self.gh3_song_script_select.setText(QCoreApplication.translate("Form", u"...", None))
+        self.gh3_perf_override_select.setText(QCoreApplication.translate("Form", u"...", None))
         self.gh3_vocal_gender_label.setText(QCoreApplication.translate("Form", u"Vocal Gender:", None))
+        self.gh3_midi_file_label.setText(QCoreApplication.translate("Form", u"MIDI File:", None))
+        self.gh3_ska_file_convert_check.setText(QCoreApplication.translate("Form", u"Do not convert SKA Files", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.song_data_tab_gh3), QCoreApplication.translate("Form", u"Song Data (GH3)", None))
         self.compile_settings.setTitle(QCoreApplication.translate("Form", u"Compile Settings", None))
         self.beat_8th_high_label.setText(QCoreApplication.translate("Form", u"High:", None))
@@ -1737,7 +1879,7 @@ class Ui_Form(object):
         self.beat_8th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
         self.hopo_mode_label.setText(QCoreApplication.translate("Form", u"HOPO Mode", None))
         self.hopo_mode_select.setItemText(0, QCoreApplication.translate("Form", u"Rock Band", None))
-        self.hopo_mode_select.setItemText(1, QCoreApplication.translate("Form", u"HMX/NS Hybrid", None))
+        self.hopo_mode_select.setItemText(1, QCoreApplication.translate("Form", u"Moonscraper", None))
         self.hopo_mode_select.setItemText(2, QCoreApplication.translate("Form", u"Guitar Hero 3", None))
         self.hopo_mode_select.setItemText(3, QCoreApplication.translate("Form", u"Guitar Hero World Tour+", None))
 

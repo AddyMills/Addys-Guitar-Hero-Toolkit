@@ -4,6 +4,7 @@ sys.path.append("../")
 from dbg import checksum_dbg
 from pak_functions import *
 from CRC import QBKey
+from io import BytesIO
 import os
 import zlib
 
@@ -149,6 +150,55 @@ def main(pak, folder, endian = "big", wor_mode = 0, pak_header_size = 0, toolkit
 
     return files
 
+def decompress_pab(comp, pak_file):
+    pak = BytesIO(pak_file)
+    del pak_file
+    last = 0x2CB3EF3B
+    files = []
+    uint32 = lambda x: int.from_bytes(x.read(4), 'big')
+    ext = uint32(pak)
+    while ext != last:
+        entry = {"extension": ext}
+        entry["offset"] = uint32(pak)
+        entry["length"] = uint32(pak)
+        entry["pak_key"] = uint32(pak)
+        entry["full_name"] = uint32(pak)
+        entry["name_sum"] = uint32(pak)
+        entry["parent"] = uint32(pak)
+        entry["flags"] = uint32(pak)
+        try:
+            entry["file_name"] = f"{checksum_dbg[entry['full_name']]}{checksum_dbg[entry['extension']]}"
+            entry["full_name"] = checksum_dbg[entry['full_name']]
+            entry['extension'] = checksum_dbg[entry['extension']]
+        except:
+            entry["file_name"] = f"{entry['full_name']}.{entry['name_sum']}.{entry['extension']}"
+        files.append(entry)
+        ext = uint32(pak)
+    pak.close()
+    comp = BytesIO(comp)
+    for entry in files:
+        comp_bytes = comp.read(entry["length"])
+        if entry["full_name"] == "SING_Adam_Dammit_100_01":
+            print()
+        if entry["flags"] == 512:
+            magic = str(comp_bytes[:4], encoding = "UTF-8")
+            if magic == "CHNK":
+                comp_bytes = comp_bytes[128:]
+            else:
+                raise Exception("Unknown magic value found. Contact me.")
+            file_bytes = zlib.decompress(comp_bytes, wbits=-15)
+            file_size = int.from_bytes(file_bytes[:4], "big")
+            #print()
+        elif entry["flags"] == 0:
+            file_size = int.from_bytes(comp_bytes[:4], "big")
+            file_bytes = comp_bytes[:file_size]
+        else:
+            raise Exception("Unknown Flag number found. Contact me.")
+        entry["file_bytes"] = file_bytes
+    #while magic == "CHNK":
+
+    return files
+
 def decompress_pak(comp, endian = "big"):
     comp = compressed_pak(comp, endian)
     decomp_file = b''
@@ -185,9 +235,13 @@ def compress_pak(decomp):
 
     return
 
-def check_decomp(pak_file, file_path = "", output_decomp = True):
-    if pak_file[:4] == b'CHNK':  # Check for xbox compressed file
-        pak_file = decompress_pak(pak_file)
+def check_decomp(comp_file, file_path = "", output_decomp = True, pab = False, *args, **kwargs):
+    if comp_file[:4] == b'CHNK':  # Check for xbox compressed file
+        if pab:
+            comp_file = decompress_pab(comp_file, kwargs["pak_file"])
+            return comp_file
+        else:
+            comp_file = decompress_pak(comp_file)
         if output_decomp:
             pak_decomp_out = f'.\\Decompressed PAKs\\{file_path}'
             if not os.path.exists(pak_decomp_out):
@@ -197,8 +251,8 @@ def check_decomp(pak_file, file_path = "", output_decomp = True):
                 except:
                     pass
                 with open(pak_decomp_out, 'wb') as write_file:
-                    write_file.write(pak_file)
-    return pak_file
+                    write_file.write(comp_file)
+    return comp_file
 
 def extract_paks():
     pabs = []
@@ -232,15 +286,26 @@ def extract_paks():
         header_size = 0
         curr_file = os.path.basename(filepaths[y])
         print(f"Processing {curr_file}")
-        if x in pabs:
-            with open(filepaths_pab[pabs.index(x)], 'rb') as f:
-                pab_file = check_decomp(f.read(), curr_file.replace(".pak.xen", ".pab.xen"))
-        else:
-            pab_file = b''
         with open(filepaths[y], 'rb') as f:
             pak_file = f.read()
             if pak_file[:4] == b'CHNK':  # Check for WoR style PAK
-                pak_file = check_decomp(pak_file, curr_file)
+                pak_file = check_decomp(pak_file, curr_file,)
+        if x in pabs:
+            with open(filepaths_pab[pabs.index(x)], 'rb') as f:
+                pab_file = check_decomp(f.read(), curr_file.replace(".pak.xen", ".pab.xen"), False, True, pak_file= pak_file)
+                if type(pab_file) == list:
+                    for z in pab_file:
+                        output_file = f'.\\output\\PAK\\{x}\\{z["file_name"]}.xen'
+                        dir_name = os.path.dirname(output_file)
+                        try:
+                            os.makedirs(dir_name)
+                        except:
+                            pass
+                        with open(output_file, 'wb') as write_file:
+                            write_file.write(z["file_bytes"])
+            continue
+        else:
+            pab_file = b''
         first_file = int.from_bytes(pak_file[4:8], "big")
         if first_file == 0:
             wor_mode = 1
