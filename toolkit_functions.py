@@ -228,7 +228,7 @@ def add_to_dict(p_dict, t, entry):
     return
 
 
-def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gh3_singer"]):
+def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer="gh3_singer"):
     if not "_song.pak" in pakmid:
         warning = input(
             "WARNING: File does not appear to be a validly named mid PAK file. Do you want to continue? (Y/N): ")
@@ -405,11 +405,10 @@ def convert_to_gh3(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gh3_sin
     song_pak = mid_qb.pakMaker(gh3_array)
 
     # raise Exception
-
     return song_name, song_pak
 
 
-def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_singer"]):
+def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer="gha_singer"):
     if "_song.pak" in pakmid:
         song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.find("_song")]
     elif ".mid" in pakmid:
@@ -507,7 +506,7 @@ def convert_to_gha(pakmid, output=f'{os.getcwd()}', singer=lipsync_dict["gha_sin
             if re.search("[0-9][bB]\.ska", x['file_name'].lower()):
                 # raise Exception
 
-                x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch=lipsync_dict["gha_guitarist"],
+                x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch="gha_guitarist",
                                               quats_mult=2)
             else:
                 x["file_data"] = make_gh3_ska(ska_bytes(x["file_data"]), ska_switch=singer, quats_mult=2)
