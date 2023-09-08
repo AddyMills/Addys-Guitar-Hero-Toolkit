@@ -887,7 +887,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 else:
                                     timestamps[time_array[index]]["colours"].append(6)
                             # print()
-                    force_off = forced_notes[diff]["off"]
+                    force_off = forced_notes[diff]["off"] if not "gh3_mode" in args else 0
                     if force_off:
                         force_off = split_list(force_off)
                         for forced in force_off:
@@ -1214,19 +1214,28 @@ def create_playable_notes(notes, drums=False):
                     test_colour["colours"].append(note_bit)
                     test_colour["colour_name"].append(colour)
                     temp_len = playtime["time_sec"] - s_time
+                    if temp_len < 13:
+                        temp_len = 13
                     temp_other_len = test_colour["length_sec"]
                     if drums:
                         if colour_time[-1]["velocity"] == 127:
                             timestamps[s_time]["accents"].append(note_bit)
                         if temp_len != test_colour["length_sec"]:
-                            if colour == "purple":
+                            temp_len_t = playtime["time_tick"] - t_time
+                            other_temp_t = timestamps[s_time]["length_tick"]
+                            if temp_len_t <= 180 and other_temp_t <= 180:
+                                timestamps[s_time]["length_sec"] = min(temp_len, temp_other_len)
+                                timestamps[s_time]["length_tick"] = min(temp_len_t, other_temp_t)
+                                del temp_len
+                                del temp_other_len
+                                del temp_len_t
+                                del other_temp_t
+                            elif colour == "purple":
                                 test_colour["length_sec_kick"] = temp_len
                             elif 5 in test_colour["colours"]:
                                 test_colour["length_sec_kick"] = test_colour["length_sec"]
                                 test_colour["length_sec"] = temp_len
                             else:
-                                temp_len_t = playtime["time_tick"] - t_time
-                                other_temp_t = timestamps[s_time]["length_tick"]
                                 timestamps[s_time]["length_sec"] = min(temp_len, temp_other_len)
                                 timestamps[s_time]["length_tick"] = min(temp_len_t, other_temp_t)
                                 del temp_len
@@ -1247,8 +1256,8 @@ def create_playable_notes(notes, drums=False):
                     s_time = colour_time[-1]["time_sec"]
                     t_time = colour_time[-1]["time_tick"]
                     len_sec = playtime["time_sec"] - s_time
-                    if len_sec < 10:
-                        len_sec = 10
+                    if len_sec < 13:
+                        len_sec = 13
                     len_tick = playtime["time_tick"] - t_time
                     if not drums:
                         timestamps[s_time] = {"colours": [note_bit], "colour_name": [colour],
@@ -2036,13 +2045,16 @@ def stance_script(time_sec, script, player, event, *args):
 
 
 def create_anim_note(x, active_notes, track_name, anim_notes, time_sec, anim_entry):
-    if x.velocity != 0:
+    if x.velocity != 0 and x.type == "note_on":
         if x.note in active_notes:
             return
         active_notes[x.note] = anim_entry
     else:
         try:
-            active_notes[x.note].setLength(time_sec - active_notes[x.note].time)
+            anim_len = time_sec - active_notes[x.note].time
+            if anim_len < 13 or anim_len > 2**32:
+                anim_len = 13
+            active_notes[x.note].setLength(anim_len)
             if active_notes[x.note].time in anim_notes[track_name]:
                 anim_notes[track_name][active_notes[x.note].time].append(active_notes[x.note])
             else:
