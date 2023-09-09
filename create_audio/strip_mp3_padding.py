@@ -16,10 +16,14 @@ def delete_files_in_directory(directory_path):
    except OSError:
      print("Error occurred while deleting files.")
 
-def main(in_folder = "input"):
-    if not shutil.which("fsbext"):
-        input("fsbext is not found in your computer's PATH.\nPress Enter to continue...")
+def main(in_folder = "input", fsb_loc = ""):
+    if fsb_loc:
+        fsbext = fsb_loc
+    elif not shutil.which("fsbext"):
+        input("fsbext is not found.\nPress Enter to continue...")
         return 0
+    else:
+        fsbext = "fsbext"
     if in_folder == "input":
         out_folder = "output"
     else:
@@ -42,7 +46,7 @@ def main(in_folder = "input"):
                     f.write(crypted)
         for filename in os.listdir(out_folder):
             print(filename)
-            subprocess.run(["fsbext", "-M","-d",out_folder, f"{out_folder}\\{filename}"])
+            subprocess.run([fsbext, "-M","-d",out_folder, f"{out_folder}\\{filename}"])
             if filename.endswith("_1.FSB"):
                 new_folder = "drums"
             elif filename.endswith("_2.FSB"):

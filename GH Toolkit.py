@@ -10,13 +10,13 @@ from create_audio import audio_functions
 debug = 0
 
 # Menu Options
-menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_to_5", "convert_to_gh3", "convert_to_gha", "convert_to_ghwor",
+menu_options_var = ["compile_wt_song", "convert_ska_file", "convert_5_to_wt", "convert_to_5", "convert_to_gh3", "convert_to_gha", "convert_to_ghwor",
                     "create_mid_from_pak", "extract_pak", "make_gh3_mid", "qb2text", "text2qb"]
 
 menu_options = [
                 "compile_wt_song - Compile a Guitar Hero: World Tour song pak file from audio and a MIDI file",
                 "convert_ska_file - Convert a SKA file from one game to another (for conversions)",
-                # "convert_5_to_wt - Convert a song from Guitar Hero 5 or Warriors of Rock to the World Tour format",
+                "convert_5_to_wt - Convert a song from Guitar Hero 5 or Warriors of Rock to the World Tour format",
                 "convert_to_5 - Convert a WT song to Guitar Hero 5 format",
                 "convert_to_gh3 - Convert a GH:A song to GH3 (removing rhythm anims/special mocap calls, porting lights and cameras)",
                 "convert_to_gha - Convert a GH3 song to GH:A (adding rhythm anims, porting lights and cameras)",
@@ -248,14 +248,15 @@ def manual_input():
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 midname = os.path.basename(midqb_file)[:os.path.basename(midqb_file).find(".")]
+                fsbext_loc = os.path.join(root_folder, "dependencies", "fsbext", "fsbext.exe")
                 if re.search(r'^[a-c]dlc', midname, flags=re.IGNORECASE):
                     midname = midname[1:]
                 print("""\nYou can add a performance override file to be added to the song.\nFor example, you can add tapping animation events or for WoR songs, add PlayIdle events.""".replace("\t",""))
                 perf_override = input("Drag in your perf override file (or leave this blank) and press Enter to continue: ").replace("\"", "")
-                music_override = input("Drag in the folder containing your audio files from the PS3 version.\nLeave blank to skip: ").replace("\"", "")
+                music_override = input("\nDrag in the folder containing your audio files from the PS3 version.\nLeave blank to skip: ").replace("\"", "")
                 if music_override:
                     try:
-                        audio_functions.strip_mp3(music_override)
+                        audio_functions.strip_mp3(music_override, fsbext_loc)
                     except Exception as E:
                         raise E
                         print("Could not convert audio.")

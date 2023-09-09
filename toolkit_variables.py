@@ -229,3 +229,24 @@ gha_anim_swaps = {
     "backplay": "jump",
     "joeperryspin": "special",
 }
+
+stfs_yaml_dict = {
+    'base-version': 0,
+    'licenses': [{'bits': 1, 'flags': 1, 'id': -1}, {'bits': 1, 'flags': 0, 'id': -1},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0},
+                 {'bits': 0, 'flags': 0, 'id': 0}, {'bits': 0, 'flags': 0, 'id': 0}],
+    'media-id': 0,
+    'package-description': ['Custom song compiled by Addy\'\'s Toolkit and created by Onyx Music Game Toolkit', '', '',
+                            '', '', '', '', '', ''],
+    'package-name': ['', '', '', '', '', '', '', '', ''],
+    'sign-live': True,
+    'title-id': 1096157315,
+    'title-name': 'Guitar Hero : Warriors of Rock',
+    'transfer-flags': 192,
+    'version': 0
+}

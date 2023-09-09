@@ -608,7 +608,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if end_event_secs and end_event_ticks:
                         continue
             elif re.search(track.name, rf'{venue_track}|cameras_wt', flags=re.IGNORECASE):
-                if track.name == "cameras_wt":
+                if re.search(track.name, r'cameras_wt', flags=re.IGNORECASE):
                     track.name = "CAMERAS"
                 else:
                     track.name = track.name.upper()

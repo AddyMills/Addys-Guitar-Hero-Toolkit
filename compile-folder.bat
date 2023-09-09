@@ -8,5 +8,6 @@ pyinstaller -p ".\create_audio" ^
 --add-data "debug.txt;." ^
 --add-data "conversion_files_prod;conversion_files" ^
 --add-data "create_audio\default_audio\blank.mp3;create_audio\default_audio" ^
+--add-data "dependencies;dependencies" ^
 "GH Toolkit.py"
 pause

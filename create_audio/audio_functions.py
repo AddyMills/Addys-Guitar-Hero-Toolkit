@@ -841,8 +841,8 @@ def main(gh3 = False):
             f.write(crypted)
     return
 
-def strip_mp3(in_folder):
-    pad_strip.main(in_folder)
+def strip_mp3(in_folder, fsb_loc = ""):
+    pad_strip.main(in_folder, fsb_loc)
 
 def test_make():
     dirin = f".\\input"

@@ -42,3 +42,4 @@ tofix.txt
 *.pyproj
 libmp3lame*
 gui/gui ideas.txt
+dependencies/

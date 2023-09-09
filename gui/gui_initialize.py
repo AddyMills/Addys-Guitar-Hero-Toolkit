@@ -15,6 +15,11 @@ import sys
 import configparser
 import string
 import traceback
+import re
+import copy
+import yaml
+import shutil
+import subprocess
 
 curr_dir = os.path.dirname(__file__)
 root_dir = os.path.dirname(curr_dir)
@@ -32,7 +37,7 @@ import MidQbGen as mid_gen
 
 sys.path.append(root_dir)
 from CRC import QBKey, QBKey_qs
-from toolkit_functions import convert_to_5
+from toolkit_functions import convert_to_5, stfs_yaml_dict
 
 
 def wrap_string(to_wrap, wide=False):
@@ -916,20 +921,36 @@ class compile_package(QWidget, compile_pack):
         qb_file = mid_gen.t2q_main(qb_text, game="GH5")
         return qb_file, qs_bytes, empty_qs
 
+    def package_name_hash_format(self, text):
+        # Take the first 42 characters of the text
+        truncated_text = text[:42]
+
+        # Transform each character based on the given conditions
+        def transform_char(match):
+            c = match.group(0)
+            if re.match(r'[a-zA-Z0-9]', c):
+                return c
+            else:
+                return "_"
+
+        # Use regex sub to apply the transformation
+        transformed_text = re.sub(r'.', transform_char, truncated_text)
+
+        return transformed_text
+
     def gen_wor_manifest(self):
-        if not self.ghwor_stfs_input.text() or not os.path.isfile(self.ghwor_stfs_input.text()):
+        """if not self.ghwor_stfs_input.text() or not os.path.isfile(self.ghwor_stfs_input.text()):
             print("STFS file not found. Cancelling compilation.")
             return 0, 0, 0
         with open(self.ghwor_stfs_input.text(), 'rb') as f:
-            stfs_data = f.read()[:0x10000]
+            stfs_data = f.read()[:0x10000]"""
 
-        c_spot = stfs_data.find(b'cmanifest')
-        cmanifest = stfs_data[c_spot:c_spot + 0x20].replace(b'\x00', b'')
-        cmanifest = cmanifest.decode("utf-8").split("_")[-1].split(".")[0]
-
-        cdl_spot = stfs_data.find(b'cdl', c_spot)
-        cdl_data = stfs_data[cdl_spot:cdl_spot + 0x20].replace(b'\x00', b'')
-        cdl_data = cdl_data.decode("utf-8").split("_")[-1].split(".")[0]
+        dlc_crc_num = 1000000000 + (int(QBKey(f"gh5{self.artist_input.text()}{self.title_input.text()}"), 16) % 1000000000)
+        self.checksum_input.setText(f"dlc{dlc_crc_num}")
+        cdl_data = f"cdl{dlc_crc_num}"
+        stfs_name = f"{cdl_data} {self.title_input.text()} ({self.artist_input.text()})"
+        cmanifest_num = QBKey(self.package_name_hash_format(stfs_name))
+        cmanifest = f"cmanifest_{cmanifest_num}"
 
         qb_file_name = hex(int(QBKey(self.checksum_input.text()), 16) + 1)
 
@@ -938,7 +959,7 @@ class compile_package(QWidget, compile_pack):
         manifest_qb += """0xe57c7c6d = 2
                         0x53a97911 = 0\n"""
         manifest_qb += "dlc_manifest = [\n{\n"
-        manifest_qb += f"package_name_checksums = [0x{cmanifest}]\n"
+        manifest_qb += f"package_name_checksums = [0x{cmanifest_num}]\n"
         manifest_qb += "format = gh5_dlc\n"
         manifest_qb += f'song_pak_stem = "{cdl_data}"\n'
         manifest_qb += f"songs = [{self.checksum_input.text()[3:]}]\n"
@@ -946,7 +967,7 @@ class compile_package(QWidget, compile_pack):
 
         cmanifest_qb = mid_gen.t2q_main(manifest_qb, game="GH5")
 
-        return cmanifest_qb, qb_file_name, cmanifest
+        return cmanifest_qb, qb_file_name, cmanifest_num, stfs_name
 
     def set_compile_args(self, *args):
         if "gh3" in args:
@@ -1089,12 +1110,11 @@ class compile_package(QWidget, compile_pack):
         return
 
     def compile_ghwor(self, *args):
-        midi_file = self.midi_check()
+        midi_file = self.midi_check(self.ghwt_midi_file_input.text())
         if not midi_file:
             return
-        self.gen_checksum()
 
-        cmanifest_qb, man_file_name, cmanifest = self.gen_wor_manifest()
+        cmanifest_qb, man_file_name, cmanifest, stfs_name = self.gen_wor_manifest()
         if not cmanifest_qb:
             return
 
@@ -1139,6 +1159,18 @@ class compile_package(QWidget, compile_pack):
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
+        onyx_repack_folder = os.path.join(save_folder, "onyx-repack")
+        if not os.path.exists(onyx_repack_folder):
+            os.makedirs(onyx_repack_folder)
+
+        song_yaml = copy.deepcopy(stfs_yaml_dict)
+        song_yaml["package-name"][0] = stfs_name
+        with open(os.path.join(onyx_repack_folder, "repack-stfs.yaml"), "w") as f:
+            yaml.dump(song_yaml, f)
+
+        shutil.copy(os.path.join(root_dir, "conversion_files", "thumbnail.png"), onyx_repack_folder)
+        shutil.copy(os.path.join(root_dir, "conversion_files", "title-thumbnail.png"), onyx_repack_folder)
+
         if not "skip_audio" in args:
             start_time = self.conv_to_secs("start")
             end_time = self.conv_to_secs("end")
@@ -1155,7 +1187,6 @@ class compile_package(QWidget, compile_pack):
                 else:
                     with open(f"{save_folder}\\a{self.checksum_input.text()}_preview.fsb.xen", 'wb') as f:
                         f.write(x)
-        print("Compile complete!")
 
         dl_num = self.checksum_input.text()[3:]
 
@@ -1167,6 +1198,9 @@ class compile_package(QWidget, compile_pack):
             f.write(cdl_text_pak)
         with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
             f.write(wor_pak)
+        print("Using Onyx Command Line to compile 360 STFS file.")
+        subprocess.run([os.path.join(root_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to", os.path.join(project_folder, f"dlc{dl_num}_ghwor")])
+        print("Compile complete!")
         return
 
     def first_boot(self):
