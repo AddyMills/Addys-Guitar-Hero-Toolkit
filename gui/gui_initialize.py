@@ -250,6 +250,7 @@ class compile_package(QWidget, compile_pack):
             "guitar_mic_check": self.guitar_mic_check.isChecked(),
             "bass_mic_check": self.bass_mic_check.isChecked(),
             "use_new_clips_check": self.use_new_clips_check.isChecked(),
+            "modern_strobes_check": self.modern_strobes_check.isChecked(),
 
             # GH3 Data
 
@@ -336,8 +337,7 @@ class compile_package(QWidget, compile_pack):
         check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio",
                        "ghwt_set_end",
                        "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check",
-                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check"]
-
+                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check", "modern_strobes_check"]
         for x in check_boxes:
             try:
                 to_set = getattr(self, x)
@@ -684,6 +684,11 @@ class compile_package(QWidget, compile_pack):
             ini["SongInfo"]["Cents"] = str(self.ghwt_vocal_cents.value())
         if self.ghwt_whammy_cutoff.value() != 0.5:
             ini["SongInfo"]["WhammyCutoff"] = str(self.ghwt_whammy_cutoff.value())
+        if self.vocal_scroll_speed_input.value() != 1:
+            ini["SongInfo"]["VocalsScrollSpeed"] = str(self.vocal_scroll_speed_input.value())
+        if self.modern_strobes_check.isChecked():
+            ini["SongInfo"]["ModernStrobes"] = str(1)
+
         return ini
 
     def ghwor_songlist_info(self, *args):

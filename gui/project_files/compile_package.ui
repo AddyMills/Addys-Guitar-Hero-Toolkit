@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>3</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -1607,6 +1607,13 @@
                  <widget class="QCheckBox" name="use_new_clips_check">
                   <property name="text">
                    <string>Use New Clips</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="modern_strobes_check">
+                  <property name="text">
+                   <string>Modern Strobes</string>
                   </property>
                  </widget>
                 </item>

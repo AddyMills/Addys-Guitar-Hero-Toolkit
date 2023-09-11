@@ -1127,6 +1127,11 @@ class Ui_Form(object):
 
         self.horizontalLayout_9.addWidget(self.use_new_clips_check)
 
+        self.modern_strobes_check = QCheckBox(self.wt_song_data_widget)
+        self.modern_strobes_check.setObjectName(u"modern_strobes_check")
+
+        self.horizontalLayout_9.addWidget(self.modern_strobes_check)
+
 
         self.gridLayout_3.addLayout(self.horizontalLayout_9, 16, 1, 1, 2)
 
@@ -1700,7 +1705,7 @@ class Ui_Form(object):
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(5)
+        self.compile_tabs.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1816,6 +1821,7 @@ class Ui_Form(object):
         self.guitar_mic_check.setText(QCoreApplication.translate("Form", u"Guitar Mic", None))
         self.bass_mic_check.setText(QCoreApplication.translate("Form", u"Bass Mic", None))
         self.use_new_clips_check.setText(QCoreApplication.translate("Form", u"Use New Clips", None))
+        self.modern_strobes_check.setText(QCoreApplication.translate("Form", u"Modern Strobes", None))
         self.ghwt_vocal_cents_label.setText(QCoreApplication.translate("Form", u"Vocal Tuning Cents:", None))
 #if QT_CONFIG(tooltip)
         self.ghwt_ska_files_input.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>A folder containing all SKA files used. Gets ignored if it's blank or doesn't exist</p></body></html>", None))
