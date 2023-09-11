@@ -24,6 +24,8 @@ tbp = 480
 
 def make_mid(midfile, hopo, filename = "", *args, **kwargs):
     mid = MidiFile(midfile, clip = True)
+    if mid.ticks_per_beat != 480:
+        hopo = round(hopo * mid.ticks_per_beat/480)
     midQS = ""
     consoleType = 1
     if filename == "":
