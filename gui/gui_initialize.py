@@ -950,7 +950,7 @@ class compile_package(QWidget, compile_pack):
         with open(self.ghwor_stfs_input.text(), 'rb') as f:
             stfs_data = f.read()[:0x10000]"""
 
-        dlc_crc_num = 1000000000 + (int(QBKey(f"gh5{self.artist_input.text()}{self.title_input.text()}"), 16) % 1000000000)
+        dlc_crc_num = 1000000000 + (int(QBKey(f"gh5{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"), 16) % 1000000000)
         self.checksum_input.setText(f"dlc{dlc_crc_num}")
         cdl_data = f"cdl{dlc_crc_num}"
         stfs_name = f"{cdl_data} {self.title_input.text()} ({self.artist_input.text()})"
@@ -1204,7 +1204,8 @@ class compile_package(QWidget, compile_pack):
         with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
             f.write(wor_pak)
         print("Using Onyx Command Line to compile 360 STFS file.")
-        subprocess.run([os.path.join(root_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to", os.path.join(project_folder, f"dlc{dl_num}_ghwor")])
+        stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dl_num}"[:36]+"_ghwor"
+        subprocess.run([os.path.join(root_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to", os.path.join(project_folder, stfs_file_name)])
         print("Compile complete!")
         return
 
