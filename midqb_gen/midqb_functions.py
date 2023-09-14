@@ -1694,7 +1694,7 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                     if not "COOP" in track.name and x.note in leftHandGtr_gh3:
                         lh_name = instrument if instrument != "Rhythm_Coop" else "Bass"
                         new_note = anim_maps_gh3[lh_name][x.note]
-                        if x.velocity != 0:
+                        if x.velocity != 0 and x.type == "note_on":
                             if new_note in active_notes:
                                 continue
                             active_notes[new_note] = AnimNote(time_sec, new_note)
