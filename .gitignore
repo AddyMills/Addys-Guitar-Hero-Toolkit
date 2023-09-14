@@ -1,4 +1,5 @@
 *.xen
+!conversion_files/gh3_scripts.qb.xen
 *.ps3
 *.qb
 *.pyc

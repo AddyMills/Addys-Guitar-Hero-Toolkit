@@ -245,8 +245,8 @@ stfs_yaml_dict = {
                             '', '', '', '', '', ''],
     'package-name': ['', '', '', '', '', '', '', '', ''],
     'sign-live': True,
-    'title-id': 1096157315,
-    'title-name': 'Guitar Hero : Warriors of Rock',
+    'title-id': 0,
+    'title-name': '',
     'transfer-flags': 192,
     'version': 0
 }

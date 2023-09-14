@@ -6,6 +6,7 @@ import mido
 import CRC
 import numpy as np
 import struct
+import configparser
 
 root_folder = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(f"{root_folder}\\pak_extract")
@@ -3672,6 +3673,7 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
         midQB = mid_qb.add_perf_to_qb(midQB, song_name, file_headers, qb_dict, *compile_args)
     wt_pak = mid_qb.create_pak_file(midQB, song_name, midQS, *compile_args)
     return wt_pak
+
 def create_mid_from_qb(pakmid):
     song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
@@ -3970,6 +3972,10 @@ def create_mid_from_qb(pakmid):
                 struct_string += "}\n"
 
     return new_mid, struct_string
+
+def rhythm_verse_output(folder_path):
+
+    return
 
 
 if __name__ == "__main__":

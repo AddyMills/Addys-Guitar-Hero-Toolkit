@@ -23,6 +23,10 @@ import subprocess
 
 curr_dir = os.path.dirname(__file__)
 root_dir = os.path.dirname(curr_dir)
+if os.path.exists(os.path.join(curr_dir, "GH Toolkit.exe")):
+    base_dir = curr_dir
+else:
+    base_dir = root_dir
 
 if os.path.exists(f"{curr_dir}\\create_audio"):
     audio_folder = f"{curr_dir}\\create_audio"
@@ -266,7 +270,7 @@ class compile_package(QWidget, compile_pack):
             "coop_backing_input_gh3": self.coop_backing_input_gh3.text(),
 
             "crowd_input_gh3": self.crowd_input_gh3.text(),
-            
+
             "gh3_preview_audio_input": self.gh3_preview_audio_input.text(),
             "gh3_rendered_preview_check": self.gh3_rendered_preview_check.isChecked(),
 
@@ -375,10 +379,10 @@ class compile_package(QWidget, compile_pack):
 
     def set_checksum_variable(self):
         game = self.game_select_group.checkedButton().objectName()
-        if game == "ghwt":
-            self.ghwt_checksum = self.checksum_input.text()
-        elif game == "ghwor":
+        if game == "ghwor":
             self.ghwor_checksum = self.checksum_input.text()
+        else:
+            self.ghwt_checksum = self.checksum_input.text()
 
     def set_genre(self):
         game = self.game_select_group.checkedButton().objectName()
@@ -443,7 +447,7 @@ class compile_package(QWidget, compile_pack):
             self.genre_select.addItems(sorted(genre_base + genre_gh5) + ["Other"])
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
         elif game == "ghwor":
-            self.genre_select.addItems(sorted(genre_gh5 + genre_wor) + ["Other"])
+            self.genre_select.addItems(sorted(genre_base + genre_gh5 + genre_wor) + ["Other"])
             self.ghwt_drumkit_select.addItems(sorted(drum_kit_gh5))
             self.checksum_input.setText(self.ghwor_checksum)
             self.genre_select.setCurrentText(self.ghwor_genre)
@@ -460,6 +464,7 @@ class compile_package(QWidget, compile_pack):
         else:
             self.compile_tabs.insertTab(1, self.audio_tab_gh3, "Audio")
             self.compile_tabs.insertTab(2, self.song_data_tab_gh3, "Song Data")
+            self.checksum_input.setText(self.ghwt_checksum)
             if game == "gh3":
                 self.crowd_input_gh3.setDisabled(True)
                 self.crowd_select_gh3.setDisabled(True)
@@ -519,7 +524,8 @@ class compile_package(QWidget, compile_pack):
         self.coop_rhythm_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_rhythm_input_gh3))
         self.coop_backing_select_gh3.clicked.connect(partial(self.open_file_dialog_audio, self.coop_backing_input_gh3))
 
-        self.gh3_preview_audio_select.clicked.connect(partial(self.open_file_dialog_audio, self.gh3_preview_audio_input))
+        self.gh3_preview_audio_select.clicked.connect(
+            partial(self.open_file_dialog_audio, self.gh3_preview_audio_input))
 
         self.p2_rhythm_check.toggled.connect(self.p2_rhythm_toggle)
 
@@ -774,6 +780,12 @@ class compile_package(QWidget, compile_pack):
         return songlist_info, qs_keys
 
     def gh3_songlist_info(self):
+        bass_lookup = {
+            "Tom Morello": "morello",
+            "Lou": "satan",
+            "God of Rock": "rockgod",
+            "Grim Ripper": "ripper"
+        }
         artist_text = self.artist_text_select.currentText()
         orig_artist = 1
         if artist_text == "By":
@@ -805,10 +817,15 @@ class compile_package(QWidget, compile_pack):
             "band_playback_volume": self.gh3_gtr_vol.value(),
             "guitar_playback_volume": self.gh3_band_vol.value(),
             "countoff": wrap_string(self.gh3_countoff_select.currentText()),
-            "rhythm_track": rhythm_track
+            "rhythm_track": rhythm_track,
+            "hammer_on_measure_scale": self.ns_value()
         }
         if self.coop_audio_check.isChecked():
             songlist_info["no_id"] = "use_coop_notetracks"
+        if self.gh3_bassist_select.currentText() != "Default":
+            bassist = bass_lookup[
+                self.gh3_bassist_select.currentText()] if self.gh3_bassist_select.currentText() in bass_lookup else self.gh3_bassist_select.currentText()
+            songlist_info["Bassist"] = wrap_string(bassist, True)
         return songlist_info
 
     def gh3_audio_gen(self, song_name, start_time, end_time, compile_args):
@@ -879,22 +896,33 @@ class compile_package(QWidget, compile_pack):
         qb_text += "}"
         platform = self.platform_button_group.checkedButton().objectName()
         if platform == "platform_360":
-            dl_qb = """qb_file = 0xbf0730f0
-            GH3_Download_Songs = {
-	        prefix = "download"
-	        num_tiers = 1
-	        tier1 = {
-		    Title = w"Downloaded songs"
-		    songs = [%s]
-		    no_id = unlockall
-		    level = load_z_artdeco
-	        }
+            qb_texts = {}
+            langs = {
+                "en": "Downloaded songs",
+                "f": "Chansons téléchargées",
+                "g": "Heruntergel. Songs",
+                "i": "Canzoni scaricate",
+                "s": "Temas descargados"
             }
-            download_songlist = [%s]
-            download_songlist_props = {
-            """.replace("%s", checksum)
-            qb_text = dl_qb + qb_text + " }"
-            qb_text = mid_gen.t2q_main(qb_text, game = "GH3")
+            for k, v in langs.items():
+                dl_qb = """qb_file = 0xbf0730f0
+                GH3_Download_Songs = {
+                prefix = "download"
+                num_tiers = 1
+                tier1 = {
+                Title = w"%l"
+                songs = [%s]
+                no_id = unlockall
+                level = load_z_artdeco
+                }
+                }
+                download_songlist = [%s]
+                download_songlist_props = {
+                """.replace("%s", checksum).replace("%l", v)
+                qb_text_360 = dl_qb + qb_text + " }"
+                qb_text_360 = mid_gen.t2q_main(qb_text_360, game="GH3")
+                qb_texts[k] = qb_text_360
+            return qb_texts
         return qb_text
 
     def gen_wor_songlist(self, *args):
@@ -950,7 +978,9 @@ class compile_package(QWidget, compile_pack):
         with open(self.ghwor_stfs_input.text(), 'rb') as f:
             stfs_data = f.read()[:0x10000]"""
 
-        dlc_crc_num = 1000000000 + (int(QBKey(f"gh5{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"), 16) % 1000000000)
+        dlc_crc_num = 1000000000 + (int(QBKey(
+            f"gh5{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"),
+                                        16) % 1000000000)
         self.checksum_input.setText(f"dlc{dlc_crc_num}")
         cdl_data = f"cdl{dlc_crc_num}"
         stfs_name = f"{cdl_data} {self.title_input.text()} ({self.artist_input.text()})"
@@ -1042,7 +1072,7 @@ class compile_package(QWidget, compile_pack):
         if not compile_args:
             return
 
-        songlist = self.gen_gh3_songlist()
+        songlists = self.gen_gh3_songlist()
         try:
             song_pak = mid_gen.make_mid(*compile_args)[0]
         except Exception as E:
@@ -1055,6 +1085,43 @@ class compile_package(QWidget, compile_pack):
             af.writeFSB3(audio, dat, audio_path)
         with open(f"{save_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
             f.write(song_pak)
+        if self.platform_360.isChecked():
+            dlc_crc_num = 1000000000 + (int(QBKey(
+                f"gh3{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"),
+                16) % 1000000000)
+            onyx_repack_folder = os.path.join(save_folder, "onyx-repack")
+
+            if not os.path.exists(onyx_repack_folder):
+                os.makedirs(onyx_repack_folder)
+
+            gh3_scripts_name = "0xf14c98ae.0xf980276f.qb"
+            with open(os.path.join(base_dir, "conversion_files", "gh3_scripts.qb.xen"), 'rb') as f:
+                gh3_scripts_qb = f.read()
+            gh3_scripts_pak = mid_gen.pakMaker([[gh3_scripts_qb, gh3_scripts_name]])
+            with open(os.path.join(save_folder, f"dl{dlc_crc_num}.pak.xen"), "wb") as f:
+                f.write(gh3_scripts_pak)
+            langs = ["_g", "", "_f", "_i", "_s"]
+            for lang in langs:
+                pak_lang = lang[-1] if lang else "en"
+                lang_pak = mid_gen.pakMaker([[songlists[pak_lang], f"dl{dlc_crc_num}.qb"]])
+                with open(os.path.join(save_folder, f"dl{dlc_crc_num}_text{lang}.pak.xen"), "wb") as f:
+                    f.write(lang_pak)
+            stfs_name = f"{self.title_input.text()} by {self.artist_input.text()}"
+            song_yaml = copy.deepcopy(stfs_yaml_dict)
+            song_yaml["package-name"][0] = stfs_name
+            song_yaml['title-id'] = 1096157175
+            song_yaml['title-name'] = 'Guitar Hero 3'
+            with open(os.path.join(onyx_repack_folder, "repack-stfs.yaml"), "w") as f:
+                yaml.dump(song_yaml, f)
+            shutil.copy(os.path.join(base_dir, "conversion_files", "thumbnail_gh3.png"),
+                        os.path.join(onyx_repack_folder, "thumbnail.png"))
+            shutil.copy(os.path.join(base_dir, "conversion_files", "thumbnail_gh3.png"),
+                        os.path.join(onyx_repack_folder, "title-thumbnail.png"))
+            print("Using Onyx Command Line to compile 360 STFS file.")
+            stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dlc_crc_num}"[
+                             :39] + "_gh3"
+            subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
+                            os.path.join(project_folder, stfs_file_name)])
         print("Compile complete!")
         return
 
@@ -1170,11 +1237,15 @@ class compile_package(QWidget, compile_pack):
 
         song_yaml = copy.deepcopy(stfs_yaml_dict)
         song_yaml["package-name"][0] = stfs_name
+        song_yaml['title-id'] = 1096157315
+        song_yaml['title-name'] = 'Guitar Hero : Warriors of Rock'
         with open(os.path.join(onyx_repack_folder, "repack-stfs.yaml"), "w") as f:
             yaml.dump(song_yaml, f)
 
-        shutil.copy(os.path.join(root_dir, "conversion_files", "thumbnail.png"), onyx_repack_folder)
-        shutil.copy(os.path.join(root_dir, "conversion_files", "title-thumbnail.png"), onyx_repack_folder)
+        shutil.copy(os.path.join(base_dir, "conversion_files", "thumbnail_wor.png"),
+                    os.path.join(onyx_repack_folder, "thumbnail.png"))
+        shutil.copy(os.path.join(base_dir, "conversion_files", "thumbnail_wor.png"),
+                    os.path.join(onyx_repack_folder, "title-thumbnail.png"))
 
         if not "skip_audio" in args:
             start_time = self.conv_to_secs("start")
@@ -1204,8 +1275,10 @@ class compile_package(QWidget, compile_pack):
         with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
             f.write(wor_pak)
         print("Using Onyx Command Line to compile 360 STFS file.")
-        stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dl_num}"[:36]+"_ghwor"
-        subprocess.run([os.path.join(root_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to", os.path.join(project_folder, stfs_file_name)])
+        stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dl_num}"[
+                         :36] + "_ghwor"
+        subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
+                        os.path.join(project_folder, stfs_file_name)])
         print("Compile complete!")
         return
 
