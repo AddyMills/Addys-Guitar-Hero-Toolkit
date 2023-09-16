@@ -326,26 +326,6 @@ def parse_fretbars(timeSigs, end_event_ticks, changes, ticksArray, mid):
     return fretbars
 
 
-def active_note_check(x, active_notes, timeSec, midi_track, track):  # midi_track is usually anim_notes
-    if x.velocity != 0:
-        if x.note in active_notes:
-            return -1
-        active_notes[x.note] = AnimNoteWT(timeSec, x.note, x.velocity)
-    else:
-        try:
-            active_notes[x.note].setLength(timeSec - active_notes[x.note].time)
-            if active_notes[x.note].time in midi_track[track.name]:
-                midi_track[track.name][active_notes[x.note].time].append(active_notes[x.note])
-            else:
-                midi_track[track.name][active_notes[x.note].time] = [active_notes[x.note]]
-            active_notes.pop(x.note)
-        except KeyError:
-            pass
-        except:
-            raise Exception(f"Something went wrong parsing the {track.name} track.")
-    return 0
-
-
 def create_diff_dicts():
     play_notes = {
         "Easy": [],
