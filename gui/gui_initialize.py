@@ -618,11 +618,11 @@ class compile_package(QWidget, compile_pack):
     def gen_checksum(self):
         game = self.game_select_group.checkedButton().objectName()
         if self.checksum_input.text() == '':
-            if game == "ghwt":
+            if game == "ghwor":
+                self.wor_checksum()
+            else:
                 self.checksum_input.setText(
                     self.title_input.text().replace(" ", "").translate(str.maketrans('', '', string.punctuation)))
-            elif game == "ghwor":
-                self.wor_checksum()
         elif game == "ghwor" and not self.checksum_input.text().startswith("dlc"):
             self.wor_checksum()
         else:
