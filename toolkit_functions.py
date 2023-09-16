@@ -4026,7 +4026,7 @@ def rhythm_verse_output(archive_path):
         errors.append("INI File")
     if errors:
         print('{"status":"error","message":"Missing ' + ', '.join(errors)+'"}')
-    return ini_dict, mid_file
+    return {"ini": ini_dict, "midi": mid_file}
 
 
 if __name__ == "__main__":
