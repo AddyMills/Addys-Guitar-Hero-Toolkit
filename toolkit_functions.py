@@ -1,3 +1,4 @@
+import io
 import sys
 import os
 import random
@@ -3674,8 +3675,9 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
     wt_pak = mid_qb.create_pak_file(midQB, song_name, midQS, *compile_args)
     return wt_pak
 
-def create_mid_from_qb(pakmid):
-    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
+def create_mid_from_qb(pakmid, song_name = ""):
+    if not song_name:
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
         song_name = song_name[1:]
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
@@ -3973,9 +3975,58 @@ def create_mid_from_qb(pakmid):
 
     return new_mid, struct_string
 
-def rhythm_verse_output(folder_path):
-
-    return
+def rhythm_verse_output(archive_path):
+    import configparser
+    if not os.path.exists(archive_path):
+        print("Error: Path does not exist.")
+    ini_file = configparser.ConfigParser()
+    mid_file = io.BytesIO()
+    extension = os.path.splitext(archive_path)[1]
+    if extension == ".7z":
+        import py7zr
+        archive = py7zr.SevenZipFile(archive_path)
+        files = archive.readall()
+        for k, v in files.items():
+            if re.search(r'_song\.pak\.xen$', k, flags=re.IGNORECASE):
+                song_name = os.path.basename(k)
+                song_name = song_name[1:song_name.lower().find("_song")]
+                pak_file = v.read()
+            if re.search(r'song\.ini$', k, flags=re.IGNORECASE):
+                ini_string = v.read().decode("utf-8")
+                ini_file.read_file(io.StringIO(ini_string))
+        archive.close()
+    elif extension == ".zip":
+        import zipfile
+        archive = zipfile.ZipFile(archive_path)
+        files = archive.namelist()
+        for k in files:
+            if re.search(r'_song\.pak\.xen$', k, flags=re.IGNORECASE):
+                song_name = os.path.basename(k)
+                song_name = song_name[1:song_name.lower().find("_song")]
+                with archive.open(k) as v:
+                    pak_file = v.read()
+            if re.search(r'song\.ini$', k, flags=re.IGNORECASE):
+                with archive.open(k) as v:
+                    ini_string = v.read().decode("utf-8")
+                ini_file.read_file(io.StringIO(ini_string))
+        archive.close()
+    elif extension == ".rar":
+        return '{"status":"error","message":"RAR File not supported"}'
+    else:
+        return '{"status":"error","message":"Unknown file found"}'
+    errors = []
+    if pak_file:
+        mido_file = create_mid_from_qb(pak_file, song_name)[0]
+        mido_file.save(file=mid_file)
+        mid_file = mid_file.getvalue()
+    else:
+        errors.append("PAK File")
+    ini_dict = {section: dict(ini_file.items(section)) for section in ini_file.sections()}
+    if not ini_dict:
+        errors.append("INI File")
+    if errors:
+        print('{"status":"error","message":"Missing ' + ', '.join(errors)+'"}')
+    return ini_dict, mid_file
 
 
 if __name__ == "__main__":
