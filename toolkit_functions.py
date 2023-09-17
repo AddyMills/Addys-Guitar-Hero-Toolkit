@@ -3975,10 +3975,9 @@ def create_mid_from_qb(pakmid, song_name = ""):
 
     return new_mid, struct_string
 
-def rhythm_verse_output(archive_path):
-    import configparser
+def rv_archive_check(archive_path):
     if not os.path.exists(archive_path):
-        print("Error: Path does not exist.")
+        return '{"status":"error","message":"Could not find file"}'
     ini_file = configparser.ConfigParser()
     mid_file = io.BytesIO()
     extension = os.path.splitext(archive_path)[1]
@@ -4015,6 +4014,50 @@ def rhythm_verse_output(archive_path):
     else:
         return '{"status":"error","message":"Unknown file found"}'
     errors = []
+    if not pak_file:
+        errors.append("PAK File")
+    ini_dict = {section: dict(ini_file.items(section)) for section in ini_file.sections()}
+    if not ini_dict:
+        errors.append("INI File")
+    if errors:
+        return ('{"status":"error","message":"Missing ' + ', '.join(errors) + '"}')
+    return '{"status":"success","message":"ok"}' # message present only for parity
+
+
+def rv_output(archive_path):
+    import configparser
+    ini_file = configparser.ConfigParser()
+    mid_file = io.BytesIO()
+    extension = os.path.splitext(archive_path)[1]
+    if extension == ".7z":
+        import py7zr
+        archive = py7zr.SevenZipFile(archive_path)
+        files = archive.readall()
+        for k, v in files.items():
+            if re.search(r'_song\.pak\.xen$', k, flags=re.IGNORECASE):
+                song_name = os.path.basename(k)
+                song_name = song_name[1:song_name.lower().find("_song")]
+                pak_file = v.read()
+            if re.search(r'song\.ini$', k, flags=re.IGNORECASE):
+                ini_string = v.read().decode("utf-8")
+                ini_file.read_file(io.StringIO(ini_string))
+        archive.close()
+    elif extension == ".zip":
+        import zipfile
+        archive = zipfile.ZipFile(archive_path)
+        files = archive.namelist()
+        for k in files:
+            if re.search(r'_song\.pak\.xen$', k, flags=re.IGNORECASE):
+                song_name = os.path.basename(k)
+                song_name = song_name[1:song_name.lower().find("_song")]
+                with archive.open(k) as v:
+                    pak_file = v.read()
+            if re.search(r'song\.ini$', k, flags=re.IGNORECASE):
+                with archive.open(k) as v:
+                    ini_string = v.read().decode("utf-8")
+                ini_file.read_file(io.StringIO(ini_string))
+        archive.close()
+    errors = []
     if pak_file:
         mido_file = create_mid_from_qb(pak_file, song_name)[0]
         mido_file.save(file=mid_file)
@@ -4024,8 +4067,6 @@ def rhythm_verse_output(archive_path):
     ini_dict = {section: dict(ini_file.items(section)) for section in ini_file.sections()}
     if not ini_dict:
         errors.append("INI File")
-    if errors:
-        print('{"status":"error","message":"Missing ' + ', '.join(errors)+'"}')
     return {"ini": ini_dict, "midi": mid_file}
 
 
