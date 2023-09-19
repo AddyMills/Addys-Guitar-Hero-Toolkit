@@ -660,6 +660,11 @@ class compile_package(QWidget, compile_pack):
             "Countoff": self.ghwt_countoff_select.currentText().lower(),
             "Drumkit": self.ghwt_drumkit_select.currentText().replace(" ", "").lower(),
             "Volume": str(self.ghwt_band_vol.value()),
+            "DiffGuitar": str(self.guitar_tier_value.value()),
+            "DiffBass": str(self.bass_tier_value.value()),
+            "DiffVocals": str(self.vocals_tier_value.value()),
+            "DiffDrums": str(self.drums_tier_value.value()),
+            "DiffBand": str(self.band_tier_value.value()),
         }
         if self.game_icon_input.text().replace(" ", ""):
             ini["SongInfo"]["GameIcon"] = self.game_icon_input.text()
