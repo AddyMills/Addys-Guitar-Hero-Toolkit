@@ -11,6 +11,7 @@ from functools import partial
 
 import json
 import os
+import io
 import sys
 import configparser
 import string
@@ -69,6 +70,7 @@ class compile_package(QWidget, compile_pack):
         self.gh3_song_data_fields()
         self.compile_fields()
         self.changing_fields()
+        self.other_buttons()
 
         self.first_boot()
 
@@ -151,6 +153,13 @@ class compile_package(QWidget, compile_pack):
         if file_name:
             text_field.setText(file_name)
 
+    def open_ch_rbproj(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "",
+                                                   "CH ini or Magma rbproj Files (*.ini *.rbproj)", options=options)
+
+        if file_name:
+            return file_name
     def p2_rhythm_toggle(self):
         if self.p2_rhythm_check.isChecked():
             self.rhythm_label_gh3.setText("Rhythm")
@@ -355,15 +364,7 @@ class compile_package(QWidget, compile_pack):
 
         for key, value in load_vars.items():
             try:
-                field = getattr(self, key)
-                if isinstance(field, QLineEdit):
-                    field.setText(value)
-                elif isinstance(field, QComboBox):
-                    field.setCurrentText(value)
-                elif isinstance(field, QSpinBox) or isinstance(field, QDoubleSpinBox):
-                    field.setValue(value)
-                elif isinstance(field, str):
-                    setattr(self, key, value)
+                self.set_field(key, value)
             except:
                 pass
 
@@ -550,6 +551,116 @@ class compile_package(QWidget, compile_pack):
         self.compile_button.clicked.connect(self.compile_song_package)
         self.compile_pak_button.clicked.connect(self.compile_pak)
 
+    def other_buttons(self):
+        self.import_from_other.clicked.connect(self.import_from_ch_rbproj)
+
+    def set_field(self, key, value):
+        field = getattr(self, key)
+        if isinstance(field, QLineEdit):
+            field.setText(value)
+        elif isinstance(field, QComboBox):
+            field.setCurrentText(value)
+        elif isinstance(field, QSpinBox) or isinstance(field, QDoubleSpinBox):
+            field.setValue(value)
+        elif isinstance(field, str):
+            setattr(self, key, value)
+
+    def import_from_ch_rbproj(self):
+        other_file = self.open_ch_rbproj()
+        if not other_file:
+            return
+
+        other_ext = os.path.splitext(other_file)[1]
+        if other_ext == ".ini":
+
+            ini_lookup_str = {
+                "name": "title_input",
+                "artist": "artist_input",
+                "charter": "author_input",
+                "frets": "author_input",
+            }
+            ini_lookup_int = {
+                "year": "year_input",
+                "diff_band": "band_tier_value",
+                "diff_guitar": "guitar_tier_value",
+                "diff_bass": "bass_tier_value",
+                "diff_drums": "drums_tier_value",
+                "diff_vocals": "vocals_tier_value",
+                "sustain_cutoff_threshold": "ghwt_whammy_cutoff",
+                "hopo_frequency": "hmx_hopo_value",
+            }
+            ini_lookup_other = ["preview_start_time", "preview_end_time"]
+            ini_file = configparser.ConfigParser()
+            ini_file.read_file(open(other_file))
+            ini_dict = {section: dict(ini_file.items(section)) for section in ini_file.sections()}
+            ini_key = ini_file.sections()[0]
+            for key, value in ini_dict[ini_key].items():
+                if key in ini_lookup_str:
+                    self.set_field(ini_lookup_str[key], value)
+                elif key in ini_lookup_int:
+                    int_val = int(value)
+                    if "diff" in key:
+                        int_val = int(int_val * 10 / 6) if int_val != 0 else 1
+                    elif key == "sustain_cutoff_threshold":
+                        int_val = int_val / 480
+                    self.set_field(ini_lookup_int[key], int_val)
+                elif key in ini_lookup_other:
+                    in_min, in_sec, in_mills = self.split_time(int(value)/1000)
+                    if key == ini_lookup_other[0]:
+                        self.set_field("preview_minutes", in_min)
+                        self.set_field("preview_seconds", in_sec)
+                        self.set_field("preview_mills", in_mills)
+                    else:
+                        self.ghwt_set_end.setChecked(True)
+                        self.set_field("length_minutes", in_min)
+                        self.set_field("length_seconds", in_sec)
+                        self.set_field("length_mills", in_mills)
+                else:
+                    print("Skipping ini key: " + key)
+            audio_files = []
+            for file in os.listdir(os.path.dirname(other_file)):
+                base_file = os.path.splitext(os.path.basename(file))[0].lower()
+                ext = os.path.splitext(file)[1]
+                if ext.lower() != ".ini":
+                    audio_files.append(base_file)
+            for file in os.listdir(os.path.dirname(other_file)):
+                full_path = os.path.join(os.path.dirname(other_file), file)
+                base_file = os.path.splitext(os.path.basename(file))[0].lower()
+                if base_file == "drums" and "drums_1" not in audio_files:
+                    self.set_field("kick_input", full_path)
+                elif base_file == "drums_1":
+                    self.set_field("kick_input", full_path)
+                elif base_file == "drums_2":
+                    self.set_field("snare_input", full_path)
+                elif base_file == "drums_3":
+                    self.set_field("cymbals_input", full_path)
+                elif base_file == "drums_4":
+                    self.set_field("toms_input", full_path)
+                elif base_file == "guitar":
+                    if "song" not in audio_files:
+                        self.set_field("backing_input", full_path)
+                    else:
+                        self.set_field("guitar_input", full_path)
+                elif base_file == "bass" or base_file == "rhythm":
+                    self.set_field("bass_input", full_path)
+                elif base_file == "vocals":
+                    self.set_field("vocals_input", full_path)
+                elif base_file == "crowd":
+                    self.set_field("crowd_input", full_path)
+                elif base_file == "song":
+                    self.set_field("backing_input", full_path)
+                elif base_file == "preview":
+                    self.ghwt_rendered_preview_check.setChecked(True)
+                    self.set_field("ghwt_preview_audio_input", full_path)
+                elif base_file == "notes":
+                    self.set_field("ghwt_midi_file_input", full_path)
+
+
+        elif other_ext == ".rbproj":
+            pass
+
+        return
+
     def changing_fields(self):
         self.ghwt_checksum = ""
         self.ghwt_genre = ""
@@ -582,13 +693,17 @@ class compile_package(QWidget, compile_pack):
         else:
             end_time -= start_time
 
-        end_min = int(end_time // 60)
-        end_sec = int(end_time % 60)
-        end_mills = round(end_time % 1, 3) * 1000
+        end_min, end_sec, end_mills = self.split_time(end_time)
 
         self.length_minutes.setValue(end_min)
         self.length_seconds.setValue(end_sec)
         self.length_mills.setValue(end_mills)
+
+    def split_time(self, in_time):
+        min = int(in_time // 60)
+        sec = int(in_time % 60)
+        mills = round(in_time % 1, 3) * 1000
+        return min, sec, mills
 
     def combo_copy(self, source, destination):
         for i in range(source.count()):

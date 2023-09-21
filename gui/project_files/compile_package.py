@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'compile_package.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.4.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -254,6 +254,16 @@ class Ui_Form(object):
 
 
         self.verticalLayout_2.addWidget(self.metadata_widget, 0, Qt.AlignTop)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.import_from_other = QPushButton(self.metadata_tab)
+        self.import_from_other.setObjectName(u"import_from_other")
+
+        self.horizontalLayout_5.addWidget(self.import_from_other)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
 
         self.compile_tabs.addTab(self.metadata_tab, "")
         self.audio_tab_wt = QWidget()
@@ -1705,7 +1715,7 @@ class Ui_Form(object):
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(3)
+        self.compile_tabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1732,6 +1742,7 @@ class Ui_Form(object):
 
         self.artist_label.setText(QCoreApplication.translate("Form", u"Artist:", None))
         self.cover_artist_label.setText(QCoreApplication.translate("Form", u"Cover Artist:", None))
+        self.import_from_other.setText(QCoreApplication.translate("Form", u"Import Data from Clone Hero .ini", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.metadata_tab), QCoreApplication.translate("Form", u"Metadata", None))
         self.crowd_select.setText(QCoreApplication.translate("Form", u"...", None))
         self.toms_label.setText(QCoreApplication.translate("Form", u"Toms", None))
