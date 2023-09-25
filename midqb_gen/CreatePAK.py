@@ -4,7 +4,7 @@ import sys
 
 from math import trunc
 root_folder = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{root_folder}\\..\\")
+sys.path.append(os.path.join(root_folder, ".."))
 from CRC import QBKey
 import binascii
 
@@ -152,8 +152,8 @@ def main(midBytes, toAdd):
 if __name__ == "__main__":
     # toAdd = "D:\GitHub\Guitar-Hero-III-Tools\MIDQBgen\greengrassreal.mid.qb.xen"
     root_folder = os.path.realpath(os.path.dirname(__file__))
-    to_add = f"{root_folder}\\Pak Input"
-    output = f'{root_folder}\\PAK compile'
+    to_add = os.path.join(root_folder, "Pak Input")
+    output = os.path.join(root_folder, "PAK compile")
     if "-pak_name" in sys.argv:
         pak_name = sys.argv[sys.argv.index("-pak_name") + 1]
     else:
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             pak_data.append([x, item_name if not any([item_name.lower().endswith(".xen"), item_name.lower().endswith(".ps3")]) else item_name[:-4]])
             # print(os.path.join(root, name)[len(toAdd)+1:])
 
-    filename = f"{output}\\{'b' if 'dlc' in str(pak_name) else ''}{pak_name if pak_name else 'output'}{'_song' if 'dlc' in str(pak_name) else ''}"
+    filename = os.path.join(output, f"{'b' if 'dlc' in str(pak_name) else ''}{pak_name if pak_name else 'output'}{'_song' if 'dlc' in str(pak_name) else ''}")
     if not split:
         pak_file = pakMaker(pak_data, pak_name, split, check)
         with open(f"{filename}.pak.xen", 'wb') as f:

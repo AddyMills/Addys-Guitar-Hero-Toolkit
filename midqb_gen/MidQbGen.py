@@ -7,8 +7,8 @@ import sys
 import re
 
 
-sys.path.append("..\\pak_extract")
-sys.path.append("..\\ska_converter")
+sys.path.append(os.path.join(os.pardir, "pak_extract"))
+sys.path.append(os.path.join(os.pardir, "ska_converter"))
 root_folder = os.path.realpath(os.path.dirname(__file__))
 from pak_extract.pak_functions import createHeaderDict
 from pak_extract.QB2Text import convert_qb_file, qb_bytes, print_qb_text_file
@@ -146,7 +146,7 @@ def create_pak_file(midQB, filename, midQS = "", *args):
             to_pak.extend(ska_files)
         elif os.path.exists(ska_files):
             for files in os.listdir(ska_files):
-                with open(f"{args[args.index('add_ska') + 1]}\\{files}", 'rb') as f:
+                with open(os.path.join(args[args.index('add_ska') + 1], files), 'rb') as f:
                     ska_file = f.read()
                     if "gh3" in args:
                         ska_file = ska_bytes(ska_file)
@@ -163,7 +163,8 @@ def create_pak_file(midQB, filename, midQS = "", *args):
             raise Exception("Could not find SKA files.")
     if "add_loops" in args:
         for file in args[args.index("add_loops") + 1]:
-            with open(f"{root_folder}\\..\\conversion_files\\anim_loops_wt\\{file}.ska.xen", 'rb') as f:
+            with open(os.path.join(root_folder, "..", "conversion_files", "anim_loops_wt", f"{file}.ska.xen"),
+                      'rb') as f:
                 to_pak.append([f.read(), f"{file}.ska"])
     pakFile = pakMaker(to_pak)
     return pakFile
@@ -206,10 +207,16 @@ if __name__ == "__main__":
     pakFile, filename = make_mid(midfile, hopo, "", *sys.argv)
 
     if "qb" in sys.argv:
-        with open(f".\\Pak Input\\songs\\{filename}.mid.qb.xen", 'wb') as f:
+        # Define base directory
+        base_dir = os.path.join(".", "Pak Input", "songs")
+
+        # Write the qb file
+        with open(os.path.join(base_dir, f"{filename}.mid.qb.xen"), 'wb') as f:
             f.write(pakFile["qb"])
+
+        # Write the qs file if it exists
         if pakFile["qs"]:
-            with open(f".\\Pak Input\\songs\\{filename}.mid.qs.xen", 'wb') as f:
+            with open(os.path.join(base_dir, f"{filename}.mid.qs.xen"), 'wb') as f:
                 f.write(pakFile["qs"])
     else:
         with open(f"{filename}_song.pak.xen", 'wb') as f:

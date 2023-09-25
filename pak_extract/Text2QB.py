@@ -690,7 +690,7 @@ if __name__ == "__main__":
     if "-input" in sys.argv:
         directory = sys.argv[sys.argv.index("-input")+1]
     else:
-        directory = f".\\input Text"
+        directory = os.path.join('.', 'input Text')
     console = "PC"
     endian = "big"
     if "-game" in sys.argv:
@@ -705,7 +705,7 @@ if __name__ == "__main__":
         print(f"Converting {file_name}")
         with open(filename, "r") as f:
             lines = f.read()
-        output_file = f'.\\output\\Text\\{file_name}.qb.xen'
+        output_file = os.path.join('.', 'output', 'Text', f'{file_name}.qb.xen')
         dir_name = os.path.dirname(output_file)
         try:
             os.makedirs(dir_name)

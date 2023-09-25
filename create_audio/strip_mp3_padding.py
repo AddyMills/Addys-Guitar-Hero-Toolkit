@@ -42,11 +42,12 @@ def main(in_folder = "input", fsb_loc = ""):
         else:
             for filename in os.listdir(in_folder):
                 crypted, fileout = af.crypt_files(in_folder, filename)
-                with open(f"{out_folder}\\{fileout}", 'wb') as f:
+                file_path = os.path.join(out_folder, fileout)
+                with open(file_path, 'wb') as f:
                     f.write(crypted)
         for filename in os.listdir(out_folder):
             print(filename)
-            subprocess.run([fsbext, "-M","-d",out_folder, f"{out_folder}\\{filename}"])
+            subprocess.run([fsbext, "-M", "-d", out_folder, os.path.join(out_folder, filename)])
             if filename.endswith("_1.FSB"):
                 new_folder = "drums"
             elif filename.endswith("_2.FSB"):
@@ -57,7 +58,8 @@ def main(in_folder = "input", fsb_loc = ""):
                 new_folder = "preview"
             else:
                 continue
-            os.rename(f"{out_folder}\\multichannel sound.mp3_channels", f"{out_folder}\\{new_folder}")
+            os.rename(os.path.join(out_folder, "multichannel sound.mp3_channels"), os.path.join(out_folder, new_folder))
+
         for filename in os.listdir(out_folder):
             if filename == "playable":
                 modifier = 4
@@ -67,13 +69,17 @@ def main(in_folder = "input", fsb_loc = ""):
                 modifier = 9
             else:
                 continue
-            for file in os.listdir(f"{out_folder}\\{filename}"):
+            sub_folder = os.path.join(out_folder, filename)
+            for file in os.listdir(sub_folder):
                 audio_name = int(os.path.splitext(file)[0])
                 audio_name += modifier
-                shutil.copy(f"{out_folder}\\{filename}\\{file}",f"{out_folder}\\drums\\{audio_name}.mp3")
-        for filename in os.listdir(f"{out_folder}\\drums"):
-            shutil.copy(f"{out_folder}\\drums\\{filename}", f"{in_folder}\\{filename}")
-        delete_files_in_directory(f"{out_folder}")
+                shutil.copy(os.path.join(sub_folder, file), os.path.join(out_folder, "drums", f"{audio_name}.mp3"))
+
+        drums_folder = os.path.join(out_folder, "drums")
+        for filename in os.listdir(drums_folder):
+            shutil.copy(os.path.join(drums_folder, filename), os.path.join(in_folder, filename))
+
+        delete_files_in_directory(out_folder)
         if in_folder == "input":
             subprocess.run(["combine_fsb.bat"])
         else:

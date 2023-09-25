@@ -3,8 +3,9 @@ from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QDragMoveEvent
 
 import sys
+import os
 
-sys.path.append("..\\")
+sys.path.append(os.path.join(".."))
 
 from toolkit_functions import extract_pak as x_pak
 

@@ -66,12 +66,13 @@ def manual_input():
                 output = f'{os.path.dirname(mid_file)}'
                 pak_file, filename = output_mid_gh3(mid_file)
 
-                with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
+                file_path = os.path.join(output, f"{filename}_song.pak.xen")
+                with open(file_path, 'wb') as f:
                     f.write(pak_file)
                 input("Done! Press Enter to go back to the Main Menu. ")
             elif main_menu == "extract_pak":
                 pak_file = input("Drag in your PAK file: ").replace("\"", "")
-                output = f'{os.path.dirname(pak_file)}\\extract'
+                output = os.path.join(os.path.dirname(pak_file), "extract")
                 extract_pak(pak_file, output)
                 input("Done! Press Enter to go back to the Main Menu. ")
             elif main_menu == "qb2text":
@@ -99,17 +100,20 @@ def manual_input():
                     singer = singer_dict[input("Type in the number corresponding to your singer: ")]
                 song_name, song_pak = convert_to_gha(midqb_file, output, singer)
                 if midqb_file.lower().endswith(".mid"):
-                    pak_name = f'\\{song_name}_song.pak.xen'
+                    pak_name = f'{song_name}_song.pak.xen'
                 else:
-                    pak_name = f'\\{song_name}_song_GHA.pak.xen'
-                with open(output + pak_name, 'wb') as f:
+                    pak_name = f'{song_name}_song_GHA.pak.xen'
+
+                file_path = os.path.join(output, pak_name)
+                with open(file_path, 'wb') as f:
                     f.write(song_pak)
                 input("Convert complete! Press Enter to continue. ")
             elif main_menu == "convert_to_gh3":
                 midqb_file = input("Drag in your song PAK file: ").replace("\"", "")
                 output = f'{os.path.dirname(midqb_file)}'
                 song_name, song_pak = convert_to_gh3(midqb_file, output)
-                with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
+                file_path = os.path.join(output, f'{song_name}_song_GH3.pak.xen')
+                with open(file_path, 'wb') as f:
                     f.write(song_pak)
                 input("Convert complete! Press Enter to continue. ")
 
@@ -139,7 +143,8 @@ def manual_input():
                 try:
                     pak_data = convert_to_5(midqb_file, new_name, *compiler_args)
                     pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], new_name)
-                    with open(output + f'\\b{new_name}_song.pak.xen', 'wb') as f:
+                    file_path = os.path.join(output, f'b{new_name}_song.pak.xen')
+                    with open(file_path, 'wb') as f:
                         f.write(pak_file)
                     input("\nComplete! Press any key to exit.")
                 except Exception as E:
@@ -152,10 +157,13 @@ def manual_input():
                 midname = os.path.basename(midqb_file)[:os.path.basename(midqb_file).find(".")]
                 print(midname)
                 mid_file, anim_string = create_mid_from_qb(midqb_file)
-                mid_file.save(f"{output}\\{midname}.mid")
+                file_path = os.path.join(output, f"{midname}.mid")
+                mid_file.save(file_path)
                 if anim_string:
                     anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
-                    with open(f"{output}\\{midname}_scripts.txt", "w") as f:
+                    file_path = os.path.join(output, f"{midname}_scripts.txt")
+
+                    with open(file_path, "w") as f:
                         f.write(anim_string)
                 input("\nComplete! Press any key to go to the main menu.")
             elif main_menu == "compile_wt_song":
@@ -171,7 +179,7 @@ def manual_input():
                     ska_folder = ska_files
                 else:
                     ska_folder = os.path.dirname(ska_files)
-                output = f'{ska_folder}\\converted_ska_files'
+                output = os.path.join(ska_folder, 'converted_ska_files')
                 target_dict = {
                     "1": "GH3",
                     "2": "GHA",
@@ -210,7 +218,8 @@ def manual_input():
                     ska_files = [ska_files]
                 quat_check = 0
                 for x in ska_files:
-                    with open(f"{ska_folder}\\{x}", "rb") as f:
+                    ska_path = os.path.join(ska_folder, x)
+                    with open(ska_path, "rb") as f:
                         ska = ska_bytes(f.read())
                     print(f"Processing {os.path.basename(x)}")
                     try:
@@ -235,7 +244,8 @@ def manual_input():
                             continue
                         if not os.path.isdir(output):
                             os.mkdir(output)
-                        with open(f'{output}\\{os.path.basename(x)}', "wb") as f:
+                        file_path = os.path.join(output, os.path.basename(x))
+                        with open(file_path, "wb") as f:
                             f.write(ska_file)
                     except Exception as E:
                         print("Conversion failed!")
@@ -262,7 +272,8 @@ def manual_input():
                         print("Could not convert audio.")
                 print(midname)
                 wt_pak = convert_5_to_wt(midqb_file, perf_override)
-                with open(f"{output}\\a{midname}.pak.xen".lower(), "wb") as f:
+                file_path = os.path.join(output, f"a{midname}.pak.xen".lower())
+                with open(file_path, "wb") as f:
                     f.write(wt_pak)
 
             elif main_menu == 1337:
@@ -294,7 +305,7 @@ def print_instructions():
 
 def launch_gui(ghproj = ""):
     root_folder = os.path.realpath(os.path.dirname(__file__))
-    sys.path.append(f"{root_folder}\\gui")
+    sys.path.append(os.path.join(root_folder, "gui"))
     from gui import toolkit_gui
     toolkit_gui.open_gui(sys.argv, proj_file = ghproj)
 
@@ -339,7 +350,8 @@ if __name__ == "__main__":
                     pak_file, filename = output_mid_gh3(mid_file, hopo)
                     if output == "":
                         output = os.path.dirname(mid_file)
-                    with open(f"{output}\\{filename}_song.pak.xen", 'wb') as f:
+                    file_path = os.path.join(output, f"{filename}_song.pak.xen")
+                    with open(file_path, 'wb') as f:
                         f.write(pak_file)
                 else:
                     print("Error: No mid file found.")
@@ -353,7 +365,7 @@ if __name__ == "__main__":
                 pak_file = input_file.replace("\"", "")
                 if pak_file.lower().endswith(".pak.xen"):
                     if "output" not in locals():
-                        output = f'{os.path.dirname(pak_file)}\\extract'
+                        output = os.path.join(os.path.dirname(pak_file), 'extract')
                     extract_pak(pak_file, output)
                 else:
                     print("Error: No PAK file found.")
@@ -381,7 +393,8 @@ if __name__ == "__main__":
                     if "singer" not in locals():
                         singer = "gh3_singer"
                     song_name, song_pak = convert_to_gh3(midqb_file, output, lipsync_dict[singer])
-                    with open(output + f'\\{song_name}_song_GH3.pak.xen', 'wb') as f:
+                    file_path = os.path.join(output, f'{song_name}_song_GH3.pak.xen')
+                    with open(file_path, 'wb') as f:
                         f.write(song_pak)
                 else:
                     print("Error: No song PAK file found.")
@@ -393,7 +406,8 @@ if __name__ == "__main__":
                     if "singer" not in locals():
                         singer = "gha_singer"
                     song_name, song_pak = convert_to_gha(midqb_file, output, lipsync_dict[singer])
-                    with open(output + f'\\{song_name}_song_GHA.pak.xen', 'wb') as f:
+                    file_path = os.path.join(output, f'{song_name}_song_GHA.pak.xen')
+                    with open(file_path, 'wb') as f:
                         f.write(song_pak)
                 else:
                     print("Error: No song PAK file found.")
@@ -407,14 +421,16 @@ if __name__ == "__main__":
                         pak_name = f"dlc{randint(10000,1000000000)}"
                     pak_data = convert_to_5(midqb_file, pak_name)
                     pak_file = mid_qb.pakMaker([[x["file_data"], x["file_name"]] for x in pak_data], pak_name)
-                    with open(output + f'\\b{pak_name}_song.pak.xen', 'wb') as f:
+
+                    file_path = os.path.join(output, f'b{pak_name}_song.pak.xen')
+                    with open(file_path, 'wb') as f:
                         f.write(pak_file)
 
             elif sys.argv[1] == "compile_pak":
                 if "in_file" not in locals():
-                    in_file = f'{root_folder}\\midqb_gen\\Pak Input'
+                    in_file = os.path.join(root_folder, 'midqb_gen', 'Pak Input')
                 if "output" not in locals():
-                    output = f'{in_file}\\..\\PAK compile'
+                    output = os.path.abspath(os.path.join(in_file, '..', 'PAK compile'))
                 if "pak_name" not in locals():
                     pak_name = 0
                 if "-pab" in sys.argv:
@@ -443,10 +459,13 @@ if __name__ == "__main__":
                     os.makedirs(output)
                 except:
                     pass
-                with open(f"{output}\\{pak_name}.pak.xen", 'wb') as f:
+                pak_file_path = os.path.join(output, f"{pak_name}.pak.xen")
+                with open(pak_file_path, 'wb') as f:
                     f.write(pak_file)
+
                 if pab:
-                    with open(f"{output}\\{pak_name}.pab.xen", 'wb') as f:
+                    pab_file_path = os.path.join(output, f"{pak_name}.pab.xen")
+                    with open(pab_file_path, 'wb') as f:
                         f.write(pab_file)
 
                         #print(os.path.join(root,name)[len(in_file)+1:])
@@ -457,10 +476,11 @@ if __name__ == "__main__":
                 midname = os.path.basename(input_file)[:os.path.basename(input_file).find(".")]
                 print(midname)
                 mid_file, anim_string = create_mid_from_qb(input_file)
-                mid_file.save(f"{output}\\{midname}.mid")
+                mid_file.save(os.path.join(output, f"{midname}.mid"))
+
                 if anim_string:
                     anim_string = f"qb_file = songs/{midname}_scripts.qb".lower() + "\n" + anim_string
-                    with open(f"{output}\\{midname}_scripts.txt", "w") as f:
+                    with open(os.path.join(output, f"{midname}_scripts.txt"), "w") as f:
                         f.write(anim_string)
             elif sys.argv[1] == "convert_5_to_wt":
                 if "output" not in locals():
@@ -472,7 +492,8 @@ if __name__ == "__main__":
                 if len(sys.argv) > 3:
                     compile_args.extend(sys.argv[3:])
                 wt_pak = convert_5_to_wt(input_file, *compile_args)
-                with open(f"{output}\\a{midname}.pak.xen".lower(), "wb") as f:
+                file_path = os.path.join(output, f"a{midname}.pak.xen".lower())
+                with open(file_path, "wb") as f:
                     f.write(wt_pak)
             elif sys.argv[1] == "make_wt_mid":
                 qb_file = mid_qb.make_wt_qb(sys.argv[2])

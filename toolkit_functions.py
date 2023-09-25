@@ -10,10 +10,10 @@ import struct
 import configparser
 
 root_folder = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(f"{root_folder}\\pak_extract")
-sys.path.append(f"{root_folder}\\midqb_gen")
-sys.path.append(f"{root_folder}\\ska_converter")
-sys.path.append(f"{root_folder}\\create_audio")
+sys.path.append(os.path.join(root_folder, "pak_extract"))
+sys.path.append(os.path.join(root_folder, "midqb_gen"))
+sys.path.append(os.path.join(root_folder, "ska_converter"))
+sys.path.append(os.path.join(root_folder, "create_audio"))
 from pak_extract import PAKExtract, QB2Text, Text2QB
 from midqb_gen import MidQbGen as mid_qb
 from ska_converter.ska_functions import make_modern_ska, make_gh3_ska
@@ -543,7 +543,8 @@ def read_qs_debug():
     for x in qs_debug.keys():
         qs_debug_qb[int(CRC.QBKey(x), 16)] = qs_debug[x]
     # curr_folder = os.getcwd()
-    with open(f"{root_folder}\\conversion_files\\qs_e.txt", encoding="utf-16-le") as f:
+    file_path = os.path.join(root_folder, "conversion_files", "qs_e.txt")
+    with open(file_path, encoding="utf-16-le") as f:
         qs_text = f.readlines()
     for x in qs_text:
         quoted_text = ""
@@ -1272,7 +1273,8 @@ def check_ska_anims(anim_skas, song_files_dict, other_skas):
     return song_files_dict
 
 def parse_anim_loops():
-    with open(f"{root_folder}\\anim_loops.txt", "r") as f:
+    file_path = os.path.join(root_folder, "anim_loops.txt")
+    with open(file_path, "r") as f:
         anim_file = f.readlines()
     anim_loops = {}
     for x in anim_file:
@@ -1325,7 +1327,8 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
     anim_loop_master = parse_anim_loops()
 
     other_skas = {}
-    for x in os.scandir(f"{root_folder}\\conversion_files\\ska"):
+    directory_path = os.path.join(root_folder, "conversion_files", "ska")
+    for x in os.scandir(directory_path):
         other_skas[x.name[:x.name.find(".ska.xen")].lower()] = x.path
 
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
@@ -2084,20 +2087,26 @@ def convert_to_5(pakmid, new_name, *args, **kwargs):
                 continue
             else:
                 new_ska.append(x)
-        left_path = "D:\\RB\\GHWoR\\Convert Creations\\Left-Hand Anims"
-        for x in os.listdir(f"{left_path}"):
-            with open(f"{left_path}\\{x}", 'rb') as f:
+        left_path = os.path.join("D:", "RB", "GHWoR", "Convert Creations", "Left-Hand Anims")
+
+        new_ska = []
+        for x in os.listdir(left_path):
+            file_path = os.path.join(left_path, x)
+            with open(file_path, 'rb') as f:
                 ska_file = f.read()
             new_ska.append({"file_name": x[:-4], "file_data": ska_file})
+
         ska_data = new_ska
     # elif re.search(r'ReEdThroughLabor', song_name, flags= re.IGNORECASE):
     elif check_150:
-        onefifty_path = "D:\\RB\\GHWoR\\Convert Creations\\150 anims"
+        onefifty_path = os.path.join("D:", "RB", "GHWoR", "Convert Creations", "150 anims")
         diff_files = ["", "_c01", "_c02", "_c03"]
+
         for x in check_150:
             print(f"Adding 150 anim: {x}")
             for y in diff_files:
-                with open(f"{onefifty_path}\\{x}{y}.ska.xen", 'rb') as f:
+                file_path = os.path.join(onefifty_path, f"{x}{y}.ska.xen")
+                with open(file_path, 'rb') as f:
                     ska_file = f.read()
                 ska_data.append({"file_name": f"{x}{y}.ska", "file_data": ska_file})
         # print()
@@ -2277,15 +2286,17 @@ def midqb2mid(pakmid, output=f'{os.getcwd()}'):
             tracks.append(new_track.copy())
     midi_export.add_track(name="GH3 VENUE")
     midi_export.tracks[-1] = mido.merge_tracks(x for x in tracks)
-    midi_export.save(filename=f'{output}\\{song_name}.mid')
+
+    filename = os.path.join(output, f'{song_name}.mid')
+    midi_export.save(filename=filename)
 
     # raise Exception
 
     return
 
 
-def extract_pak(pak_file, output=f'{os.getcwd()}\\PAK extract'):
-    pab_file = os.path.dirname(pak_file) + f"\\{os.path.basename(pak_file[:pak_file.find('.pak')])}.pab.xen"
+def extract_pak(pak_file, output=os.path.join(os.getcwd(), "PAK extract")):
+    pab_file = os.path.join(os.path.dirname(pak_file), f"{os.path.basename(pak_file[:pak_file.find('.pak')])}.pab.xen")
     if os.path.isfile(pab_file):
         print("Found PAB file")
         with open(pab_file, "rb") as pab:
@@ -2303,7 +2314,7 @@ def extract_pak(pak_file, output=f'{os.getcwd()}\\PAK extract'):
     pak_files = PAKExtract.main(pak_bytes, "")
     # raise Exception
     for x in pak_files:
-        output_file = f"{output}\\{x['file_name']}"
+        output_file = os.path.join(output, x['file_name'])
         dir_name = os.path.dirname(output_file)
         try:
             os.makedirs(dir_name)
@@ -2324,7 +2335,7 @@ def output_mid_gh3(mid_file, hopo=170, filename="", gh3_plus=True):
 
 def qb_to_text(file, output=f'{os.getcwd()}', game="GH3"):
     qb_sections, file_name = QB2Text.main(file)
-    output_file = f'{output}\\{file_name}.txt'
+    output_file = os.path.join(output, f'{file_name}.txt')
     dir_name = os.path.dirname(output_file)
     try:
         os.makedirs(dir_name)
@@ -2341,7 +2352,7 @@ def text_to_qb(text_file, output=os.getcwd()):
     qb_file = Text2QB.main(lines)
     qb_name = f'{os.path.splitext(os.path.basename(text_file))[0]}.qb'
     # raise Exception
-    qb_check = f'{output}\\{qb_name}'
+    qb_check = os.path.join(output, qb_name)
     if os.path.isfile(qb_check):
         try:
             print("Backing up QB file found of corresponding text file.\n")
@@ -2349,7 +2360,7 @@ def text_to_qb(text_file, output=os.getcwd()):
         except FileExistsError:
             print("Backup of QB file found of corresponding text file. Will not overwrite\n")
             pass
-    with open(f'{output}\\{qb_name}', 'wb') as f:
+    with open(qb_check, 'wb') as f:
         f.write(qb_file)
 
     return
@@ -3638,7 +3649,8 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
     if perf_override:
         compile_args.extend(["replace_perf", perf_override])
     if anim_structs['type'] == "gh6":
-        with open(f"{root_folder}\\conversion_files\\basic_loops.txt", "r") as f:
+        gh6_path = os.path.join(root_folder, "conversion_files", "basic_loops.txt")
+        with open(gh6_path, "r") as f:
             scripts_override = f.read()
         if perf_clips:
             scripts_override += f"\n{perf_clips}"

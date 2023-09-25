@@ -6,4 +6,5 @@ import shutil
 
 root_folder = os.path.realpath(os.path.dirname(__file__))
 args = sys.argv
-subprocess.run(["python",f"{root_folder}\\GH Toolkit.py", *sys.argv[1:]])
+toolkit_path = os.path.join(root_folder, "GH Toolkit.py")
+subprocess.run(["python", toolkit_path, *sys.argv[1:]])

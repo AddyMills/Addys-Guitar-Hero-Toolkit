@@ -22,21 +22,27 @@ import yaml
 import shutil
 import subprocess
 
+# Get the current directory and root directory
 curr_dir = os.path.dirname(__file__)
 root_dir = os.path.dirname(curr_dir)
+
+# Determine the base directory
 if os.path.exists(os.path.join(curr_dir, "GH Toolkit.exe")):
     base_dir = curr_dir
 else:
     base_dir = root_dir
 
-if os.path.exists(f"{curr_dir}\\create_audio"):
-    audio_folder = f"{curr_dir}\\create_audio"
+# Determine the audio folder
+if os.path.exists(os.path.join(curr_dir, "create_audio")):
+    audio_folder = os.path.join(curr_dir, "create_audio")
 else:
-    audio_folder = f"{root_dir}\\create_audio"
+    audio_folder = os.path.join(root_dir, "create_audio")
+
+# Append the audio folder to sys.path
 sys.path.append(audio_folder)
 import audio_functions as af
 
-midqb_folder = f"{root_dir}\\midqb_gen"
+midqb_folder = os.path.join(root_dir, "midqb_gen")
 sys.path.append(midqb_folder)
 import MidQbGen as mid_gen
 
@@ -1184,7 +1190,7 @@ class compile_package(QWidget, compile_pack):
         song_name = self.checksum_input.text()
         compile_args = self.set_compile_args(*["gh3"])
         project_folder = os.path.dirname(self.project_file_path.text())
-        save_folder = f"{project_folder}\\gh3_compile"
+        save_folder = os.path.join(project_folder, "gh3_compile")
         try:
             os.mkdir(save_folder)
         except:
@@ -1201,9 +1207,11 @@ class compile_package(QWidget, compile_pack):
             return
         if not "skip_audio" in args:
             audio, dat = self.gh3_audio_gen(song_name, start_time, end_time, compile_args)
-            audio_path = f"{save_folder}\\{song_name}"
+            audio_path = os.path.join(save_folder, song_name)
             af.writeFSB3(audio, dat, audio_path)
-        with open(f"{save_folder}\\{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+        file_name = f"{self.checksum_input.text()}_song.pak.xen"
+        file_path = os.path.join(save_folder, file_name)
+        with open(file_path, "wb") as f:
             f.write(song_pak)
         if self.platform_360.isChecked():
             dlc_crc_num = 1000000000 + (int(QBKey(
@@ -1281,7 +1289,9 @@ class compile_package(QWidget, compile_pack):
             traceback.print_exc()
             # raise E
             return
-        with open(f"{song_folder}\\Content\\a{song_name}_song.pak.xen", "wb") as f:
+        pak_name = f"a{song_name}_song.pak.xen"
+        pak_path = os.path.join(song_folder, "Content", pak_name)
+        with open(pak_path, "wb") as f:
             f.write(song_pak)
 
         if not "skip_audio" in args:
@@ -1290,11 +1300,13 @@ class compile_package(QWidget, compile_pack):
                 return
             for enum, x in enumerate([drum, inst, other, preview]):
                 if enum != 3:
-                    with open(f"{music_folder}\\{song_name}_{enum + 1}.fsb.xen", 'wb') as f:
-                        f.write(x)
+                    audio_name = f"{song_name}_{enum + 1}.fsb.xen"
                 else:
-                    with open(f"{music_folder}\\{song_name}_preview.fsb.xen", 'wb') as f:
-                        f.write(x)
+                    audio_name = f"{song_name}_preview.fsb.xen"
+
+                audio_path = os.path.join(music_folder, audio_name)
+                with open(audio_path, 'wb') as f:
+                    f.write(x)
         print("Compile complete!")
         return
 
@@ -1347,7 +1359,7 @@ class compile_package(QWidget, compile_pack):
                                    self.checksum_input.text())
 
         project_folder = os.path.dirname(self.project_file_path.text())
-        save_folder = f"{project_folder}\\{self.checksum_input.text()}_WoR_Files"
+        save_folder = os.path.join(project_folder, f"{self.checksum_input.text()}_WoR_Files")
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
@@ -1377,22 +1389,20 @@ class compile_package(QWidget, compile_pack):
             if not drum:
                 return
             for enum, x in enumerate([drum, inst, other, preview]):
-                if enum != 3:
-                    with open(f"{save_folder}\\a{self.checksum_input.text()}_{enum + 1}.fsb.xen", 'wb') as f:
-                        f.write(x)
-                else:
-                    with open(f"{save_folder}\\a{self.checksum_input.text()}_preview.fsb.xen", 'wb') as f:
-                        f.write(x)
+                filename = f"a{self.checksum_input.text()}_{enum + 1}.fsb.xen" if enum != 3 else f"a{self.checksum_input.text()}_preview.fsb.xen"
+                file_path = os.path.join(save_folder, filename)
+                with open(file_path, 'wb') as f:
+                    f.write(x)
 
         dl_num = self.checksum_input.text()[3:]
 
-        with open(f"{save_folder}\\cmanifest_{cmanifest}.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cmanifest_{cmanifest}.pak.xen"), "wb") as f:
             f.write(manifest_pak)
-        with open(f"{save_folder}\\cdl{dl_num}.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cdl{dl_num}.pak.xen"), "wb") as f:
             f.write(cdl_pak)
-        with open(f"{save_folder}\\cdl{dl_num}_text.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"cdl{dl_num}_text.pak.xen"), "wb") as f:
             f.write(cdl_text_pak)
-        with open(f"{save_folder}\\b{self.checksum_input.text()}_song.pak.xen", "wb") as f:
+        with open(os.path.join(save_folder, f"b{self.checksum_input.text()}_song.pak.xen"), "wb") as f:
             f.write(wor_pak)
         print("Using Onyx Command Line to compile 360 STFS file.")
         stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dl_num}"[

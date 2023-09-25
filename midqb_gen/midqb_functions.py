@@ -8,13 +8,15 @@ import sys
 import struct
 from copy import deepcopy
 import binascii
+import os
 from math import ceil
 
-sys.path.append("..\\pak_extract")
+sys.path.append(os.path.join("..", "pak_extract"))
+sys.path.append("..")
 from pak_extract.Text2QB import basic_data, struct_data, assign_data, assign_types, create_qb
 from pak_extract.pak_functions import make_script_struct, round_time, round_cam_len, new_stance_gh3
 
-sys.path.append("..\\")
+
 import CRC
 
 

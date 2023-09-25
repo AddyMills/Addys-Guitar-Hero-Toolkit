@@ -2,11 +2,9 @@ def read_debug():
     import os
     root_folder = os.path.realpath(os.path.dirname(__file__))
     func_dict = {}
-    with open(f"{root_folder}\\debug.txt", 'r') as f:
+    dbg_path = os.path.join(root_folder, "debug.txt")
+    with open(dbg_path, 'r') as f:
         text_lines = f.readlines()
-
-    """with open(f"{root_folder}\\debug_extra.txt", 'r') as f:
-        text_lines += f.readlines()"""
 
     for x in text_lines:
         new_text = x[:-1].split(" ", maxsplit=1)
@@ -24,7 +22,8 @@ def add_extra(qb_key, text):
     global checksum_dbg
     root_folder = os.path.realpath(os.path.dirname(__file__))
     if int(qb_key, 16) not in checksum_dbg:
-        with open(f"{root_folder}\\debug_extra.txt", 'a') as f:
+        file_path = os.path.join(root_folder, "debug_extra.txt")
+        with open(file_path, 'a') as f:
             f.write(f'\n{qb_key} "{text}"')
     # checksum_dbg[int(qb_key, 16)] = text
 

@@ -156,7 +156,7 @@ def main(func, write = False, **kwargs):
             new_ska = func(ska_file, game = game, quats_mult = quats_mult, ska_switch = ska_switch)
 
             if write == True:
-                with open(f"{out_dir}\\{x.name}", 'wb') as f:
+                with open(os.path.join(out_dir, x.name), 'wb') as f:
                     f.write(new_ska)
             """result = debug_test(ska_orig, new_ska)
             print(x.name, result)"""

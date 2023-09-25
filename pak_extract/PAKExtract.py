@@ -243,7 +243,7 @@ def check_decomp(comp_file, file_path = "", output_decomp = True, pab = False, *
         else:
             comp_file = decompress_pak(comp_file)
         if output_decomp:
-            pak_decomp_out = f'.\\Decompressed PAKs\\{file_path}'
+            pak_decomp_out = os.path.join('.', 'Decompressed PAKs', file_path)
             if not os.path.exists(pak_decomp_out):
                 dir_name = os.path.dirname(pak_decomp_out)
                 try:
@@ -263,9 +263,9 @@ def extract_paks():
     pak_type = 0
     wor_mode = 0
 
-    for root, dirs, files in os.walk(f".\\input PAK"):
+    for root, dirs, files in os.walk(os.path.join('.', 'input PAK')):
         for f in files:
-            filename = f"{root}\\{f}".lower()
+            filename = os.path.join(root, f).lower()
             name_check = [filename.endswith(".pak.xen"), filename.endswith(".pak.ps3")]
             level_1 = os.path.splitext(os.path.basename(filename))
             level_2 = os.path.splitext(level_1[0])
@@ -295,7 +295,7 @@ def extract_paks():
                 pab_file = check_decomp(f.read(), curr_file.replace(".pak.xen", ".pab.xen"), False, True, pak_file= pak_file)
                 if type(pab_file) == list:
                     for z in pab_file:
-                        output_file = f'.\\output\\PAK\\{x}\\{z["file_name"]}.xen'
+                        output_file = os.path.join('.', 'output', 'PAK', str(x), f'{z["file_name"]}.xen')
                         dir_name = os.path.dirname(output_file)
                         try:
                             os.makedirs(dir_name)
@@ -315,7 +315,7 @@ def extract_paks():
         pak_file += pab_file
         files = main(pak_file, filepaths[y], wor_mode = wor_mode, pak_header_size = header_size)
         for z in files:
-            output_file = f'.\\output\\PAK\\{z["file_name"]}.xen'
+            output_file = os.path.join('.', 'output', 'PAK', str(x), f'{z["file_name"]}.xen')
             dir_name = os.path.dirname(output_file)
             try:
                 os.makedirs(dir_name)
