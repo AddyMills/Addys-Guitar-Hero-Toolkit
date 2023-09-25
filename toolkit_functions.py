@@ -3687,9 +3687,8 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
     wt_pak = mid_qb.create_pak_file(midQB, song_name, midQS, *compile_args)
     return wt_pak
 
-def create_mid_from_qb(pakmid, song_name = ""):
-    if not song_name:
-        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
+def create_mid_from_qb(pakmid):
+    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
         song_name = song_name[1:]
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)
@@ -3717,7 +3716,7 @@ def create_mid_from_qb(pakmid, song_name = ""):
     struct_string = ""
     anim_structs = []
     anim_loops = []
-    qs_dict = 0
+    qs_dict = {}
     for files in song_files:
         if re.search(fr"songs/{song_name}\.mid\.qs$", files["file_name"], flags=re.IGNORECASE):
             qs_dict = get_qs_strings(files["file_data"])
@@ -3744,6 +3743,10 @@ def create_mid_from_qb(pakmid, song_name = ""):
                         elif y.data_dict["scr"] == "Band_PlayLoop":
                             anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
             #print()
+    if sections_dict and not instruments:
+        note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name,
+                                                                          convert="")
+        instruments = read_gh5_note(convert_to_gh5_bin(note_file, "note", song_name))
     try:
         timesig = sections_dict[f"{song_name}_timesig"].section_data
         fretbars = sections_dict[f"{song_name}_fretbars"].section_data

@@ -315,7 +315,7 @@ def extract_paks():
         pak_file += pab_file
         files = main(pak_file, filepaths[y], wor_mode = wor_mode, pak_header_size = header_size)
         for z in files:
-            output_file = os.path.join('.', 'output', 'PAK', str(x), f'{z["file_name"]}.xen')
+            output_file = os.path.join('.', 'output', 'PAK', f'{z["file_name"]}.xen')
             dir_name = os.path.dirname(output_file)
             try:
                 os.makedirs(dir_name)
