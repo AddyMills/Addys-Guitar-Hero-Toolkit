@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -2302,6 +2302,16 @@
                    </attribute>
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QRadioButton" name="platform_ps3">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>PS3</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
                <item>
@@ -2628,7 +2638,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>329</x>
@@ -2644,7 +2654,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>541</x>
@@ -2660,7 +2670,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>139</x>
@@ -2676,7 +2686,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>188</x>
@@ -2692,7 +2702,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>241</x>
@@ -2708,7 +2718,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>339</x>
@@ -2724,7 +2734,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>388</x>
@@ -2740,7 +2750,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>441</x>
@@ -2756,7 +2766,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>620</y>
+     <y>644</y>
     </hint>
     <hint type="destinationlabel">
      <x>541</x>

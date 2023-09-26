@@ -3687,8 +3687,9 @@ def convert_5_to_wt(pakmid, perf_override = "", *args):
     wt_pak = mid_qb.create_pak_file(midQB, song_name, midQS, *compile_args)
     return wt_pak
 
-def create_mid_from_qb(pakmid):
-    song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
+def create_mid_from_qb(pakmid, song_name = ""):
+    if not song_name:
+        song_name = pakmid[len(os.path.dirname(pakmid)) + 1:pakmid.lower().find("_s")].lower()
     if re.search(r'^[a-c]dlc', song_name, flags=re.IGNORECASE):
         song_name = song_name[1:]
     qb_sections, file_headers, file_headers_hex, song_files = pak2mid(pakmid, song_name)

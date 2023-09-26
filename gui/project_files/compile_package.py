@@ -1592,6 +1592,12 @@ class Ui_Form(object):
 
         self.platform_select.addWidget(self.platform_360)
 
+        self.platform_ps3 = QRadioButton(self.compile_settings)
+        self.platform_ps3.setObjectName(u"platform_ps3")
+        self.platform_ps3.setEnabled(False)
+
+        self.platform_select.addWidget(self.platform_ps3)
+
 
         self.verticalLayout_15.addLayout(self.platform_select)
 
@@ -1715,7 +1721,7 @@ class Ui_Form(object):
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(0)
+        self.compile_tabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1907,6 +1913,7 @@ class Ui_Form(object):
         self.platform_label.setText(QCoreApplication.translate("Form", u"Platform:", None))
         self.platform_pc.setText(QCoreApplication.translate("Form", u"PC", None))
         self.platform_360.setText(QCoreApplication.translate("Form", u"Xbox 360", None))
+        self.platform_ps3.setText(QCoreApplication.translate("Form", u"PS3", None))
         self.compile_input_label.setText(QCoreApplication.translate("Form", u"Compile Folder:", None))
         self.compile_select.setText(QCoreApplication.translate("Form", u"...", None))
         self.project_file_label.setText(QCoreApplication.translate("Form", u"Project File:", None))

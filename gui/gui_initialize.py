@@ -439,6 +439,7 @@ class compile_package(QWidget, compile_pack):
         self.deactivate_layout(self.skeleton_types_layout)
         self.platform_360.setEnabled(False)
         self.platform_pc.setEnabled(False)
+        self.platform_ps3.setEnabled(False)
         if any([game == "gh3", game == "gha"]):
             self.genre_select.setDisabled(True)
         elif game == "ghwt":
@@ -463,6 +464,8 @@ class compile_package(QWidget, compile_pack):
             self.ghwor_stfs_select.setEnabled(True)
             self.encrypt_audio.setDisabled(True)
             self.encrypt_audio.setChecked(True)
+            self.platform_360.setEnabled(True)
+            self.platform_ps3.setEnabled(True)
         if all([game != "gh3", game != "gha"]):
             self.genre_select.setDisabled(False)
             self.cover_checkbox.setDisabled(False)
@@ -478,6 +481,7 @@ class compile_package(QWidget, compile_pack):
                 self.cover_checkbox.setDisabled(True)
                 self.platform_360.setEnabled(True)
                 self.platform_pc.setEnabled(True)
+                self.platform_ps3.setEnabled(True)
             else:
                 self.crowd_input_gh3.setDisabled(False)
                 self.crowd_select_gh3.setDisabled(False)
