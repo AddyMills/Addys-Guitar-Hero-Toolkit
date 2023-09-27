@@ -1593,6 +1593,7 @@ class Ui_Form(object):
         self.platform_select.addWidget(self.platform_360)
 
         self.platform_ps3 = QRadioButton(self.compile_settings)
+        self.platform_button_group.addButton(self.platform_ps3)
         self.platform_ps3.setObjectName(u"platform_ps3")
         self.platform_ps3.setEnabled(False)
 

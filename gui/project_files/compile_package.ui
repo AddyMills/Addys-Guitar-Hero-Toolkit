@@ -2310,6 +2310,9 @@
                    <property name="text">
                     <string>PS3</string>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">platform_button_group</string>
+                   </attribute>
                   </widget>
                  </item>
                 </layout>
@@ -2808,7 +2811,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="platform_button_group"/>
   <buttongroup name="game_select_group"/>
+  <buttongroup name="platform_button_group"/>
  </buttongroups>
 </ui>

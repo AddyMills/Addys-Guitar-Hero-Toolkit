@@ -1025,7 +1025,7 @@ class compile_package(QWidget, compile_pack):
             qb_text += f"{k} = {v}\n"
         qb_text += "}"
         platform = self.platform_button_group.checkedButton().objectName()
-        if platform == "platform_360":
+        if platform != "platform_pc":
             qb_texts = {}
             langs = {
                 "en": "Downloaded songs",
@@ -1114,7 +1114,8 @@ class compile_package(QWidget, compile_pack):
         self.checksum_input.setText(f"dlc{dlc_crc_num}")
         cdl_data = f"cdl{dlc_crc_num}"
         stfs_name = f"{cdl_data} {self.title_input.text()} ({self.artist_input.text()})"
-        cmanifest_num = QBKey(self.package_name_hash_format(stfs_name))
+        cmanifest_name = self.package_name_hash_format(stfs_name)
+        cmanifest_num = QBKey(cmanifest_name)
         cmanifest = f"cmanifest_{cmanifest_num}"
 
         qb_file_name = hex(int(QBKey(self.checksum_input.text()), 16) + 1)
@@ -1132,7 +1133,7 @@ class compile_package(QWidget, compile_pack):
 
         cmanifest_qb = mid_gen.t2q_main(manifest_qb, game="GH5")
 
-        return cmanifest_qb, qb_file_name, cmanifest_num, stfs_name
+        return cmanifest_qb, qb_file_name, cmanifest_num, stfs_name, cmanifest_name
 
     def set_compile_args(self, *args):
         if "gh3" in args:
@@ -1217,10 +1218,10 @@ class compile_package(QWidget, compile_pack):
         file_path = os.path.join(save_folder, file_name)
         with open(file_path, "wb") as f:
             f.write(song_pak)
-        if self.platform_360.isChecked():
-            dlc_crc_num = 1000000000 + (int(QBKey(
-                f"gh3{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"),
-                16) % 1000000000)
+        dlc_crc_num = 1000000000 + (int(QBKey(
+            f"gh3{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"),
+            16) % 1000000000)
+        if self.platform_360.isChecked() or self.platform_ps3.isChecked():
             onyx_repack_folder = os.path.join(save_folder, "onyx-repack")
 
             if not os.path.exists(onyx_repack_folder):
@@ -1249,11 +1250,28 @@ class compile_package(QWidget, compile_pack):
                         os.path.join(onyx_repack_folder, "thumbnail.png"))
             shutil.copy(os.path.join(base_dir, "conversion_files", "thumbnail_gh3.png"),
                         os.path.join(onyx_repack_folder, "title-thumbnail.png"))
-            print("Using Onyx Command Line to compile 360 STFS file.")
             stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dlc_crc_num}"[
                              :39] + "_gh3"
-            subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
-                            os.path.join(project_folder, stfs_file_name)])
+            if self.platform_360.isChecked():
+                print("Using Onyx Command Line to compile 360 STFS file.")
+                subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
+                                os.path.join(project_folder, stfs_file_name)])
+            else:
+                print("Using Onyx Command Line to compile PS3 PKG file.")
+                ps3_folder = f"A{dlc_crc_num}{stfs_file_name.replace('-', '').upper()}"[:27]
+                ps3_key = f"UP0002-BLUS30074_00-{ps3_folder}"
+                ps3_save_folder = os.path.join(project_folder, "gh3_compile_ps3")
+                ps3_usrdir = os.path.join(ps3_save_folder,"USRDIR", ps3_folder)
+                os.makedirs(ps3_usrdir, exist_ok=True)
+                for file in os.listdir(save_folder):
+                    if os.path.isfile(os.path.join(save_folder, file)):
+                        shutil.copy(os.path.join(save_folder, file), os.path.join(ps3_usrdir, f"{file[:-4]}.ps3".upper()))
+                ps3_assets = os.path.join(base_dir, "conversion_files", "PS3 Assets", "GH3")
+                for file in os.listdir(ps3_assets):
+                    shutil.copy(os.path.join(ps3_assets, file), os.path.join(ps3_save_folder, file))
+                subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "pkg", ps3_key, ps3_save_folder, "--to",
+                                os.path.join(project_folder, f"{stfs_file_name}.pkg")])
+
         print("Compile complete!")
         return
 
@@ -1322,7 +1340,7 @@ class compile_package(QWidget, compile_pack):
         if not midi_file:
             return
 
-        cmanifest_qb, man_file_name, cmanifest, stfs_name = self.gen_wor_manifest()
+        cmanifest_qb, man_file_name, cmanifest, stfs_name, cmanifest_name = self.gen_wor_manifest()
         if not cmanifest_qb:
             return
 
@@ -1363,6 +1381,7 @@ class compile_package(QWidget, compile_pack):
                                    self.checksum_input.text())
 
         project_folder = os.path.dirname(self.project_file_path.text())
+
         save_folder = os.path.join(project_folder, f"{self.checksum_input.text()}_WoR_Files")
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
@@ -1408,11 +1427,32 @@ class compile_package(QWidget, compile_pack):
             f.write(cdl_text_pak)
         with open(os.path.join(save_folder, f"b{self.checksum_input.text()}_song.pak.xen"), "wb") as f:
             f.write(wor_pak)
-        print("Using Onyx Command Line to compile 360 STFS file.")
         stfs_file_name = f"{self.artist_input.text().replace(' ', '')}-{self.title_input.text().replace(' ', '')}{dl_num}"[
                          :36] + "_ghwor"
-        subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
-                        os.path.join(project_folder, stfs_file_name)])
+        if self.platform_360.isChecked():
+            print("Using Onyx Command Line to compile 360 STFS file.")
+            subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "stfs", save_folder, "--to",
+                            os.path.join(project_folder, stfs_file_name)])
+        elif self.platform_ps3.isChecked():
+            print("Using Onyx Command Line to compile PS3 PKG file.")
+            ps3_folder = f"A{dl_num}{stfs_file_name.replace('-', '').upper()}"[:27]
+            ps3_key = f"UP0002-BLUS30487_00-{ps3_folder}"
+            ps3_save_folder = os.path.join(project_folder, f"{self.checksum_input.text()}_WoR_Files_PS3")
+            ps3_usrdir = os.path.join(ps3_save_folder, "USRDIR", cmanifest_name.upper())
+            os.makedirs(ps3_usrdir, exist_ok=True)
+            vram_file = os.path.join(base_dir, "conversion_files", "PS3 Assets", "VRAM.PAK.PS3")
+            for file in os.listdir(save_folder):
+                if os.path.isfile(os.path.join(save_folder, file)):
+                    shutil.copy(os.path.join(save_folder, file), os.path.join(ps3_usrdir, f"{file[:-4]}.ps3".upper()))
+                    if ".pak" in file.lower():
+                        v_name = f"{file[:-8]}_vram.pak.ps3".upper()
+                        shutil.copy(vram_file, os.path.join(ps3_usrdir, v_name))
+            ps3_assets = os.path.join(base_dir, "conversion_files", "PS3 Assets", "GHWoR")
+            for file in os.listdir(ps3_assets):
+                shutil.copy(os.path.join(ps3_assets, file), os.path.join(ps3_save_folder, file))
+            subprocess.run(
+                [os.path.join(base_dir, "dependencies", "onyx", "onyx"), "pkg", ps3_key, ps3_save_folder, "--to",
+                 os.path.join(project_folder, f"{stfs_file_name}.pkg")])
         print("Compile complete!")
         return
 
