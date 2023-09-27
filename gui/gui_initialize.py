@@ -1350,6 +1350,7 @@ class compile_package(QWidget, compile_pack):
             song_pak = mid_gen.make_mid(*compile_args)[0]
         except Exception as E:
             traceback.print_exc()
+            # raise E
             return
 
         wor_pak_files = convert_to_5(song_pak, self.checksum_input.text(), *compile_args,

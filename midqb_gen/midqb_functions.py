@@ -373,6 +373,12 @@ def create_diff_dicts():
 def split_list(l_in):
     return [l_in[i:i + 2] for i in range(0, len(l_in), 2)]
 
+def split_time(in_time):
+    min = int(in_time // 60)
+    sec = int(in_time % 60)
+    mills = int(round(in_time % 1, 3) * 1000)
+    time_str = f"{min}:{sec}.{mills}"
+    return time_str
 
 def parse_wt_qb(mid, hopo, *args, **kwargs):
     changes, ticks = tempMap(mid)
@@ -851,34 +857,44 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     force_on = forced_notes[diff]["on"]
                     if force_on:
                         force_on = split_list(force_on)
-                        for forced in force_on:
-                            if forced[0] == forced[1]:
-                                forced[1] += 1
-                            # Pull all timestamps that need to be forced
-                            to_force = mod_notes(time_array, forced)
-                            for index in np.nditer(to_force):  # Loop through indexes in timestamps
-                                temp_colour = timestamps[time_array[index]]["colours"]
-                                if index == 0:
-                                    continue
-                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
-                                    continue
-                                elif len(temp_colour) > 1 and "gh5_mode" not in args:
-                                    if "gh3_mode" in args and 6 in temp_colour:
-                                        temp_colour.remove(6)
-                                    continue
-                                else:
-                                    timestamps[time_array[index]]["colours"].append(6)
-                            # print()
+                        try:
+                            for forced in force_on:
+                                if forced[0] == forced[1]:
+                                    forced[1] += 1
+                                # Pull all timestamps that need to be forced
+                                to_force = mod_notes(time_array, forced)
+                                for index in np.nditer(to_force):  # Loop through indexes in timestamps
+                                    temp_colour = timestamps[time_array[index]]["colours"]
+                                    if index == 0:
+                                        continue
+                                    elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
+                                        continue
+                                    elif len(temp_colour) > 1 and "gh5_mode" not in args:
+                                        if "gh3_mode" in args and 6 in temp_colour:
+                                            temp_colour.remove(6)
+                                        continue
+                                    else:
+                                        timestamps[time_array[index]]["colours"].append(6)
+                                # print()
+                        except ValueError:
+                            print(f"Force on marker found at {split_time(forced[0]/1000)} without any notes under it.")
+                        except:
+                            print("WARNING: Something weird happened with parsing forced on notes. Contact me.")
                     force_off = forced_notes[diff]["off"] if not "gh3_mode" in args else 0
                     if force_off:
                         force_off = split_list(force_off)
-                        for forced in force_off:
-                            if forced[0] == forced[1]:
-                                forced[1] += 1
-                            to_force = mod_notes(time_array, forced)
-                            for index in np.nditer(to_force):
-                                if 6 in timestamps[time_array[index]]["colours"]:
-                                    timestamps[time_array[index]]["colours"].remove(6)
+                        try:
+                            for forced in force_off:
+                                if forced[0] == forced[1]:
+                                    forced[1] += 1
+                                to_force = mod_notes(time_array, forced)
+                                for index in np.nditer(to_force):
+                                    if 6 in timestamps[time_array[index]]["colours"]:
+                                        timestamps[time_array[index]]["colours"].remove(6)
+                        except ValueError:
+                            print(f"Force off marker found at {split_time(forced[0]/1000)} without any notes under it.")
+                        except:
+                            print("WARNING: Something weird happened with parsing forced off notes. Contact me.")
 
                 if star_power[instrument]:
                     note_range_count(star_power[instrument], time_array, play_star[diff])
