@@ -1271,7 +1271,7 @@ class compile_package(QWidget, compile_pack):
                     shutil.copy(os.path.join(ps3_assets, file), os.path.join(ps3_save_folder, file))
                 subprocess.run([os.path.join(base_dir, "dependencies", "onyx", "onyx"), "pkg", ps3_key, ps3_save_folder, "--to",
                                 os.path.join(project_folder, f"{stfs_file_name}.pkg")])
-
+                shutil.rmtree(ps3_save_folder)
         print("Compile complete!")
         return
 
@@ -1454,6 +1454,7 @@ class compile_package(QWidget, compile_pack):
             subprocess.run(
                 [os.path.join(base_dir, "dependencies", "onyx", "onyx"), "pkg", ps3_key, ps3_save_folder, "--to",
                  os.path.join(project_folder, f"{stfs_file_name}.pkg")])
+            shutil.rmtree(ps3_save_folder)
         print("Compile complete!")
         return
 
