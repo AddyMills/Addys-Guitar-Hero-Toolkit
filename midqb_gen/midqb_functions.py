@@ -865,6 +865,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 to_force = mod_notes(time_array, forced)
                                 for index in np.nditer(to_force):  # Loop through indexes in timestamps
                                     temp_colour = timestamps[time_array[index]]["colours"]
+                                    # print()
                                     if index == 0:
                                         continue
                                     elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
@@ -873,9 +874,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         if "gh3_mode" in args and 6 in temp_colour:
                                             temp_colour.remove(6)
                                         continue
+                                    elif 6 in temp_colour:
+                                        continue
                                     else:
                                         timestamps[time_array[index]]["colours"].append(6)
-                                # print()
+                                    # print()
                         except ValueError:
                             print(f"Force on marker found at {split_time(forced[0]/1000)} without any notes under it.")
                         except:
@@ -1713,6 +1716,10 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                     if instrument == "Bass" or instrument == "Guitar":
                         player = "Bassist" if instrument == "Bass" else "Guitarist"
                         check_to_add_stance(x, time_sec, anim_notes, player, guit_stances, guit_anims)
+        if time > last_event_tick:
+            last_event_tick = time
+            last_event_secs = time_sec
+
         if playable:
             star_power[instrument] = split_list(star_power[instrument])
             bm_star_power[instrument] = split_list(bm_star_power[instrument])
@@ -1880,11 +1887,12 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                 anim_notes["LIGHTSHOW"][key] = value
         anim_notes["LIGHTSHOW"] = dict(sorted((anim_notes["LIGHTSHOW"].items())))
 
-
-    if not "end_event_secs" in locals():
-        raise Exception("Invalid MIDI: No [end] event found. Cannot parse MIDI.")
     if cameraNotes:
         cameraNotes[-1].setLength(end_event_secs - cameraNotes[-1].time)
+
+    if not end_event_secs:
+        end_event_ticks = last_event_tick
+        end_event_secs = last_event_secs
 
     fretbars = parse_fretbars(timeSigs, end_event_ticks, changes, ticksArray, mid)
     if anim_notes["drum_anims"]:
