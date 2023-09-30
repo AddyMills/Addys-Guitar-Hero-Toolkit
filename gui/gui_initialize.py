@@ -58,6 +58,20 @@ def wrap_string(to_wrap, wide=False):
     return new_string
 
 
+def count_parent_directories(path):
+    # Normalize the path to ensure consistent separators and resolved redundant patterns
+    path = os.path.normpath(path)
+
+    # Construct patterns to search for parent directories
+    patterns = [
+        os.sep + ".." + os.sep,  # Middle (e.g., /../)
+        ".." + os.sep,  # Start (e.g., ../folder/)
+        os.sep + ".."  # End (e.g., /folder/..)
+    ]
+
+    return sum(path.count(pattern) for pattern in patterns)
+
+
 class main_window(QWidget):
     def __init__(self):
         super().__init__()
@@ -89,11 +103,28 @@ class compile_package(QWidget, compile_pack):
         else:
             self.artist_text_other.setDisabled(True)
 
+    def make_all_abs_path(self):
+        line_edits = self.findChildren(QLineEdit)
+        project_dir = os.path.dirname(self.project_file_path.text())
+        for le in line_edits:
+            if "input" in le.objectName():
+                abs_path = os.path.join(project_dir, le.text())
+                same_path = os.path.normpath(project_dir) == os.path.normpath(abs_path)
+                # If I don't do this same_path check, dots will appear in fields which I don't want.
+                if os.path.exists(abs_path) and not same_path:
+                    le.setText(abs_path)
+    def make_all_rel_path(self):
+        line_edits = self.findChildren(QLineEdit)
+        for le in line_edits:
+            if "input" in le.objectName():
+                if os.path.exists(le.text()):
+                    self.rel_path_check(le, le.text())
     def compile_song_package(self):
         self.project_save_path()
         if self.project_file_path.text() == '' or not os.path.exists(self.project_file_path.text()):
             print("There is no save file path!")
             return
+        self.make_all_abs_path()
         game = self.game_select_group.checkedButton().objectName()
         if game == "gh3":
             self.compile_gh3()
@@ -103,6 +134,7 @@ class compile_package(QWidget, compile_pack):
             self.compile_gh5()
         elif game == "ghwor":
             self.compile_ghwor()
+        self.make_all_rel_path()
         return
 
     def compile_pak(self):
@@ -110,6 +142,7 @@ class compile_package(QWidget, compile_pack):
         if self.project_file_path.text() == '' or not os.path.exists(self.project_file_path.text()):
             print("There is no save file path!")
             return
+        self.make_all_abs_path()
         game = self.game_select_group.checkedButton().objectName()
         if game == "gh3":
             self.compile_gh3("skip_audio")
@@ -119,7 +152,24 @@ class compile_package(QWidget, compile_pack):
             self.compile_gh5()
         elif game == "ghwor":
             self.compile_ghwor("skip_audio")
+        self.make_all_rel_path()
         return
+
+    def rel_path_check(self, field, value):
+        try:
+            project_dir = os.path.dirname(self.project_file_path.text())
+            if not project_dir:
+                raise Exception
+            file_dir = os.path.dirname(value)
+            file_name = os.path.basename(value)
+            rel_path = os.path.relpath(file_dir, project_dir)
+            rel_file = os.path.join(rel_path, file_name)
+            if count_parent_directories(rel_file) < 3:
+                field.setText(os.path.normpath(rel_file))
+            else:
+                raise Exception
+        except:
+            field.setText(os.path.normpath(value))
 
     def open_file_dialog_audio(self, text_field):
         options = QFileDialog.Options()
@@ -127,21 +177,21 @@ class compile_package(QWidget, compile_pack):
                                                    options=options)
 
         if file_name:
-            text_field.setText(file_name)
+            self.rel_path_check(text_field, file_name)
 
     def open_file_dialog_folder(self, text_field):
         options = QFileDialog.Options()
         folder_name = QFileDialog.getExistingDirectory(self, "Open Folder", "", options=options)
 
         if folder_name:
-            text_field.setText(folder_name)
+            self.rel_path_check(text_field, folder_name)
 
     def open_file_dialog_midi(self, text_field):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "MIDI Files (*.mid *.midi)", options=options)
 
         if file_name:
-            text_field.setText(file_name)
+            self.rel_path_check(text_field, file_name)
 
     def open_file_dialog_qb(self, text_field):
         options = QFileDialog.Options()
@@ -149,7 +199,7 @@ class compile_package(QWidget, compile_pack):
                                                    "QB or Text Files (*.txt *.qb *.qb.xen *.qb.ps3)", options=options)
 
         if file_name:
-            text_field.setText(file_name)
+            self.rel_path_check(text_field, file_name)
 
     def open_file_dialog_all(self, text_field):
         options = QFileDialog.Options()
@@ -157,7 +207,7 @@ class compile_package(QWidget, compile_pack):
                                                    "All Files (*.*)", options=options)
 
         if file_name:
-            text_field.setText(file_name)
+            self.rel_path_check(text_field, file_name)
 
     def open_ch_rbproj(self):
         options = QFileDialog.Options()
@@ -243,7 +293,6 @@ class compile_package(QWidget, compile_pack):
             "ghwt_perf_override_input": self.ghwt_perf_override_input.text(),
             "ghwt_ska_files_input": self.ghwt_ska_files_input.text(),
             "ghwt_song_script_input": self.ghwt_song_script_input.text(),
-            "ghwor_stfs_input": self.ghwor_stfs_input.text(),
             "ghwt_countoff_select": self.ghwt_countoff_select.currentText(),
             "ghwt_drumkit_select": self.ghwt_drumkit_select.currentText(),
             "ghwt_vocal_gender_select": self.ghwt_vocal_gender_select.currentText(),
@@ -367,6 +416,7 @@ class compile_package(QWidget, compile_pack):
 
         load_vars.pop("game")
         load_vars.pop("platform")
+        load_vars.pop("project_file_path")
 
         for key, value in load_vars.items():
             try:
@@ -429,8 +479,6 @@ class compile_package(QWidget, compile_pack):
         self.compile_tabs.removeTab(2)
         self.compile_tabs.removeTab(1)
 
-        self.ghwor_stfs_input.setDisabled(True)
-        self.ghwor_stfs_select.setDisabled(True)
 
         self.encrypt_audio.setEnabled(True)
         self.other_settings_label.setText("Other Settings")
@@ -520,7 +568,6 @@ class compile_package(QWidget, compile_pack):
         self.ghwt_perf_override_select.clicked.connect(partial(self.open_file_dialog_qb, self.ghwt_perf_override_input))
         self.ghwt_ska_files_select.clicked.connect(partial(self.open_file_dialog_folder, self.ghwt_ska_files_input))
         self.ghwt_song_script_select.clicked.connect(partial(self.open_file_dialog_qb, self.ghwt_song_script_input))
-        self.ghwor_stfs_select.clicked.connect(partial(self.open_file_dialog_all, self.ghwor_stfs_input))
 
         for x in [self.skeleton_type_b_select, self.skeleton_type_d_select, self.skeleton_type_v_select]:
             self.combo_copy(self.skeleton_type_g_select, x)
@@ -567,7 +614,10 @@ class compile_package(QWidget, compile_pack):
     def set_field(self, key, value):
         field = getattr(self, key)
         if isinstance(field, QLineEdit):
-            field.setText(value)
+            if os.path.exists(value):
+                self.rel_path_check(field, value)
+            else:
+                field.setText(value)
         elif isinstance(field, QComboBox):
             field.setCurrentText(value)
         elif isinstance(field, QSpinBox) or isinstance(field, QDoubleSpinBox):
@@ -721,6 +771,10 @@ class compile_package(QWidget, compile_pack):
             destination.addItem(item_text)
 
     def midi_check(self, midi_path):
+        project_dir = os.path.dirname(self.project_file_path.text())
+        rel_path = os.path.join(project_dir, midi_path)
+        if os.path.exists(rel_path):
+            midi_path = rel_path
         if not midi_path:
             print("No MIDI file selected! Cancelling compilation")
             return 0
@@ -971,12 +1025,15 @@ class compile_package(QWidget, compile_pack):
         if self.game_select_group.checkedButton().objectName() == "gha":
             all_audio["crowd"] = self.crowd_input_gh3.text()
 
+
         for key, value in all_audio.items():
             if not os.path.isfile(value):
                 print(f"File for {key} does not exist. Using blank audio")
                 all_audio[key] = f"{audio_folder}/default_audio/blank.mp3"
             elif value.endswith("default_audio/blank.wav"):
-                value = f"{audio_folder}/default_audio/blank.mp3"
+                file_path = f"{audio_folder}/default_audio/blank.mp3"
+                all_audio[key] = file_path
+            else:
                 all_audio[key] = value
         fsb_file, fsb_dat = af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
 
