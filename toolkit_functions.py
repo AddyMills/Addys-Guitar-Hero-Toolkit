@@ -4075,15 +4075,40 @@ def rv_output(archive_path):
         archive.close()
     errors = []
     if pak_file:
+        mid_sections = pak2mid(pak_file, song_name)[0]
+        mid_dict = {}
+        for x in mid_sections:
+            mid_dict[x.section_id] = x
+        diff_dict = {
+            "guitar": {
+                "easy": False, "medium": False, "hard": False, "expert": False
+            },
+            "bass": {
+                "easy": False, "medium": False, "hard": False, "expert": False
+            },
+            "drums": {
+                "easy": False, "medium": False, "hard": False, "expert": False
+            },
+            "vocals": False
+        }
+        for x in ["", "rhythm", "drum"]:
+            inst = "guitar" if not x else "bass" if x == "rhythm" else "drums"
+            for diff in ["Easy", "Medium", "Hard", "Expert"]:
+                section = f"{song_name}_song_{x}_{diff}" if x else f"{song_name}_song_{diff}"
+                if mid_dict[section].array_node_type != "Floats":
+                    diff_dict[inst][diff.lower()] = True
+        if mid_dict[f"{song_name}_song_vocals"].array_node_type != "Floats":
+            diff_dict["vocals"] = True
         mido_file = create_mid_from_qb(pak_file, song_name)[0]
         mido_file.save(file=mid_file)
         mid_file = mid_file.getvalue()
+
     else:
         errors.append("PAK File")
     ini_dict = {section: dict(ini_file.items(section)) for section in ini_file.sections()}
     if not ini_dict:
         errors.append("INI File")
-    return {"ini": ini_dict, "midi": mid_file}
+    return {"ini": ini_dict, "midi": mid_file, "instruments": diff_dict}
 
 
 if __name__ == "__main__":
