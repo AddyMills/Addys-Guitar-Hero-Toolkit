@@ -740,7 +740,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         if not sys_head == (80, 83, 0):
                             continue
                         if x.data[5] == 4 and x.data[4] in [3, 127]:
-                            sysex_taps.append(time_sec)
+                            sysex_taps.append(time_sec + (25*(len(sysex_taps)%2)))
                         elif x.data[5] == 1 and x.data[4] != 127:
                             try:
                                 sysex_opens[x.data[4]].append(time_sec)
