@@ -740,7 +740,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         if not sys_head == (80, 83, 0):
                             continue
                         if x.data[5] == 4 and x.data[4] in [3, 127]:
-                            sysex_taps.append(time_sec + (25*(len(sysex_taps)%2)))
+                            sysex_taps.append(time_sec)
                         elif x.data[5] == 1 and x.data[4] != 127:
                             try:
                                 sysex_opens[x.data[4]].append(time_sec)
@@ -773,8 +773,6 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             last_event_tick = time
             last_event_secs = time_sec
         if playable and not re.search(r'(vocal)', instrument, flags=re.IGNORECASE):
-            if sysex_taps and not play_tap:
-                play_tap = sysex_taps
             star_power[instrument] = split_list(star_power[instrument])
             bm_star_power[instrument] = split_list(bm_star_power[instrument])
             fo_star_power[instrument] = split_list(fo_star_power[instrument])
@@ -803,6 +801,21 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 timestamps = dict(sorted(timestamps.items()))
                 if drums and diff == "Expert":
                     drum_notes = dict(sorted(timestamps.items()))
+                if diff == "Expert":
+                    if sysex_taps and not play_tap:
+                        tap_times = sysex_taps[::2]
+                        tap_ends = sysex_taps[1::2]
+                        new_taps = []
+                        for start, end in zip(tap_times, tap_ends):
+                            new_taps.append(start)
+                            closest_note = min(timestamps.keys(), key=lambda check: abs(check - end))
+                            closest_note_index = list(timestamps.keys()).index(closest_note)
+                            try:
+                                next_note = list(timestamps.keys())[closest_note_index+1]
+                            except:
+                                next_note = closest_note + 200
+                            new_taps.append(next_note-1)
+                        play_tap = new_taps
                 time_array = np.array(list(timestamps.keys()))
                 if sysex_opens_check:
                     sys_diff = sysex_opens[difficulties.index(diff)]
