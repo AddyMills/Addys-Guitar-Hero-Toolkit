@@ -636,6 +636,7 @@ class compile_package(QWidget, compile_pack):
                 "artist": "artist_input",
                 "charter": "author_input",
                 "frets": "author_input",
+                "checksum": "checksum_input",
             }
             ini_lookup_int = {
                 "year": "year_input",
