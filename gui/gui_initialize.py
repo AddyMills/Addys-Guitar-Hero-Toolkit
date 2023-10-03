@@ -508,8 +508,6 @@ class compile_package(QWidget, compile_pack):
             self.checksum_input.setText(self.ghwor_checksum)
             self.genre_select.setCurrentText(self.ghwor_genre)
             self.ghwt_drumkit_select.setCurrentText(self.ghwor_drumkit)
-            self.ghwor_stfs_input.setEnabled(True)
-            self.ghwor_stfs_select.setEnabled(True)
             self.encrypt_audio.setDisabled(True)
             self.encrypt_audio.setChecked(True)
             self.platform_360.setEnabled(True)
@@ -1159,12 +1157,6 @@ class compile_package(QWidget, compile_pack):
         return transformed_text
 
     def gen_wor_manifest(self):
-        """if not self.ghwor_stfs_input.text() or not os.path.isfile(self.ghwor_stfs_input.text()):
-            print("STFS file not found. Cancelling compilation.")
-            return 0, 0, 0
-        with open(self.ghwor_stfs_input.text(), 'rb') as f:
-            stfs_data = f.read()[:0x10000]"""
-
         dlc_crc_num = 1000000000 + (int(QBKey(
             f"gh5{self.artist_input.text()}{self.title_input.text()}{self.year_input.value()}{self.cover_checkbox.isChecked()}"),
                                         16) % 1000000000)
