@@ -3744,7 +3744,7 @@ def create_mid_from_qb(pakmid, song_name = ""):
                         elif y.data_dict["scr"] == "Band_PlayLoop":
                             anim_loops.append({"text": y.data_dict["params"]["name"], "time": y.data_dict["time"]})
             #print()
-    if sections_dict and not instruments:
+    if sections_dict and not instruments and not gh3:
         note_file, qb_file, qs_file, cameras, marker_names = wt_to_5_file(sections_dict, qs_dict, song_name,
                                                                           convert="")
         instruments = read_gh5_note(convert_to_gh5_bin(note_file, "note", song_name))
