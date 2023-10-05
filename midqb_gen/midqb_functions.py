@@ -16,7 +16,6 @@ sys.path.append("..")
 from pak_extract.Text2QB import basic_data, struct_data, assign_data, assign_types, create_qb
 from pak_extract.pak_functions import make_script_struct, round_time, round_cam_len, new_stance_gh3
 
-
 import CRC
 
 
@@ -373,6 +372,7 @@ def create_diff_dicts():
 def split_list(l_in):
     return [l_in[i:i + 2] for i in range(0, len(l_in), 2)]
 
+
 def split_time(in_time):
     min = int(in_time // 60)
     sec = int(in_time % 60)
@@ -380,12 +380,15 @@ def split_time(in_time):
     time_str = f"{min}:{sec}.{mills}"
     return time_str
 
+
 def parse_wt_qb(mid, hopo, *args, **kwargs):
     changes, ticks = tempMap(mid)
     if "force_only" in args:
         time_hopos = False
     else:
         time_hopos = True
+
+    warning_msg = []
 
     global sp_note
     if "star_power" in kwargs:
@@ -747,7 +750,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                 if not sysex_opens_check:
                                     sysex_opens_check = 1
                             except:
-                                print(f"{track.name}: Invalid SysEx event found at {time_sec}")
+                                warning_msg.append(f"{track.name}: Invalid SysEx event found at {time_sec}")
                         # print()
 
                 else:  # vocals. Note range 36-84 inclusive probably
@@ -811,10 +814,10 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                             closest_note = min(timestamps.keys(), key=lambda check: abs(check - end))
                             closest_note_index = list(timestamps.keys()).index(closest_note)
                             try:
-                                next_note = list(timestamps.keys())[closest_note_index+1]
+                                next_note = list(timestamps.keys())[closest_note_index + 1]
                             except:
                                 next_note = closest_note + 200
-                            new_taps.append(next_note-1)
+                            new_taps.append(next_note - 1)
                         play_tap = new_taps
                 time_array = np.array(list(timestamps.keys()))
                 if sysex_opens_check:
@@ -893,9 +896,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                         timestamps[time_array[index]]["colours"].append(6)
                                     # print()
                         except ValueError:
-                            print(f"Force on marker found at {split_time(forced[0]/1000)} without any notes under it.")
+                            warning_msg.append(
+                                f"{track.name}: Force on marker found at {split_time(forced[0] / 1000)} without any notes under it.")
                         except:
-                            print("WARNING: Something weird happened with parsing forced on notes. Contact me.")
+                            warning_msg.append(
+                                f"WARNING: Something weird happened with parsing forced on notes in {track.name}. Contact me.")
                     force_off = forced_notes[diff]["off"] if not "gh3_mode" in args else 0
                     if force_off:
                         force_off = split_list(force_off)
@@ -908,9 +913,11 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     if 6 in timestamps[time_array[index]]["colours"]:
                                         timestamps[time_array[index]]["colours"].remove(6)
                         except ValueError:
-                            print(f"Force off marker found at {split_time(forced[0]/1000)} without any notes under it.")
+                            warning_msg.append(
+                                f"{track.name}: Force on marker found at {split_time(forced[0] / 1000)} without any notes under it.")
                         except:
-                            print("WARNING: Something weird happened with parsing forced off notes. Contact me.")
+                            warning_msg.append(
+                                f"WARNING: Something weird happened with parsing forced off notes in {track.name}. Contact me.")
 
                 if star_power[instrument]:
                     note_range_count(star_power[instrument], time_array, play_star[diff])
@@ -940,13 +947,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         all_taps = mod_notes(time_array, tap)[0]
                         curr_taps = []
                         if not np.any(all_taps):
-                            print("No notes found under any tap note on Expert track.")
-                            no_tap_notes = input(
-                                "Type 'Continue' to compile without taps, or press enter to cancel compilation: ")
-                            if not no_tap_notes.lower() == "continue":
-                                raise Exception("Cancelled compilation by user")
-                            else:
-                                break
+                            warning_msg.append("No notes found under any tap note on Expert track.")
+                            break
                         for note_check in list(timestamps.values())[all_taps[0]:all_taps[-1] + 1]:
                             if len(note_check['colour_name']) > 1:
                                 if curr_taps:
@@ -1065,8 +1067,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                     vocals_freeform_playable.append([key, f_len, f_unk])
                                     break
                                 else:
-                                    print(
-                                        f"Freeform marker at {f2[0]} does not coincide with a free phrase marker. Skipping...")
+                                    warning_msg.append(
+                                        f"{track.name}: Freeform marker at {f2[0]} does not coincide with a free phrase marker. Skipping.")
             playable_freeform_dict = {}
             for t in vocals_freeform_playable:
                 playable_freeform_dict[t[0]] = t
@@ -1136,7 +1138,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                 for enum, cut in enumerate(v):
                     if cut.note in moment_cams:
                         to_keep = enum
-                    elif cut.note in range(33,37):
+                    elif cut.note in range(33, 37):
                         to_keep_2 = enum
                 if to_keep >= 0:
                     anim_notes["CAMERAS"][k] = [v[to_keep]]
@@ -1188,6 +1190,10 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
     if ghost_notes:
         ghost_notes = split_list([elem for pair in ghost_notes.items() for elem in pair])
+
+    if warning_msg:
+        display_warnings(warning_msg)
+
     to_return = {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
                  "tap": playable_tap, "fo_star_power": playable_fo_star_power, "face_off": playable_face_off,
                  "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
@@ -1471,6 +1477,7 @@ def make_wt_bin_notes(timestamps, play_notes, diff, drums):
 def parse_gh3_qb(mid, hopo, *args, **kwargs):
     hmxmode = 1
     changes, ticks = tempMap(mid)
+    warning_msg = []
 
     ticksArray = np.array(ticks)
     changesArray = np.array(changes)
@@ -1768,39 +1775,52 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                 force_on = forced_notes[diff]["on"]
                 if force_on:
                     force_on = split_list(force_on)
-                    for forced in force_on:
-                        if forced[0] == forced[1]:
-                            forced[1] += 1
-                        # Pull all timestamps that need to be forced
-                        to_force = mod_notes(time_array, forced)
-                        for index in np.nditer(to_force):  # Loop through indexes in timestamps
-                            temp_colour = timestamps[time_array[index]]["colours"]
-                            if index == 0:
-                                continue
-                            elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
-                                continue
-                            elif len(temp_colour) > 1:
-                                continue
-                            elif timestamps[time_array[index]]["is_hopo"]:
-                                if 5 in timestamps[time_array[index]]["colours"] and not "gh3_mode" in args:
-                                    timestamps[time_array[index]]["colours"].remove(5)
-                                continue
-                            else:
-                                timestamps[time_array[index]]["colours"].append(5)
-
+                    try:
+                        for forced in force_on:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
+                            # Pull all timestamps that need to be forced
+                            to_force = mod_notes(time_array, forced)
+                            for index in np.nditer(to_force):  # Loop through indexes in timestamps
+                                temp_colour = timestamps[time_array[index]]["colours"]
+                                if index == 0:
+                                    continue
+                                elif temp_colour == timestamps[time_array[index - 1]]["colours"]:
+                                    continue
+                                elif len(temp_colour) > 1:
+                                    continue
+                                elif timestamps[time_array[index]]["is_hopo"]:
+                                    if 5 in timestamps[time_array[index]]["colours"] and not "gh3_mode" in args:
+                                        timestamps[time_array[index]]["colours"].remove(5)
+                                    continue
+                                else:
+                                    timestamps[time_array[index]]["colours"].append(5)
+                    except ValueError:
+                        warning_msg.append(
+                            f"{track.name}: Force on marker found at {split_time(forced[0] / 1000)} without any notes under it.")
+                    except:
+                        warning_msg.append(
+                            "WARNING: Something weird happened with parsing forced on notes. Contact me.")
                 force_off = forced_notes[diff]["off"] if not "gh3_mode" in args else 0
                 if force_off:
                     force_off = split_list(force_off)
-                    for forced in force_off:
-                        if forced[0] == forced[1]:
-                            forced[1] += 1
-                        to_force = mod_notes(time_array, forced)
-                        for index in np.nditer(to_force):
-                            if not timestamps[time_array[index]]["is_hopo"] and 5 in timestamps[time_array[index]][
-                                "colours"]:
-                                timestamps[time_array[index]]["colours"].remove(5)
-                            elif timestamps[time_array[index]]["is_hopo"]:
-                                timestamps[time_array[index]]["colours"].append(5)
+                    try:
+                        for forced in force_off:
+                            if forced[0] == forced[1]:
+                                forced[1] += 1
+                            to_force = mod_notes(time_array, forced)
+                            for index in np.nditer(to_force):
+                                if not timestamps[time_array[index]]["is_hopo"] and 5 in timestamps[time_array[index]][
+                                    "colours"]:
+                                    timestamps[time_array[index]]["colours"].remove(5)
+                                elif timestamps[time_array[index]]["is_hopo"]:
+                                    timestamps[time_array[index]]["colours"].append(5)
+                    except ValueError:
+                        warning_msg.append(
+                            f"{track.name}: Force off marker found at {split_time(forced[0] / 1000)} without any notes under it.")
+                    except:
+                        warning_msg.append(
+                            f"WARNING: Something weird happened with parsing forced off notes in {track.name}. Contact me.")
 
                 if star_power[instrument]:
                     note_range_count(star_power[instrument], time_array, play_star[diff])
@@ -1842,7 +1862,7 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
             max_len = 0
             blended = False
             for lights in value:
-                if lights.note in range(70, 77) or lights.note in range(57,59):
+                if lights.note in range(70, 77) or lights.note in range(57, 59):
                     blended = True
                 if lights.note == 70:
                     strobe_mode = 1
@@ -1932,10 +1952,18 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
         print("Generating lightshow")
         anim_notes["LIGHTSHOW"] = auto_gen_lightshow(fretbars, markers, True)
 
+    if warning_msg:
+        display_warnings(warning_msg)
+
     return {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
             "timesig": timeSigs, "markers": markers,
             "fretbars": fretbars, "face_offs": play_face_off, "anim": anim_notes}
 
+def display_warnings(warnings):
+    print("\nWhile compiling, the following situations were found:\n")
+    for x in warnings:
+        print(x)
+    input("\nSong will be playable, but might not be as imagined until the warnings are fixed.\n\nPress Enter to continue")
 
 def create_gh3_sections(qb_dict, filename, headerDict, consoleType):
     QBItems = []
@@ -2071,7 +2099,7 @@ def create_anim_note(x, active_notes, track_name, anim_notes, time_sec, anim_ent
     else:
         try:
             anim_len = time_sec - active_notes[x.note].time
-            if anim_len < 13 or anim_len > 2**32:
+            if anim_len < 13 or anim_len > 2 ** 32:
                 anim_len = 13
             active_notes[x.note].setLength(anim_len)
             if active_notes[x.note].time in anim_notes[track_name]:
@@ -2085,11 +2113,13 @@ def create_anim_note(x, active_notes, track_name, anim_notes, time_sec, anim_ent
             raise Exception(f"Something went wrong parsing the {track_name} track.")
     return
 
+
 def camera_script(zoom_type, zoom_length):
     param_type = {"param": "type", "data": zoom_type, "type": "QbKey"}
     param_time = {"param": "time", "data": zoom_length,
                   "type": "Integer" if type(zoom_length) == int else "Float"}
     return param_type, param_time
+
 
 def lightshow_script(x):
     if type(x) == float or type(x) == int:
@@ -2099,6 +2129,7 @@ def lightshow_script(x):
     blendtime = {"param": "time", "data": float(t),
                  "type": "Float"}  # Blend time is in seconds
     return blendtime
+
 
 def drum_anim_note(x, active_notes, new_note, anim_notes, time_sec, args):
     new_len = time_sec - active_notes[new_note].time
