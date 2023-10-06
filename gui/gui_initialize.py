@@ -1024,14 +1024,13 @@ class compile_package(QWidget, compile_pack):
         if self.game_select_group.checkedButton().objectName() == "gha":
             all_audio["crowd"] = self.crowd_input_gh3.text()
 
-
+        blank_path = os.path.join(audio_folder,"default_audio","blank.mp3")
         for key, value in all_audio.items():
             if not os.path.isfile(value):
                 print(f"File for {key} does not exist. Using blank audio")
-                all_audio[key] = f"{audio_folder}/default_audio/blank.mp3"
-            elif value.endswith("default_audio/blank.wav"):
-                file_path = f"{audio_folder}/default_audio/blank.mp3"
-                all_audio[key] = file_path
+                all_audio[key] = blank_path
+            elif value.endswith(os.path.join("default_audio", "blank.wav")):
+                all_audio[key] = blank_path
             else:
                 all_audio[key] = value
         fsb_file, fsb_dat = af.compile_gh3_audio(all_audio, song_name, start_time, end_time, *compile_args)
@@ -1042,13 +1041,14 @@ class compile_package(QWidget, compile_pack):
         all_audio = [self.kick_input, self.snare_input, self.cymbals_input, self.toms_input, self.guitar_input,
                      self.bass_input, self.vocals_input, self.backing_input, self.crowd_input]
         all_audio_path = []
+        blank_path = os.path.join(audio_folder, "default_audio", "blank.mp3")
         for files in all_audio:
             if not files.text() or not os.path.isfile(files.text()):
                 if not os.path.isfile(files.text()):
                     print(f"File for {files.objectName()} does not exist. Using blank audio")
-                files.setText(f"{audio_folder}/default_audio/blank.mp3")
-            elif files.text().endswith("default_audio/blank.wav"):
-                files.setText(f"{audio_folder}/default_audio/blank.mp3")
+                files.setText(blank_path)
+            elif files.text().endswith(os.path.join("default_audio", "blank.wav")):
+                files.setText(blank_path)
             all_audio_path.append(files.text())
         try:
             drum, inst, other, preview = af.compile_wt_audio(all_audio_path, song_name, start_time, end_time,

@@ -231,6 +231,7 @@ def is_program_in_path(program_name):
 def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
     # Get the maximum length
     max_length = 0
+    blank_path = os.path.join("default_audio", "blank.mp3")
     if not "audio_len" in args:
         print("Converting all files to MP3 and padding to the longest")
     if "no_convert" in args:
@@ -253,7 +254,7 @@ def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
             # Pad each input file and store the output in a list
             padded_mp3_data_list = []
             for enum, input_file in enumerate(all_audio):
-                if input_file.endswith("default_audio/blank.mp3"):
+                if input_file.endswith(blank_path):
                     with open(input_file, 'rb') as f:
                         padded_mp3_data_list.append(f.read())
                 else:
@@ -269,7 +270,7 @@ def get_padded_audio(all_audio, start_time = 30, end_time = 60, *args):
             # Pad each input file and store the output in a list
             padded_mp3_data_list = []
             for enum, input_file in enumerate(all_audio):
-                if input_file.endswith("default_audio/blank.mp3"):
+                if input_file.endswith(blank_path):
                     with open(input_file, 'rb') as f:
                         padded_mp3_data_list.append(f.read())
                 else:
