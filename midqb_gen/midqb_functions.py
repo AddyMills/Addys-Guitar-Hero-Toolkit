@@ -1127,25 +1127,34 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             # print()
     if anim_notes["CAMERAS"]:
         prev_time = 0
+        cam_fx = list(range(81,87)) + list(range(101, 127))
         for k, v in anim_notes["CAMERAS"].items():
             if prev_time:
-                prev_note = anim_notes["CAMERAS"][prev_time][0]
-                prev_note.setLength(v[0].time - prev_note.time)
+                for cams in anim_notes["CAMERAS"][prev_time]:
+                    cams.setLength(v[0].time - cams.time)
             prev_time = v[0].time
             if len(v) > 1:
                 to_keep = -1
                 to_keep_2 = -1
+                to_keep_auto = -1
+                to_keep_pp = []
                 for enum, cut in enumerate(v):
                     if cut.note in moment_cams:
                         to_keep = enum
                     elif cut.note in range(33, 37):
                         to_keep_2 = enum
+                    elif cut.note in cam_fx:
+                        to_keep_pp.append(cut)
+                    else:
+                        to_keep_auto = enum
                 if to_keep >= 0:
                     anim_notes["CAMERAS"][k] = [v[to_keep]]
                 elif to_keep_2 >= 0:
                     anim_notes["CAMERAS"][k] = [v[to_keep_2]]
-                else:
-                    anim_notes["CAMERAS"][k] = [v[0]]
+                elif to_keep_auto >= 0:
+                    anim_notes["CAMERAS"][k] = [v[to_keep_auto]]
+                if to_keep_pp:
+                    anim_notes["CAMERAS"][k].extend(to_keep_pp)
     temp_sp = []
     for enum, sp in enumerate(vocal_sp):
         if enum % 2 == 0:
