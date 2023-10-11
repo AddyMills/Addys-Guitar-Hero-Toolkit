@@ -107,7 +107,7 @@ class compile_package(QWidget, compile_pack):
         line_edits = self.findChildren(QLineEdit)
         project_dir = os.path.dirname(self.project_file_path.text())
         for le in line_edits:
-            if "input" in le.objectName():
+            if "input" in le.objectName() and "compile" not in le.objectName():
                 abs_path = os.path.join(project_dir, le.text())
                 same_path = os.path.normpath(project_dir) == os.path.normpath(abs_path)
                 # If I don't do this same_path check, dots will appear in fields which I don't want.
@@ -116,7 +116,7 @@ class compile_package(QWidget, compile_pack):
     def make_all_rel_path(self):
         line_edits = self.findChildren(QLineEdit)
         for le in line_edits:
-            if "input" in le.objectName():
+            if "input" in le.objectName() and "compile" not in le.objectName():
                 if os.path.exists(le.text()):
                     self.rel_path_check(le, le.text())
     def compile_song_package(self):
