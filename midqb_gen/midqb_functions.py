@@ -811,7 +811,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         new_taps = []
                         for start, end in zip(tap_times, tap_ends):
                             new_taps.append(start)
-                            closest_note = min(timestamps.keys(), key=lambda check: abs(check - end))
+                            closest_note = max([key for key in timestamps.keys() if key <= end], default=None)
+                            if not closest_note:
+                                continue
                             closest_note_index = list(timestamps.keys()).index(closest_note)
                             try:
                                 next_note = list(timestamps.keys())[closest_note_index + 1]
@@ -949,7 +951,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         if not np.any(all_taps):
                             warning_msg.append("No notes found under any tap note on Expert track.")
                             break
-                        for note_check in list(timestamps.values())[all_taps[0]:all_taps[-1] + 1]:
+                        note_list = list(timestamps.values())[all_taps[0]:all_taps[-1] + 1]
+                        for note_check in note_list:
                             if len(note_check['colour_name']) > 1:
                                 if curr_taps:
                                     curr_taps.append(note_check["time_sec"])
