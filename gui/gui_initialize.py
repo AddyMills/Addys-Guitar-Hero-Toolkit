@@ -78,7 +78,7 @@ class main_window(QWidget):
 
 
 class compile_package(QWidget, compile_pack):
-    def __init__(self, ghproj=""):
+    def __init__(self, ghproj="", *args):
         super().__init__()
         self.setupUi(self)
         self.artist_text_select.currentTextChanged.connect(self.artist_text_change)
@@ -1257,7 +1257,8 @@ class compile_package(QWidget, compile_pack):
         try:
             song_pak = mid_gen.make_mid(*compile_args)[0]
         except Exception as E:
-            # raise E
+            if "-debug" in sys.argv:
+                raise E
             traceback.print_exc()
             return
         if not "skip_audio" in args:
@@ -1358,8 +1359,9 @@ class compile_package(QWidget, compile_pack):
         try:
             song_pak, xplus_pak = mid_gen.make_mid(*compile_args)
         except Exception as E:
+            if "-debug" in sys.argv:
+                raise E
             traceback.print_exc()
-            # raise E
             return
         pak_name = f"a{song_name}_song.pak.xen"
         pak_path = os.path.join(song_folder, "Content", pak_name)
