@@ -31,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>5</number>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -2059,8 +2059,8 @@
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <item>
                 <layout class="QGridLayout" name="gridLayout_6">
-                 <item row="3" column="3">
-                  <widget class="QSpinBox" name="beat_16th_low_input">
+                 <item row="3" column="5">
+                  <widget class="QSpinBox" name="beat_16th_high_input">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
@@ -2070,32 +2070,8 @@
                    <property name="maximum">
                     <number>300</number>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="4">
-                  <widget class="QLabel" name="beat_8th_high_label">
-                   <property name="text">
-                    <string>High:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QSpinBox" name="beat_8th_low_input">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>300</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QLabel" name="beat_16th_low_label">
-                   <property name="text">
-                    <string>Low:</string>
+                   <property name="value">
+                    <number>120</number>
                    </property>
                   </widget>
                  </item>
@@ -2106,17 +2082,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" alignment="Qt::AlignRight">
-                  <widget class="QLabel" name="beat_8th_label">
-                   <property name="text">
-                    <string>8th Notes</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="3" column="1" alignment="Qt::AlignRight">
                   <widget class="QLabel" name="beat_16th_label">
                    <property name="text">
                     <string>16th Notes</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="4">
+                  <widget class="QLabel" name="beat_8th_high_label">
+                   <property name="text">
+                    <string>High:</string>
                    </property>
                   </widget>
                  </item>
@@ -2161,43 +2137,6 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="2" column="0" rowspan="2">
-                  <widget class="QCheckBox" name="beatlines_check">
-                   <property name="text">
-                    <string>Beat Lines BPM:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="hopo_label">
-                   <property name="text">
-                    <string>HOPO Threshold:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="2">
-                  <widget class="QLabel" name="beat_8th_low_label">
-                   <property name="text">
-                    <string>Low:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="5">
-                  <widget class="QSpinBox" name="beat_16th_high_input">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>300</number>
-                   </property>
-                   <property name="value">
-                    <number>120</number>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="5">
                   <widget class="QSpinBox" name="beat_8th_high_input">
                    <property name="enabled">
@@ -2214,10 +2153,64 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="3" column="3">
+                  <widget class="QSpinBox" name="beat_16th_low_input">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>300</number>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="hopo_mode_label">
                    <property name="text">
                     <string>HOPO Mode</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0" rowspan="2">
+                  <widget class="QCheckBox" name="beatlines_check">
+                   <property name="text">
+                    <string>Beat Lines BPM:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QSpinBox" name="beat_8th_low_input">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>300</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QLabel" name="beat_8th_low_label">
+                   <property name="text">
+                    <string>Low:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="hopo_label">
+                   <property name="text">
+                    <string>HOPO Threshold:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QLabel" name="beat_16th_low_label">
+                   <property name="text">
+                    <string>Low:</string>
                    </property>
                   </widget>
                  </item>
@@ -2246,6 +2239,20 @@
                      <string>Guitar Hero World Tour+</string>
                     </property>
                    </item>
+                  </widget>
+                 </item>
+                 <item row="2" column="1" alignment="Qt::AlignRight">
+                  <widget class="QLabel" name="beat_8th_label">
+                   <property name="text">
+                    <string>8th Notes</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0" colspan="2">
+                  <widget class="QCheckBox" name="use_beat_check">
+                   <property name="text">
+                    <string>Use BEAT track as tempo map</string>
+                   </property>
                   </widget>
                  </item>
                 </layout>
@@ -2794,7 +2801,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="platform_button_group"/>
   <buttongroup name="game_select_group"/>
+  <buttongroup name="platform_button_group"/>
  </buttongroups>
 </ui>

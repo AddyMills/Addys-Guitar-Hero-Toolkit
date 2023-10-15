@@ -1433,46 +1433,29 @@ class Ui_Form(object):
         self.verticalLayout_15.setObjectName(u"verticalLayout_15")
         self.gridLayout_6 = QGridLayout()
         self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.beat_16th_low_input = QSpinBox(self.compile_settings)
-        self.beat_16th_low_input.setObjectName(u"beat_16th_low_input")
-        self.beat_16th_low_input.setEnabled(False)
-        self.beat_16th_low_input.setMinimum(1)
-        self.beat_16th_low_input.setMaximum(300)
+        self.beat_16th_high_input = QSpinBox(self.compile_settings)
+        self.beat_16th_high_input.setObjectName(u"beat_16th_high_input")
+        self.beat_16th_high_input.setEnabled(False)
+        self.beat_16th_high_input.setMinimum(1)
+        self.beat_16th_high_input.setMaximum(300)
+        self.beat_16th_high_input.setValue(120)
 
-        self.gridLayout_6.addWidget(self.beat_16th_low_input, 3, 3, 1, 1)
-
-        self.beat_8th_high_label = QLabel(self.compile_settings)
-        self.beat_8th_high_label.setObjectName(u"beat_8th_high_label")
-
-        self.gridLayout_6.addWidget(self.beat_8th_high_label, 2, 4, 1, 1)
-
-        self.beat_8th_low_input = QSpinBox(self.compile_settings)
-        self.beat_8th_low_input.setObjectName(u"beat_8th_low_input")
-        self.beat_8th_low_input.setEnabled(False)
-        self.beat_8th_low_input.setMinimum(1)
-        self.beat_8th_low_input.setMaximum(300)
-
-        self.gridLayout_6.addWidget(self.beat_8th_low_input, 2, 3, 1, 1)
-
-        self.beat_16th_low_label = QLabel(self.compile_settings)
-        self.beat_16th_low_label.setObjectName(u"beat_16th_low_label")
-
-        self.gridLayout_6.addWidget(self.beat_16th_low_label, 3, 2, 1, 1)
+        self.gridLayout_6.addWidget(self.beat_16th_high_input, 3, 5, 1, 1)
 
         self.beat_16th_high_label = QLabel(self.compile_settings)
         self.beat_16th_high_label.setObjectName(u"beat_16th_high_label")
 
         self.gridLayout_6.addWidget(self.beat_16th_high_label, 3, 4, 1, 1)
 
-        self.beat_8th_label = QLabel(self.compile_settings)
-        self.beat_8th_label.setObjectName(u"beat_8th_label")
-
-        self.gridLayout_6.addWidget(self.beat_8th_label, 2, 1, 1, 1, Qt.AlignRight)
-
         self.beat_16th_label = QLabel(self.compile_settings)
         self.beat_16th_label.setObjectName(u"beat_16th_label")
 
         self.gridLayout_6.addWidget(self.beat_16th_label, 3, 1, 1, 1, Qt.AlignRight)
+
+        self.beat_8th_high_label = QLabel(self.compile_settings)
+        self.beat_8th_high_label.setObjectName(u"beat_8th_high_label")
+
+        self.gridLayout_6.addWidget(self.beat_8th_high_label, 2, 4, 1, 1)
 
         self.horizontalLayout_11 = QHBoxLayout()
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
@@ -1504,30 +1487,6 @@ class Ui_Form(object):
 
         self.gridLayout_6.addLayout(self.horizontalLayout_11, 0, 1, 1, 5)
 
-        self.beatlines_check = QCheckBox(self.compile_settings)
-        self.beatlines_check.setObjectName(u"beatlines_check")
-
-        self.gridLayout_6.addWidget(self.beatlines_check, 2, 0, 2, 1)
-
-        self.hopo_label = QLabel(self.compile_settings)
-        self.hopo_label.setObjectName(u"hopo_label")
-
-        self.gridLayout_6.addWidget(self.hopo_label, 0, 0, 1, 1)
-
-        self.beat_8th_low_label = QLabel(self.compile_settings)
-        self.beat_8th_low_label.setObjectName(u"beat_8th_low_label")
-
-        self.gridLayout_6.addWidget(self.beat_8th_low_label, 2, 2, 1, 1)
-
-        self.beat_16th_high_input = QSpinBox(self.compile_settings)
-        self.beat_16th_high_input.setObjectName(u"beat_16th_high_input")
-        self.beat_16th_high_input.setEnabled(False)
-        self.beat_16th_high_input.setMinimum(1)
-        self.beat_16th_high_input.setMaximum(300)
-        self.beat_16th_high_input.setValue(120)
-
-        self.gridLayout_6.addWidget(self.beat_16th_high_input, 3, 5, 1, 1)
-
         self.beat_8th_high_input = QSpinBox(self.compile_settings)
         self.beat_8th_high_input.setObjectName(u"beat_8th_high_input")
         self.beat_8th_high_input.setEnabled(False)
@@ -1537,10 +1496,46 @@ class Ui_Form(object):
 
         self.gridLayout_6.addWidget(self.beat_8th_high_input, 2, 5, 1, 1)
 
+        self.beat_16th_low_input = QSpinBox(self.compile_settings)
+        self.beat_16th_low_input.setObjectName(u"beat_16th_low_input")
+        self.beat_16th_low_input.setEnabled(False)
+        self.beat_16th_low_input.setMinimum(1)
+        self.beat_16th_low_input.setMaximum(300)
+
+        self.gridLayout_6.addWidget(self.beat_16th_low_input, 3, 3, 1, 1)
+
         self.hopo_mode_label = QLabel(self.compile_settings)
         self.hopo_mode_label.setObjectName(u"hopo_mode_label")
 
         self.gridLayout_6.addWidget(self.hopo_mode_label, 1, 0, 1, 1)
+
+        self.beatlines_check = QCheckBox(self.compile_settings)
+        self.beatlines_check.setObjectName(u"beatlines_check")
+
+        self.gridLayout_6.addWidget(self.beatlines_check, 2, 0, 2, 1)
+
+        self.beat_8th_low_input = QSpinBox(self.compile_settings)
+        self.beat_8th_low_input.setObjectName(u"beat_8th_low_input")
+        self.beat_8th_low_input.setEnabled(False)
+        self.beat_8th_low_input.setMinimum(1)
+        self.beat_8th_low_input.setMaximum(300)
+
+        self.gridLayout_6.addWidget(self.beat_8th_low_input, 2, 3, 1, 1)
+
+        self.beat_8th_low_label = QLabel(self.compile_settings)
+        self.beat_8th_low_label.setObjectName(u"beat_8th_low_label")
+
+        self.gridLayout_6.addWidget(self.beat_8th_low_label, 2, 2, 1, 1)
+
+        self.hopo_label = QLabel(self.compile_settings)
+        self.hopo_label.setObjectName(u"hopo_label")
+
+        self.gridLayout_6.addWidget(self.hopo_label, 0, 0, 1, 1)
+
+        self.beat_16th_low_label = QLabel(self.compile_settings)
+        self.beat_16th_low_label.setObjectName(u"beat_16th_low_label")
+
+        self.gridLayout_6.addWidget(self.beat_16th_low_label, 3, 2, 1, 1)
 
         self.hopo_mode_select = QComboBox(self.compile_settings)
         self.hopo_mode_select.addItem("")
@@ -1550,6 +1545,16 @@ class Ui_Form(object):
         self.hopo_mode_select.setObjectName(u"hopo_mode_select")
 
         self.gridLayout_6.addWidget(self.hopo_mode_select, 1, 1, 1, 2)
+
+        self.beat_8th_label = QLabel(self.compile_settings)
+        self.beat_8th_label.setObjectName(u"beat_8th_label")
+
+        self.gridLayout_6.addWidget(self.beat_8th_label, 2, 1, 1, 1, Qt.AlignRight)
+
+        self.use_beat_check = QCheckBox(self.compile_settings)
+        self.use_beat_check.setObjectName(u"use_beat_check")
+
+        self.gridLayout_6.addWidget(self.use_beat_check, 4, 0, 1, 2)
 
 
         self.verticalLayout_15.addLayout(self.gridLayout_6)
@@ -1707,7 +1712,7 @@ class Ui_Form(object):
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_input.setEnabled)
         self.gh3_rendered_preview_check.toggled.connect(self.gh3_preview_audio_select.setEnabled)
 
-        self.compile_tabs.setCurrentIndex(2)
+        self.compile_tabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(Form)
@@ -1874,17 +1879,16 @@ class Ui_Form(object):
         self.gh3_ska_file_convert_check.setText(QCoreApplication.translate("Form", u"Do not convert SKA Files", None))
         self.compile_tabs.setTabText(self.compile_tabs.indexOf(self.song_data_tab_gh3), QCoreApplication.translate("Form", u"Song Data (GH3)", None))
         self.compile_settings.setTitle(QCoreApplication.translate("Form", u"Compile Settings", None))
-        self.beat_8th_high_label.setText(QCoreApplication.translate("Form", u"High:", None))
-        self.beat_16th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
         self.beat_16th_high_label.setText(QCoreApplication.translate("Form", u"High:", None))
-        self.beat_8th_label.setText(QCoreApplication.translate("Form", u"8th Notes", None))
         self.beat_16th_label.setText(QCoreApplication.translate("Form", u"16th Notes", None))
+        self.beat_8th_high_label.setText(QCoreApplication.translate("Form", u"High:", None))
         self.hmx_hopo_label.setText(QCoreApplication.translate("Form", u"HMX Value", None))
         self.ns_hopo_label.setText(QCoreApplication.translate("Form", u"NS Value", None))
-        self.beatlines_check.setText(QCoreApplication.translate("Form", u"Beat Lines BPM:", None))
-        self.hopo_label.setText(QCoreApplication.translate("Form", u"HOPO Threshold:", None))
-        self.beat_8th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
         self.hopo_mode_label.setText(QCoreApplication.translate("Form", u"HOPO Mode", None))
+        self.beatlines_check.setText(QCoreApplication.translate("Form", u"Beat Lines BPM:", None))
+        self.beat_8th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
+        self.hopo_label.setText(QCoreApplication.translate("Form", u"HOPO Threshold:", None))
+        self.beat_16th_low_label.setText(QCoreApplication.translate("Form", u"Low:", None))
         self.hopo_mode_select.setItemText(0, QCoreApplication.translate("Form", u"Rock Band", None))
         self.hopo_mode_select.setItemText(1, QCoreApplication.translate("Form", u"Moonscraper", None))
         self.hopo_mode_select.setItemText(2, QCoreApplication.translate("Form", u"Guitar Hero 3", None))
@@ -1894,6 +1898,8 @@ class Ui_Form(object):
         self.hopo_mode_select.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>The mode to use for Hammer Ons and Pull Offs. Each mode changes the logic of compilation slightly. Rock Band mode should be the default for most MIDIs you find or make, but if you are converting a song, it may be useful to change this setting.</p><p>Rock Band - This mode will calculate HOPOs based on the distance between each note, and then apply forcings, either on or off. If a chord and a single note follows containing the lowest note of the chord and it's within the HOPO threshold, this will NOT be a HOPO unless forced.</p><p>HMX/NS Hybrid - This mode will calculate HOPOs based on the distance between each note, and then apply forcings, either on or off. If a chord and a single note follows containing the lowest note of the chord and it's within the HOPO threshold, this will be a HOPO unless forced off (this mode is not based on any game's logic, it's a combo of RB and GH3).</p><p>Guitar Hero 3 - This mode will calculate HOPOs based on the distance between each note. If a &quot;force o"
                         "n&quot; note exists on a note in the MIDI, it swaps the HOPO status. If a chord and a single note follows containing the lowest note of the chord, this will be a HOPO unless swapped.</p><p>Guitar Hero World Tour+ - This mode will NOT calculate HOPOs based on the distance between each note. Only notes that are forced will become HOPOs.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
+        self.beat_8th_label.setText(QCoreApplication.translate("Form", u"8th Notes", None))
+        self.use_beat_check.setText(QCoreApplication.translate("Form", u"Use BEAT track as tempo map", None))
         self.platform_label.setText(QCoreApplication.translate("Form", u"Platform:", None))
         self.platform_pc.setText(QCoreApplication.translate("Form", u"PC", None))
         self.platform_360.setText(QCoreApplication.translate("Form", u"Xbox 360", None))

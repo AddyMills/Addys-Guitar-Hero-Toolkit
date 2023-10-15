@@ -363,6 +363,7 @@ class compile_package(QWidget, compile_pack):
             "beat_8th_high_input": self.beat_8th_high_input.value(),
             "beat_8th_low_input": self.beat_8th_low_input.value(),
             "beatlines_check": self.beatlines_check.isChecked(),
+            "use_beat_check": self.use_beat_check.isChecked(),
 
             "hmx_hopo_value": self.hmx_hopo_value.value(),
             "hopo_mode_select": self.hopo_mode_select.currentText(),
@@ -405,7 +406,7 @@ class compile_package(QWidget, compile_pack):
         check_boxes = ["cover_checkbox", "p2_rhythm_check", "coop_audio_check", "beatlines_check", "encrypt_audio",
                        "ghwt_set_end",
                        "guitar_mic_check", "bass_mic_check", "use_new_clips_check", "force_ffmpeg_check",
-                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check", "modern_strobes_check"]
+                       "gh3_rendered_preview_check", "ghwt_rendered_preview_check", "modern_strobes_check", "use_beat_check"]
         for x in check_boxes:
             try:
                 to_set = getattr(self, x)
@@ -1234,6 +1235,10 @@ class compile_package(QWidget, compile_pack):
 
         if self.force_ffmpeg_check.isChecked():
             compile_args += ["ffmpeg"]
+
+        if self.use_beat_check.isChecked():
+            compile_args += ["use_beat"]
+
         return compile_args
 
     def compile_gh3(self, *args):

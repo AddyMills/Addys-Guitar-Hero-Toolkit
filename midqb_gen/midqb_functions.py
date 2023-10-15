@@ -380,6 +380,10 @@ def split_time(in_time):
     time_str = f"{min}:{sec}.{mills}"
     return time_str
 
+def parse_beat_event(track):
+
+    return
+
 
 def parse_wt_qb(mid, hopo, *args, **kwargs):
     changes, ticks = tempMap(mid)
@@ -535,6 +539,12 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     lyrics_qs_dict = {}
     vocal_sp = []
 
+    beat_ts = []
+    beat_ts_num = 1 # Check figure to keep track of numerator
+    prev_downbeat = 0 # Number to keep track of when the previous downbeat happened in case the TS changes
+    prev_ts = 4 # Since most songs are in 4/4 time
+    beat_fretbars = []
+
     drum_notes = {}
     timeSigs = []
     markers = []
@@ -608,23 +618,6 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                     if x.note in valid_check:
                         create_anim_note(x, active_notes, track.name, anim_notes, time_sec,
                                          AnimNoteWT(time_sec, x.note, x.velocity))
-                        '''if x.velocity != 0:
-                            if x.note in active_notes:
-                                continue
-                            active_notes[x.note] = AnimNoteWT(time_sec, x.note, x.velocity)
-                        else:
-                            try:
-                                active_notes[x.note].setLength(time_sec - active_notes[x.note].time)
-                                if active_notes[x.note].time in anim_notes[track.name]:
-                                    anim_notes[track.name][active_notes[x.note].time].append(active_notes[x.note])
-                                else:
-                                    anim_notes[track.name][active_notes[x.note].time] = [active_notes[x.note]]
-                                active_notes.pop(x.note)
-                            except KeyError:
-                                pass
-                            except:
-                                raise Exception(f"Something went wrong parsing the {track.name} track.")'''
-
                 elif x.type == "text":
                     if re.search(r'^(SetBlendTime|LightShow_Set)', x.text, flags=re.IGNORECASE):
                         # if x.text.startswith("SetBlendTime") or x.text.startswith("LightShow_Set"):
@@ -639,6 +632,23 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                         param_type, param_time = camera_script(zoom_type, zoom_length)
                         anim_notes["performance"].append(
                             scriptsNode(time_sec, "CameraCutsEffect_FOVPulse", [param_type, param_time]))
+            elif track.name == "BEAT" and "use_beat" in args:
+                if x.type == "note_on":
+                    if x.velocity != 0:
+                        beat_fretbars.append(time_sec)
+                        if x.note == 12:
+                            if beat_ts:
+                                prev_beat = beat_ts[-1].numerator
+                                if beat_ts_num != prev_beat:
+                                    beat_ts.append(timeSigEvent(prev_downbeat, beat_ts_num, 4))
+                            elif time_sec == 0:
+                                pass
+                            else:
+                                beat_ts.append(timeSigEvent(0, beat_ts_num, 4))
+                            beat_ts_num = 1
+                            prev_downbeat = time_sec
+                        elif x.note == 13:
+                            beat_ts_num += 1
             elif playable:
                 if re.search(r'(guitar|bass|drums)', instrument, flags=re.IGNORECASE):
                     if x.type == "note_on" or x.type == "note_off":
@@ -1206,6 +1216,10 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
     if warning_msg:
         display_warnings(warning_msg)
 
+    if beat_ts and beat_fretbars:
+        timeSigs = beat_ts
+        fretbars = beat_fretbars
+
     to_return = {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
                  "tap": playable_tap, "fo_star_power": playable_fo_star_power, "face_off": playable_face_off,
                  "gtr_markers": markers, "drum_fills": playable_drum_fills, "anim": anim_notes, "timesigs": timeSigs,
@@ -1498,6 +1512,12 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
     gh3venue = 0
     hmxvenue = 0
 
+    beat_ts = []
+    beat_ts_num = 1 # Check figure to keep track of numerator
+    prev_downbeat = 0 # Number to keep track of when the previous downbeat happened in case the TS changes
+    prev_ts = 4 # Since most songs are in 4/4 time
+    beat_fretbars = []
+
     for x in mid.tracks:
         if x.name in GH2Tracks:
             spNote = 103
@@ -1748,6 +1768,23 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
                     if instrument == "Bass" or instrument == "Guitar":
                         player = "Bassist" if instrument == "Bass" else "Guitarist"
                         check_to_add_stance(x, time_sec, anim_notes, player, guit_stances, guit_anims)
+            elif track.name == "BEAT" and "use_beat" in args:
+                if x.type == "note_on":
+                    if x.velocity != 0:
+                        beat_fretbars.append(time_sec)
+                        if x.note == 12:
+                            if beat_ts:
+                                prev_beat = beat_ts[-1].numerator
+                                if beat_ts_num != prev_beat:
+                                    beat_ts.append(timeSigEvent(prev_downbeat, beat_ts_num, 4))
+                            elif time_sec == 0:
+                                pass
+                            else:
+                                beat_ts.append(timeSigEvent(0, beat_ts_num, 4))
+                            beat_ts_num = 1
+                            prev_downbeat = time_sec
+                        elif x.note == 13:
+                            beat_ts_num += 1
         if time > last_event_tick:
             last_event_tick = time
             last_event_secs = time_sec
@@ -1966,6 +2003,10 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
 
     if warning_msg:
         display_warnings(warning_msg)
+        
+    if beat_ts and beat_fretbars:
+        timeSigs = beat_ts
+        fretbars = beat_fretbars
 
     return {"playable_qb": playable_qb, "star_power": playable_star_power, "bm_star_power": playable_bm_star_power,
             "timesig": timeSigs, "markers": markers,
