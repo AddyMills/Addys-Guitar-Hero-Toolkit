@@ -10,9 +10,9 @@
 *.spec
 *.ska
 *.wav
-!create_audio/default_audio/blank.wav
 *.fsb
 *.mp3
+!create_audio/default_audio/blank.mp3
 .vs/
 guides/
 .idea/discord.xml

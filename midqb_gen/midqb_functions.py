@@ -2003,7 +2003,7 @@ def parse_gh3_qb(mid, hopo, *args, **kwargs):
 
     if warning_msg:
         display_warnings(warning_msg)
-        
+
     if beat_ts and beat_fretbars:
         timeSigs = beat_ts
         fretbars = beat_fretbars

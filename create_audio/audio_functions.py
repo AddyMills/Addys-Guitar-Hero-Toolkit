@@ -830,8 +830,9 @@ def main(gh3 = False):
     dirout = f".\\output"
     for filename in os.listdir(dirin):
       crypted, fileout = crypt_files(dirin, filename, gh3)
-      with open(f"{dirout}\\{fileout}", 'wb') as f:
-            f.write(crypted)
+      if crypted:
+          with open(f"{dirout}\\{fileout}", 'wb') as f:
+                f.write(crypted)
     return
 
 def strip_mp3(in_folder, fsb_loc = ""):

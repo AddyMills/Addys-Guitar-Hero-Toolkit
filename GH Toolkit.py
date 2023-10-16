@@ -170,7 +170,7 @@ def manual_input():
                 launch_gui()
             elif main_menu == "convert_ska_file":
                 while True:
-                    ska_files = input("Drag in your SKA file or a folder containing multiple SKA files: ")
+                    ska_files = os.path.normpath(input("Drag in your SKA file or a folder containing multiple SKA files: "))
                     if not os.path.exists(ska_files):
                         print("File path does not exist")
                     else:
