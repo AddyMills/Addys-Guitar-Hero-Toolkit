@@ -1,6 +1,7 @@
 *.xen
 !conversion_files/gh3_scripts.qb.xen
 *.ps3
+!conversion_files/PS3 Assets/VRAM.PAK.PS3
 *.qb
 *.pyc
 *.xlsx

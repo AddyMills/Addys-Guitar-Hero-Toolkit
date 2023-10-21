@@ -1142,19 +1142,21 @@ class compile_package(QWidget, compile_pack):
         return qb_file, qs_bytes, empty_qs
 
     def package_name_hash_format(self, text):
-        # Take the first 42 characters of the text
-        truncated_text = text[:42]
-
         # Transform each character based on the given conditions
         def transform_char(match):
             c = match.group(0)
-            if re.match(r'[a-zA-Z0-9]', c):
-                return c
-            else:
-                return "_"
+            c_bytes = bytes(c, "utf-8")
+            new_char = ""
+            for letter in c_bytes:
+                chr_letter = chr(letter)
+                if re.match(r'[a-zA-Z0-9]', chr_letter):
+                    new_char += chr_letter
+                else:
+                    new_char += "_"
+            return new_char
 
         # Use regex sub to apply the transformation
-        transformed_text = re.sub(r'.', transform_char, truncated_text)
+        transformed_text = re.sub(r'.', transform_char, text)[:42]
 
         return transformed_text
 
@@ -1166,7 +1168,7 @@ class compile_package(QWidget, compile_pack):
         cdl_data = f"cdl{dlc_crc_num}"
         stfs_name = f"{cdl_data} {self.title_input.text()} ({self.artist_input.text()})"
         cmanifest_name = self.package_name_hash_format(stfs_name)
-        cmanifest_num = QBKey(cmanifest_name)
+        cmanifest_num = QBKey(cmanifest_name).lstrip('0') or '0'
         cmanifest = f"cmanifest_{cmanifest_num}"
 
         qb_file_name = hex(int(QBKey(self.checksum_input.text()), 16) + 1)

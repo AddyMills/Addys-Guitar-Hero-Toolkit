@@ -903,6 +903,8 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
                                             temp_colour.remove(6)
                                         continue
                                     elif 6 in temp_colour:
+                                        if "gh3_mode" in args:
+                                            temp_colour.remove(6)
                                         continue
                                     else:
                                         timestamps[time_array[index]]["colours"].append(6)

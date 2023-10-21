@@ -181,7 +181,7 @@ def read_qb_item(qb_file, item_type):
         raise Exception
     elif "FloatsX" in item_type:
         float_header = read_int_bytes()
-        if float_header != 0x00010000:
+        if float_header != 0x00010000 and float_header != 256:
             raise Exception
         if item_type.endswith("X2"):
             floats = []
