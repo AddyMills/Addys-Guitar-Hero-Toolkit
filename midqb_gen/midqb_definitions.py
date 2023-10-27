@@ -475,6 +475,7 @@ drumKeyMapRB_wt = {
     22: 83,
     21: 65,
     20: 83,
+    19: 70
 }
 
 drumKeyMapRB_wor = {
@@ -509,7 +510,7 @@ drumKeyMapRB_wor = {
     21: 95,
 }
 
-practice_mode_wt = [21, 20]
+practice_mode_wt = [21, 20, 19]
 
 inst_name_lookup = {
     "Guitar": "",

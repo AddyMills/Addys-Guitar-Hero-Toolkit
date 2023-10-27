@@ -992,7 +992,9 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
 
             next_hyphen = False
             for t, lyric in vocals_lyrics.items():
-                if lyric.endswith("+"):
+                if lyric.endswith("%"):
+                    lyric = lyric[:-1]
+                if lyric.startswith("+"):
                     continue
                 elif lyric.endswith("$"):
                     lyric = lyric[:-1]
@@ -1106,7 +1108,7 @@ def parse_wt_qb(mid, hopo, *args, **kwargs):
             slides = {}
             # vocals_notes_time = dict(sorted((vocals_notes_time.items())))
             for t, lyrics in vocals_lyrics.items():
-                if lyrics == "+":
+                if lyrics.startswith("+"):
                     prev_len = vocals_notes_time[prev_time]["length"]
                     slide_time = prev_time + prev_len
                     slide_len = t - slide_time

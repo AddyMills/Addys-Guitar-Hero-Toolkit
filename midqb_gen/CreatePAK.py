@@ -173,7 +173,6 @@ if __name__ == "__main__":
             with open(fullpath, 'rb') as f:
                 x = f.read()
             item_name = fullpath[len(to_add) + 1:]
-            # raise Exception
             pak_data.append([x, item_name if not any([item_name.lower().endswith(".xen"), item_name.lower().endswith(".ps3")]) else item_name[:-4]])
             # print(os.path.join(root, name)[len(toAdd)+1:])
 
