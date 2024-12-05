@@ -2817,7 +2817,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                 misc_event = []
                 for entry in value.section_data:
                     t_sec = entry.data_dict["time"]
-                    t_event = f"{entry.data_dict['scr']} {round(entry.data_dict['params']['time'], 4)}"
+                    t_event = f"[{entry.data_dict['scr']} {round(entry.data_dict['params']['time'], 4)}]"
                     misc_event.append({"time": t_sec, "event": t_event})
                 misc_charts["lightshow"] += misc_event.copy()
             elif re.search(r"(performance)", misc_type, flags=re.IGNORECASE):
@@ -2830,7 +2830,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                         if re.search(r"(Band_ChangeStance)", script, flags=re.IGNORECASE):
                             avatar = entry.data_dict["params"]["name"]
                             stance = entry.data_dict["params"]["stance"]
-                            band_event = {"time": t_sec, "event": stance.lower()}
+                            band_event = {"time": t_sec, "event": f"[{stance.lower()}]"}
                             track = rename_track(avatar)
                             if track == "drums":
                                 misc_charts[track].append(band_event)
@@ -2840,7 +2840,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                         elif re.search(r"Band_PlayFacialAnim", script, flags=re.IGNORECASE):
                             avatar = entry.data_dict["params"]["name"]
                             anim = entry.data_dict["params"]["anim"]
-                            band_event = {"time": t_sec, "event": f"Band_PlayFacialAnim {anim}"}
+                            band_event = {"time": t_sec, "event": f"[Band_PlayFacialAnim {anim}]"}
                             track = rename_track(avatar)
                             note_charts[track].append(band_event)
                             continue
@@ -2855,10 +2855,10 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 if anim_re:
                                     if anim_re.string == "allow_in_2player":
                                         p2_bool = "1p" if param2[anim_re.string] == "false" else "2p"
-                                        band_event = {"time": t_sec, "event": f"{anim.lower()} {p2_bool}"}
+                                        band_event = {"time": t_sec, "event": f"[{anim.lower()} {p2_bool}]"}
                                     else:
                                         modifier = param2[anim_re.string]
-                                        band_event = {"time": t_sec, "event": f"{anim.lower()} {modifier}"}
+                                        band_event = {"time": t_sec, "event": f"[{anim.lower()} {modifier}]"}
 
                                 else:
                                     print(f"Unknown key {list(param2.keys())[2]} found in PlayAnim. Skipping...")
@@ -2867,7 +2867,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 print(f"Unknown values {param2.keys()} found in PlayAnim")
                                 continue
                             else:
-                                band_event = {"time": t_sec, "event": f"{anim}"}
+                                band_event = {"time": t_sec, "event": f"[{anim}]"}
                             if track == "drums":
                                 misc_charts[track].append(band_event)
                             else:
@@ -2883,7 +2883,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 if re.search(r"(0x0)", list(param2.keys())[2], flags=re.IGNORECASE):
                                     if "0x0" in param2:
                                         other = param2["0x0"]
-                                        band_event = {"time": t_sec, "event": f"{node} {other}"}
+                                        band_event = {"time": t_sec, "event": f"[{node} {other}]"}
                                 else:
                                     print(f"Unknown key {param2.keys()[2]} found in PlayAnim. Skipping...")
                                     continue
@@ -2891,7 +2891,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 print(f"Unknown values {param2.keys()} found in PlayAnim")
                                 continue
                             else:
-                                band_event = {"time": t_sec, "event": f"{node}"}
+                                band_event = {"time": t_sec, "event": f"[{node}]"}
                             if track == "drums":
                                 misc_charts[track].append(band_event)
                             else:
@@ -2902,7 +2902,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 temp_par = entry.data_dict["params"]
                                 if "0x0" in temp_par:
                                     script += f" {temp_par['0x0']}"
-                            spec_event = {"time": t_sec, "event": f"{script}"}
+                            spec_event = {"time": t_sec, "event": f"[{script}]"}
                             misc_charts["performance"].append(spec_event)
                             continue
                         else:
@@ -2912,7 +2912,7 @@ def read_gh3_note(sections_dict, tempo_data, tpb, game="GH3", *args):
                                 else:
                                     print(f"{script} not yet supported. Skipping...")
                     params = ' '.join(params)
-                    t_event = f"{script} {params}"
+                    t_event = f"[{script} {params}]"
                     misc_event.append({"time": t_sec, "event": t_event})
                 misc_charts["performance"] += misc_event.copy()
             else:
@@ -3123,6 +3123,12 @@ def read_gh5_note(note_bin, drum_mode=False, *args):
                             "text"].endswith("=") else ""
                 note_file_dict[entry_id].append(
                     {"time": entry_time, "text": entry_text})
+        elif entry_type == 'gh5_vocal_note':
+            for entry in range(entry_count):
+                entry_time = read_int()
+                entry_length = read_int(2)
+                entry_note = read_int(1)
+                note_file_dict[entry_id].append({"time": entry_time, "length": entry_length, "note": entry_note})
         else:
             raise Exception
     return note_file_dict

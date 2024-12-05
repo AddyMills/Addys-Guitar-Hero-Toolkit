@@ -11,6 +11,7 @@ sys.path.append("../pak_extract")
 from create_audio.audio_functions import *
 from toolkit_functions import convert_to_5
 from midqb_gen import CreatePAK
+from pak_extract import PAKExtract
 import os
 import time
 
@@ -89,6 +90,59 @@ if __name__ == "__main__":
     song_files = []
     filesfolder = sys.argv[1]
 
+    masterfile = filesfolder+"\\dlc_mappings.txt"
+    gh6_songlist = os.path.join(filesfolder, "gh6_1_songlist.q")
+    gh6_songlist_update = os.path.join(filesfolder, "gh6_1_songlist_new.q")
+
+    if not os.path.exists(masterfile):
+        exit()
+
+    dlc_converts = {}
+
+    with open(gh6_songlist, "r") as f:
+        bh2_songlist = f.read()
+
+    with open(masterfile, "r") as file:
+        for line in file:
+            split = line.split("-")
+            dlc_name = split[1].strip()
+            origname = split[0].strip()
+            dlc_converts[origname] = dlc_name
+    audio_loops = ["1", "2", "3", "preview"]
+    for song, dlc in dlc_converts.items():
+        old_ids = generate_ids(song)
+        new_ids = generate_ids(dlc)
+        print(f"Processing {song}")
+        bh2_songlist = bh2_songlist.replace(song, dlc)
+        pak_file = os.path.join(filesfolder,f"{song}_song.pak.xen")
+        with open(pak_file,'rb') as f:
+            decomp_pak = f.read()
+            if decomp_pak[:4] == b"CHNK":
+                decomp_pak = PAKExtract.decompress_pak(decomp_pak)
+            for i, z in enumerate(old_ids):
+                decomp_pak = decomp_pak.replace(z, new_ids[i])
+        new_pak_file = os.path.join(filesfolder,f"b{dlc}_song.pak.xen")
+        with open(new_pak_file, 'wb') as f:
+            f.write(decomp_pak)
+        for audio in audio_loops:
+            audio_name = f"{song}_{audio}"
+            audio_file = os.path.join(filesfolder, f"{audio_name}.fsb")
+            new_name = f"a{dlc}_{audio}"
+            new_audio_file = os.path.join(filesfolder, f"{new_name}.fsb.xen")
+            no_ext = file_renamer(new_name)
+            key = generate_fsb_key(no_ext)
+            with open(audio_file, 'rb') as f:
+                audio = f.read()
+            print(f"Encrypting with id {no_ext}")
+            audio = encrypt_fsb4(audio, key)
+            with open(new_audio_file, 'wb') as f:
+                f.write(audio)
+            # print()
+    with open(gh6_songlist_update, "w") as f:
+        f.write(bh2_songlist)
+    t1 = time.process_time()
+    print(t1 - t0)
+    exit()
     with os.scandir(filesfolder) as songs:
         for x in songs:
             dlc_name = x.name.split(" - ")[0]
@@ -192,6 +246,4 @@ if __name__ == "__main__":
             with open(f"{savepath}\\b{x[0].lower()}_song.pak.xen", 'wb') as f:
                 f.write(pak_file)
             print()
-    t1 = time.process_time()
-    print(t1 - t0)
 
