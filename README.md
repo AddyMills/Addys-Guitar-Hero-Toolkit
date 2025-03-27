@@ -1,4 +1,16 @@
 # Guitar Hero III Tools
+
+### This repo is now archived. No more updates will be done as the code has been converted to C# in Honeycomb. This repo will stay visible to view for archival use only.
+Links to the new Repos:
+
+https://github.com/AddyMills/Honeycomb-GUI
+
+https://github.com/AddyMills/Honeycomb-CLI
+
+https://github.com/AddyMills/GH-Toolkit-NET
+
+
+## Original README Starts Here
  
 A WIP toolkit to create more legitimate-looking Guitar Hero III customs
 
